@@ -1,5 +1,9 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
+@variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
+@variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
 
-/* This file is for your main application CSS */
+@source "./js/**/*.js";
+@source "../../lib/sutra_ui_web.ex";
+@source "../../lib/sutra_ui_web/**/*.*ex";
+
+@import "tailwindcss";
