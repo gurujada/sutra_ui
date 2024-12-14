@@ -19,15 +19,15 @@ defmodule SutraUiWeb.ConnCase do
 
   using do
     quote do
+      use SutraUiWeb, :verified_routes
+
+      import Phoenix.ConnTest
+      import Plug.Conn
+      import SutraUiWeb.ConnCase
       # The default endpoint for testing
       @endpoint SutraUiWeb.Endpoint
 
-      use SutraUiWeb, :verified_routes
-
       # Import conveniences for testing with connections
-      import Plug.Conn
-      import Phoenix.ConnTest
-      import SutraUiWeb.ConnCase
     end
   end
 
