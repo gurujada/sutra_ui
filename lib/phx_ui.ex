@@ -84,6 +84,19 @@ defmodule PhxUI do
   - `PhxUI.Command` - Command palette with search
   - `PhxUI.Carousel` - CSS scroll-snap carousel
 
+  ### Form & Layout Helpers (Phase 6)
+  - `PhxUI.FilterBar` - Filter bar for index pages
+  - `PhxUI.InputGroup` - Input with prefix/suffix attachments
+  - `PhxUI.Item` - Versatile list item component
+  - `PhxUI.LoadingState` - Loading indicator with message
+  - `PhxUI.SimpleForm` - Simple form wrapper with auto-styling
+
+  ### Navigation (Phase 7)
+  - `PhxUI.NavPills` - Responsive navigation pills
+  - `PhxUI.Sidebar` - Collapsible sidebar navigation
+  - `PhxUI.TabNav` - Server-side routed tab navigation
+  - `PhxUI.ThemeSwitcher` - Light/dark theme toggle
+
   ## Tailwind CSS
 
   This library uses Tailwind CSS classes. Make sure your project has
@@ -168,6 +181,19 @@ defmodule PhxUI do
       import PhxUI.Popover
       import PhxUI.Command
       import PhxUI.Carousel
+
+      # Phase 6: Form & Layout Helpers
+      import PhxUI.FilterBar
+      import PhxUI.InputGroup
+      import PhxUI.Item
+      import PhxUI.LoadingState
+      import PhxUI.SimpleForm
+
+      # Phase 7: Navigation
+      import PhxUI.NavPills
+      import PhxUI.Sidebar
+      import PhxUI.TabNav
+      import PhxUI.ThemeSwitcher
     end
   end
 end

@@ -2,6 +2,30 @@ defmodule PhxUI.Textarea do
   @moduledoc """
   Displays a multi-line text input field.
 
+  ## Examples
+
+      # Basic textarea
+      <.textarea name="bio" placeholder="Tell us about yourself" />
+
+      # Textarea with custom rows
+      <.textarea name="description" rows={6} />
+
+      # Disabled textarea
+      <.textarea name="readonly_content" disabled />
+
+      # Textarea with form field
+      <.textarea field={@form[:message]} />
+
+      # Textarea with character limits
+      <.textarea name="summary" minlength="10" maxlength="500" />
+
+      # Textarea with ARIA attributes
+      <.textarea
+        name="feedback"
+        aria-label="Your feedback"
+        aria-describedby="feedback-help"
+      />
+
   ## Accessibility
 
   - `aria-label` - Label for the textarea when no visible label is present

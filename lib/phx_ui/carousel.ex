@@ -128,6 +128,8 @@ defmodule PhxUI.Carousel do
         type="button"
         class="carousel-prev"
         aria-label="Previous slide"
+        data-carousel-prev
+        disabled={!@loop}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -149,6 +151,7 @@ defmodule PhxUI.Carousel do
         type="button"
         class="carousel-next"
         aria-label="Next slide"
+        data-carousel-next
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -185,13 +188,13 @@ defmodule PhxUI.Carousel do
           this.viewport = this.el.querySelector('.carousel-viewport');
           this.items = Array.from(this.el.querySelectorAll('[data-carousel-item]'));
           this.indicators = Array.from(this.el.querySelectorAll('[data-carousel-indicator]'));
-          this.prevBtn = this.el.querySelector('.carousel-prev');
-          this.nextBtn = this.el.querySelector('.carousel-next');
+          this.prevBtn = this.el.querySelector('[data-carousel-prev]');
+          this.nextBtn = this.el.querySelector('[data-carousel-next]');
           this.currentIndex = 0;
           this.loop = this.el.dataset.loop === 'true';
           
           // Set up intersection observer for indicators
-          if (this.indicators.length > 0) {
+          if (this.indicators.length > 0 || this.prevBtn || this.nextBtn) {
             this.observer = new IntersectionObserver(
               (entries) => this.handleIntersection(entries),
               {
@@ -218,6 +221,9 @@ defmodule PhxUI.Carousel do
           
           // Keyboard navigation
           this.viewport.addEventListener('keydown', (e) => this.handleKeydown(e));
+          
+          // Initial button state
+          this.updateButtonStates();
         },
         
         destroyed() {
@@ -243,6 +249,19 @@ defmodule PhxUI.Carousel do
             indicator.classList.toggle('carousel-indicator-active', isActive);
             indicator.setAttribute('aria-selected', String(isActive));
           });
+          
+          this.updateButtonStates();
+        },
+        
+        updateButtonStates() {
+          if (!this.loop) {
+            if (this.prevBtn) {
+              this.prevBtn.disabled = this.currentIndex === 0;
+            }
+            if (this.nextBtn) {
+              this.nextBtn.disabled = this.currentIndex === this.items.length - 1;
+            }
+          }
         },
         
         scrollToItem(index) {

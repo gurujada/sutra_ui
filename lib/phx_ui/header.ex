@@ -39,6 +39,7 @@ defmodule PhxUI.Header do
   slot(:subtitle, doc: "Optional subtitle text")
   slot(:actions, doc: "Optional action buttons")
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
+  attr(:rest, :global, doc: "Additional HTML attributes")
 
   def header(assigns) do
     ~H"""

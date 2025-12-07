@@ -2,6 +2,31 @@ defmodule PhxUI.Switch do
   @moduledoc """
   A toggle control that allows the user to switch between checked and not checked.
 
+  ## Examples
+
+      # Basic switch
+      <.switch name="airplane_mode" />
+
+      # Switch with initial checked state
+      <.switch name="notifications" checked />
+
+      # Disabled switch
+      <.switch name="marketing_emails" disabled />
+
+      # Switch with phx-click for LiveView interactivity
+      <.switch name="dark_mode" phx-click="toggle_dark_mode" checked={@dark_mode} />
+
+      # Switch with phx-change inside a form
+      <.switch name="auto_save" phx-change="toggle_auto_save" checked={@auto_save} />
+
+      # Switch with accessibility attributes
+      <.switch
+        name="email_notifications"
+        id="email-notifications"
+        aria-label="Enable email notifications"
+        aria-describedby="email-help"
+      />
+
   ## Accessibility
 
   - Uses `<input type="checkbox">` with `role="switch"`

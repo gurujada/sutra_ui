@@ -2,6 +2,31 @@ defmodule PhxUI.Input do
   @moduledoc """
   Displays a form input field.
 
+  ## Examples
+
+      # Basic text input
+      <.input type="text" name="username" placeholder="Username" />
+
+      # Email input with form field
+      <.input field={@form[:email]} type="email" />
+
+      # Password input with required attribute
+      <.input type="password" name="password" placeholder="Password" required />
+
+      # Number input with min/max constraints
+      <.input type="number" name="age" min="0" max="120" />
+
+      # Search input with autocomplete disabled
+      <.input type="search" name="query" placeholder="Search..." autocomplete="off" />
+
+      # Input with ARIA attributes for accessibility
+      <.input
+        type="text"
+        name="phone"
+        aria-label="Phone number"
+        aria-describedby="phone-help"
+      />
+
   ## Accessibility
 
   - `aria-label` - Label for the input when no visible label is present

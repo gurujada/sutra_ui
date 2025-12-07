@@ -2,6 +2,16 @@ defmodule PhxUI.Checkbox do
   @moduledoc """
   A control that allows the user to toggle between checked and not checked.
 
+  ## Examples
+
+      <.checkbox name="terms" value="accepted" />
+
+      <.checkbox name="terms" value="accepted" checked />
+
+      <.checkbox name="newsletter" value="subscribed" disabled />
+
+      <.checkbox name="agree" id="agree-checkbox" required aria-describedby="agree-help" />
+
   ## Accessibility
 
   - Uses semantic `<input type="checkbox">` element
