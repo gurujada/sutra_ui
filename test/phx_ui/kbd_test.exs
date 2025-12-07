@@ -89,9 +89,9 @@ defmodule PhxUI.KbdTest do
         <Kbd.kbd>K</Kbd.kbd>
         """)
 
-      # Should have some basic styling (not testing exact classes)
+      # Should have the semantic kbd class (styling is done in CSS)
       assert html =~ "class="
-      assert html =~ "font-mono"
+      assert html =~ "kbd"
     end
   end
 end

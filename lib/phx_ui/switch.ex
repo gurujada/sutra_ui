@@ -31,7 +31,8 @@ defmodule PhxUI.Switch do
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
 
   attr(:rest, :global,
-    include: ~w(form required aria-label aria-labelledby aria-describedby aria-required),
+    include:
+      ~w(form required aria-label aria-labelledby aria-describedby aria-required phx-click phx-change),
     doc: "Additional HTML attributes including ARIA"
   )
 
@@ -46,7 +47,7 @@ defmodule PhxUI.Switch do
       checked={@checked}
       disabled={@disabled}
       aria-checked={to_string(@checked)}
-      class={["input", @class]}
+      class={["switch", @class]}
       {@rest}
     />
     """

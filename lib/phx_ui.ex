@@ -56,14 +56,33 @@ defmodule PhxUI do
   - `PhxUI.Switch` - Toggle switch
   - `PhxUI.RadioGroup` - Radio button groups
   - `PhxUI.Field` - Field container with label/description/error
-  - `PhxUI.Select` - Custom select dropdown (requires JS hook)
-  - `PhxUI.Slider` - Range slider (requires JS hook)
+  - `PhxUI.Select` - Custom select dropdown (with JS hook)
+  - `PhxUI.Slider` - Range slider (with JS hook)
 
-  ### Coming Soon
-  - Layout components (card, header, table)
-  - Interactive components (accordion, tabs, dropdown)
-  - Overlay components (dialog, popover, tooltip)
-  - And more...
+  ### Layout & Data Display (Phase 3)
+  - `PhxUI.Card` - Card container with header, content, footer
+  - `PhxUI.Header` - Page header with title, subtitle, actions
+  - `PhxUI.Table` - Data table with column definitions
+  - `PhxUI.Skeleton` - Loading placeholder
+  - `PhxUI.Empty` - Empty state with icon, title, description
+  - `PhxUI.Alert` - Alert/callout messages
+  - `PhxUI.Progress` - Progress bar indicator
+
+  ### Navigation & Interactive (Phase 4)
+  - `PhxUI.Breadcrumb` - Breadcrumb navigation
+  - `PhxUI.Pagination` - Page navigation
+  - `PhxUI.Accordion` - Collapsible content sections
+  - `PhxUI.Tabs` - Tab panels (with JS hook)
+  - `PhxUI.DropdownMenu` - Dropdown menu (with JS hook)
+  - `PhxUI.Toast` - Toast notifications (with JS hook)
+
+  ### Advanced UI (Phase 5)
+  - `PhxUI.Avatar` - User avatars with fallback support
+  - `PhxUI.Tooltip` - CSS-only hover tooltips
+  - `PhxUI.Dialog` - Modal dialogs
+  - `PhxUI.Popover` - Click-triggered popups
+  - `PhxUI.Command` - Command palette with search
+  - `PhxUI.Carousel` - CSS scroll-snap carousel
 
   ## Tailwind CSS
 
@@ -124,6 +143,31 @@ defmodule PhxUI do
       import PhxUI.Field
       import PhxUI.Select
       import PhxUI.Slider
+
+      # Phase 3: Layout & Data Display
+      import PhxUI.Card
+      import PhxUI.Header
+      import PhxUI.Table
+      import PhxUI.Skeleton
+      import PhxUI.Empty
+      import PhxUI.Alert
+      import PhxUI.Progress
+
+      # Phase 4: Navigation & Interactive
+      import PhxUI.Breadcrumb
+      import PhxUI.Pagination
+      import PhxUI.Accordion
+      import PhxUI.Tabs
+      import PhxUI.DropdownMenu
+      import PhxUI.Toast
+
+      # Phase 5: Advanced UI
+      import PhxUI.Avatar
+      import PhxUI.Tooltip
+      import PhxUI.Dialog
+      import PhxUI.Popover
+      import PhxUI.Command
+      import PhxUI.Carousel
     end
   end
 end

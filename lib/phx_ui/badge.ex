@@ -10,6 +10,7 @@ defmodule PhxUI.Badge do
   - `default` - Default badge style
   - `secondary` - Muted secondary style
   - `destructive` - Error/danger style
+  - `success` - Success/positive style
   - `outline` - Border only, transparent background
 
   ## Examples
@@ -49,7 +50,7 @@ defmodule PhxUI.Badge do
   """
   attr(:variant, :string,
     default: "default",
-    values: ~w(default secondary destructive outline),
+    values: ~w(default secondary destructive success outline),
     doc: "Visual style variant"
   )
 
@@ -95,6 +96,7 @@ defmodule PhxUI.Badge do
         "default" -> "badge"
         "secondary" -> "badge-secondary"
         "destructive" -> "badge-destructive"
+        "success" -> "badge-success"
         "outline" -> "badge-outline"
       end
 

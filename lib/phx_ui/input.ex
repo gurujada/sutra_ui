@@ -24,15 +24,16 @@ defmodule PhxUI.Input do
       <.input type="password" name="password" placeholder="Password" required />
   """
 
-  attr(:field, FormField, doc: "A form field struct retrieved from the form")
+  attr(:field, FormField, default: nil, doc: "A form field struct retrieved from the form")
+  attr(:id, :string, default: nil, doc: "The id attribute for the input")
   attr(:type, :string, default: "text", doc: "The type of input field")
   attr(:name, :string, default: nil, doc: "The name attribute for the input")
-  attr(:value, :string, default: nil, doc: "The value of the input")
+  attr(:value, :any, default: nil, doc: "The value of the input")
   attr(:placeholder, :string, default: nil, doc: "Placeholder text")
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
 
   attr(:rest, :global,
-    include: ~w(id disabled required autocomplete autofocus readonly min max step pattern
+    include: ~w(disabled required autocomplete autofocus readonly min max step pattern
                 minlength maxlength size multiple accept capture
                 aria-label aria-describedby aria-invalid aria-required),
     doc: "Additional HTML attributes including ARIA"
@@ -40,9 +41,10 @@ defmodule PhxUI.Input do
 
   def input(%{field: %FormField{} = field} = assigns) do
     assigns
-    |> assign(field: nil, id: assigns[:id] || field.id)
-    |> assign_new(:name, fn -> field.name end)
-    |> assign_new(:value, fn -> field.value end)
+    |> assign(field: nil)
+    |> assign(:id, assigns[:id] || field.id)
+    |> assign(:name, assigns[:name] || field.name)
+    |> assign(:value, assigns[:value] || field.value)
     |> input_impl()
   end
 
@@ -54,6 +56,7 @@ defmodule PhxUI.Input do
     ~H"""
     <input
       type={@type}
+      id={@id}
       name={@name}
       value={@value}
       placeholder={@placeholder}

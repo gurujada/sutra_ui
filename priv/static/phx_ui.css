@@ -1181,8 +1181,7 @@
 
 /* Switch */
 @layer components {
-    :is(.form, .field) input[type="checkbox"][role="switch"],
-    .input[type="checkbox"][role="switch"] {
+    .switch {
         @apply appearance-none focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50;
         @apply bg-input dark:bg-input/80 checked:bg-primary dark:checked:bg-primary;
         @apply before:content-[''] before:pointer-events-none before:block before:size-4 before:rounded-full before:ring-0 before:transition-all;
@@ -1361,6 +1360,287 @@
                 @apply before:top-1/2 before:-translate-y-1/2;
             }
         }
+    }
+}
+
+/* Accordion */
+@layer components {
+    .accordion {
+        @apply w-full divide-y divide-border;
+    }
+    .accordion-item {
+        @apply border-b border-border;
+
+        &:last-child {
+            @apply border-b-0;
+        }
+        &[data-state="open"] .accordion-chevron {
+            @apply rotate-180;
+        }
+    }
+    .accordion-disabled {
+        @apply opacity-50 pointer-events-none;
+    }
+    .accordion-header {
+        @apply flex;
+    }
+    .accordion-trigger {
+        @apply flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all hover:underline text-left [&[disabled]]:pointer-events-none [&[disabled]]:opacity-50;
+
+        &[aria-expanded="true"] .accordion-chevron {
+            @apply rotate-180;
+        }
+    }
+    .accordion-chevron {
+        @apply size-4 shrink-0 text-muted-foreground transition-transform duration-200;
+    }
+    .accordion-content {
+        @apply overflow-hidden text-sm;
+
+        &[hidden] {
+            @apply hidden;
+        }
+    }
+    .accordion-content-inner {
+        @apply pb-4 pt-0;
+    }
+}
+
+/* Breadcrumb */
+@layer components {
+    .breadcrumb {
+        @apply flex;
+    }
+    .breadcrumb-list {
+        @apply flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5;
+    }
+    .breadcrumb-item {
+        @apply inline-flex items-center gap-1.5;
+    }
+    .breadcrumb-separator {
+        @apply text-muted-foreground [&>svg]:size-3.5;
+    }
+    .breadcrumb-link {
+        @apply transition-colors hover:text-foreground;
+    }
+    .breadcrumb-page {
+        @apply font-normal text-foreground;
+    }
+}
+
+/* Dropdown */
+@layer components {
+    .dropdown {
+        @apply relative inline-flex;
+    }
+    .dropdown-trigger {
+        @apply inline-flex;
+    }
+    .dropdown-content {
+        @apply absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md;
+        @apply opacity-100 scale-100 transition-all flex flex-col;
+
+        &[hidden] {
+            @apply hidden;
+        }
+    }
+    .dropdown-bottom {
+        @apply top-full mt-1;
+    }
+    .dropdown-top {
+        @apply bottom-full mb-1;
+    }
+    .dropdown-left {
+        @apply right-full mr-1;
+    }
+    .dropdown-right {
+        @apply left-full ml-1;
+    }
+    .dropdown-align-start {
+        @apply left-0;
+    }
+    .dropdown-align-center {
+        @apply left-1/2 -translate-x-1/2;
+    }
+    .dropdown-align-end {
+        @apply right-0;
+    }
+    .dropdown-item {
+        @apply relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0;
+    }
+    .dropdown-item-icon {
+        @apply flex-shrink-0 text-muted-foreground [&>span]:size-4;
+    }
+    .dropdown-item-label {
+        @apply flex-1;
+    }
+    .dropdown-item-shortcut {
+        @apply ml-auto text-xs tracking-widest text-muted-foreground;
+    }
+    .dropdown-item-destructive {
+        @apply text-destructive focus:text-destructive hover:text-destructive;
+    }
+    .dropdown-item-disabled {
+        @apply opacity-50 pointer-events-none;
+    }
+    .dropdown-label {
+        @apply px-2 py-1.5 text-sm font-semibold;
+    }
+    .dropdown-separator {
+        @apply -mx-1 my-1 h-px bg-border;
+    }
+    .dropdown-icon {
+        @apply transition-transform duration-200;
+    }
+    .dropdown-open .dropdown-icon {
+        @apply rotate-180;
+    }
+}
+
+/* Empty State */
+@layer components {
+    .empty,
+    .empty-outline {
+        @apply flex flex-col items-center justify-center py-12 px-4 text-center;
+
+        header {
+            @apply flex flex-col items-center gap-2;
+        }
+        h3 {
+            @apply text-lg font-semibold;
+        }
+        p {
+            @apply text-sm text-muted-foreground max-w-sm;
+        }
+        section {
+            @apply mt-6 flex flex-wrap items-center justify-center gap-2;
+        }
+    }
+    .empty-icon {
+        @apply mb-4 text-muted-foreground [&>svg]:size-12;
+    }
+    .empty-outline {
+        @apply border-2 border-dashed border-border rounded-lg;
+    }
+}
+
+/* Header */
+@layer components {
+    .header {
+        @apply flex flex-col gap-1;
+
+        &.header-with-actions {
+            @apply flex-row items-start justify-between gap-4;
+        }
+    }
+    .header-title {
+        @apply text-2xl font-semibold tracking-tight;
+    }
+    .header-subtitle {
+        @apply text-sm text-muted-foreground;
+    }
+    .header-actions {
+        @apply flex items-center gap-2 shrink-0;
+    }
+}
+
+/* Pagination */
+@layer components {
+    .pagination {
+        @apply flex justify-center;
+    }
+    .pagination-list {
+        @apply flex flex-row items-center gap-1;
+    }
+    .pagination-btn {
+        @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 w-9;
+    }
+    .pagination-prev,
+    .pagination-next {
+        @apply gap-1 px-2.5;
+    }
+    .pagination-page {
+        @apply border border-input bg-background shadow-sm;
+    }
+    .pagination-active {
+        @apply bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground;
+    }
+    .pagination-ellipsis {
+        @apply flex h-9 w-9 items-center justify-center text-muted-foreground;
+    }
+}
+
+/* Progress */
+@layer components {
+    .progress {
+        @apply relative h-2 w-full overflow-hidden rounded-full bg-primary/20;
+    }
+    .progress-indicator {
+        @apply h-full bg-primary transition-all duration-300 ease-in-out rounded-full;
+    }
+    .progress-sm {
+        @apply h-1;
+    }
+    .progress-lg {
+        @apply h-3;
+    }
+    .progress-xl {
+        @apply h-4;
+    }
+}
+
+/* Skeleton */
+@layer components {
+    .skeleton {
+        @apply animate-pulse rounded-md bg-primary/10;
+    }
+}
+
+/* Toast Component (additional styles) */
+@layer components {
+    .toast-container {
+        @apply fixed bottom-0 right-0 p-4 pointer-events-none z-50 w-full max-w-sm flex flex-col gap-2;
+    }
+    .toast {
+        @apply pointer-events-auto w-full bg-popover text-popover-foreground border shadow-lg rounded-lg overflow-hidden flex items-start gap-3 p-4 transition-all;
+    }
+    .toast-content {
+        @apply flex-1 min-w-0;
+    }
+    .toast-title {
+        @apply font-medium text-sm;
+    }
+    .toast-description {
+        @apply text-sm text-muted-foreground mt-1;
+    }
+    .toast-action {
+        @apply shrink-0;
+    }
+    .toast-close {
+        @apply shrink-0 rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors;
+    }
+    .toast-success {
+        @apply border-green-500/50 bg-green-50 dark:bg-green-950/50;
+
+        .toast-title {
+            @apply text-green-700 dark:text-green-400;
+        }
+    }
+    .toast-destructive {
+        @apply border-destructive/50 bg-destructive/10;
+
+        .toast-title {
+            @apply text-destructive;
+        }
+    }
+    .toast-show {
+        @apply opacity-100 translate-y-0;
+    }
+    .toast-hide {
+        @apply opacity-0 translate-y-2;
+    }
+    .toast-hidden {
+        @apply hidden;
     }
 }
 
@@ -1639,3 +1919,79 @@ markdown-toolbar md-task-list::before { content: "☑"; }
 markdown-toolbar md-header-1::before { content: "H1"; @apply font-bold text-xs; }
 markdown-toolbar md-header-2::before { content: "H2"; @apply font-bold text-xs; }
 markdown-toolbar md-header-3::before { content: "H3"; @apply font-bold text-xs; }
+
+/* Avatar */
+@layer components {
+    .avatar {
+        @apply relative flex shrink-0 overflow-hidden;
+    }
+    .avatar-circle {
+        @apply rounded-full;
+    }
+    .avatar-square {
+        @apply rounded-md;
+    }
+    .avatar-sm {
+        @apply size-8 text-xs;
+    }
+    .avatar-md {
+        @apply size-10 text-sm;
+    }
+    .avatar-lg {
+        @apply size-12 text-base;
+    }
+    .avatar-xl {
+        @apply size-16 text-lg;
+    }
+    .avatar-image {
+        @apply aspect-square size-full object-cover;
+    }
+    .avatar-fallback {
+        @apply flex size-full items-center justify-center bg-muted text-muted-foreground font-medium;
+    }
+    .avatar-fallback-hidden {
+        @apply hidden;
+    }
+    .avatar-group {
+        @apply flex -space-x-3;
+
+        .avatar {
+            @apply ring-2 ring-background;
+        }
+    }
+}
+
+/* Carousel */
+@layer components {
+    .carousel {
+        @apply relative w-full;
+    }
+    .carousel-viewport {
+        @apply flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+        &:focus {
+            @apply outline-none ring-2 ring-ring ring-offset-2 rounded-lg;
+        }
+    }
+    .carousel-item {
+        @apply flex-none snap-start w-full;
+    }
+    .carousel-indicators {
+        @apply flex justify-center gap-2 mt-4;
+    }
+    .carousel-indicator {
+        @apply size-2 rounded-full bg-muted transition-all cursor-pointer;
+
+        &:hover {
+            @apply bg-muted-foreground/50;
+        }
+    }
+    .carousel-indicator-active {
+        @apply bg-primary w-6;
+    }
+}
