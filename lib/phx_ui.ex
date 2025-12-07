@@ -97,6 +97,9 @@ defmodule PhxUI do
   - `PhxUI.TabNav` - Server-side routed tab navigation
   - `PhxUI.ThemeSwitcher` - Light/dark theme toggle
 
+  ### Advanced Form Controls (Phase 8)
+  - `PhxUI.RangeSlider` - Dual-handle range slider for selecting value ranges
+
   ## Tailwind CSS
 
   This library uses Tailwind CSS classes. Make sure your project has
@@ -194,6 +197,9 @@ defmodule PhxUI do
       import PhxUI.Sidebar
       import PhxUI.TabNav
       import PhxUI.ThemeSwitcher
+
+      # Phase 8: Advanced Form Controls
+      import PhxUI.RangeSlider
     end
   end
 end

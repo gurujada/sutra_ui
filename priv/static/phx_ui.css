@@ -2387,3 +2387,59 @@ markdown-toolbar md-header-3::before { content: "H3"; @apply font-bold text-xs; 
         @apply hidden;
     }
 }
+
+/* Range Slider (dual-handle) */
+@layer components {
+    .range-slider {
+        @apply relative w-full h-8 flex items-center select-none;
+        /* Larger touch target area */
+        padding: 0.5rem 0;
+    }
+    .range-slider-track {
+        @apply relative w-full h-2 bg-muted rounded-full cursor-pointer;
+    }
+    .range-slider-range {
+        @apply absolute h-full bg-primary rounded-full pointer-events-none;
+        /* Smooth transition for server updates */
+        transition: left 150ms ease-out, width 150ms ease-out;
+    }
+    .range-slider-thumb {
+        @apply absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-5 bg-background border-2 border-primary rounded-full shadow-md cursor-grab outline-none z-10;
+        /* Smooth transition for server updates, but not during drag */
+        transition: left 150ms ease-out, box-shadow 150ms ease, transform 150ms ease;
+
+        &:hover {
+            @apply ring-4 ring-primary/20 scale-105;
+        }
+        &:focus-visible {
+            @apply ring-4 ring-ring/50;
+        }
+        &.range-slider-thumb-active {
+            @apply cursor-grabbing ring-4 ring-primary/30 scale-110;
+            /* Disable transition during drag for immediate response */
+            transition: box-shadow 150ms ease, transform 100ms ease;
+        }
+    }
+    .range-slider-tooltip {
+        @apply absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-primary text-primary-foreground text-xs rounded whitespace-nowrap pointer-events-none;
+        transition: opacity 150ms ease;
+    }
+    .range-slider-disabled {
+        @apply opacity-50 pointer-events-none;
+
+        .range-slider-thumb {
+            @apply cursor-not-allowed;
+        }
+    }
+    .range-slider-dragging {
+        @apply cursor-grabbing;
+
+        /* Disable transitions during drag for immediate response */
+        .range-slider-thumb {
+            transition: box-shadow 150ms ease, transform 100ms ease;
+        }
+        .range-slider-range {
+            transition: none;
+        }
+    }
+}
