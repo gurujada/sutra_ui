@@ -6,6 +6,9 @@ defmodule PhxUI.Popover do
   positioned relative to a trigger element. Unlike tooltips, popovers
   are interactive and can contain buttons, forms, and other elements.
 
+  Supports dynamic positioning that automatically adjusts based on viewport
+  boundaries to prevent the popover from being clipped.
+
   ## Examples
 
       <.popover id="user-popover">
@@ -18,11 +21,20 @@ defmodule PhxUI.Popover do
         </div>
       </.popover>
 
-      <.popover id="settings-popover" side="right" align="start">
+      <.popover id="settings-popover" side="auto">
         <:trigger>
           <button class="btn">Settings</button>
         </:trigger>
         Settings content...
+      </.popover>
+
+  ## With dynamic button text
+
+      <.popover id="toggle-popover">
+        <:trigger let={open}>
+          <button class="btn">{if open, do: "Close", else: "Open"} Popover</button>
+        </:trigger>
+        Popover content...
       </.popover>
 
   ## Accessibility
@@ -36,6 +48,7 @@ defmodule PhxUI.Popover do
 
   use Phoenix.Component
   alias Phoenix.LiveView.JS
+  alias Phoenix.LiveView.ColocatedHook
 
   @doc """
   Renders a popover component.
@@ -43,9 +56,9 @@ defmodule PhxUI.Popover do
   attr(:id, :string, required: true, doc: "Unique identifier for the popover")
 
   attr(:side, :string,
-    default: "bottom",
-    values: ~w(top bottom left right),
-    doc: "Which side the popover opens on"
+    default: "auto",
+    values: ~w(top bottom left right auto),
+    doc: "Which side the popover opens on (auto for dynamic positioning)"
   )
 
   attr(:align, :string,
@@ -63,7 +76,14 @@ defmodule PhxUI.Popover do
 
   def popover(assigns) do
     ~H"""
-    <div id={@id} class="popover" {@rest}>
+    <div
+      id={@id}
+      class="popover"
+      phx-hook=".Popover"
+      data-side={@side}
+      data-align={@align}
+      {@rest}
+    >
       <button
         type="button"
         class="popover-trigger"
@@ -71,7 +91,12 @@ defmodule PhxUI.Popover do
         aria-controls={"#{@id}-content"}
         phx-click={toggle_popover(@id)}
       >
-        {render_slot(@trigger)}
+        <span class="popover-trigger-closed">
+          {render_slot(@trigger, false)}
+        </span>
+        <span class="popover-trigger-open" style="display: none;">
+          {render_slot(@trigger, true)}
+        </span>
       </button>
       <div
         id={"#{@id}-content"}
@@ -81,13 +106,107 @@ defmodule PhxUI.Popover do
         data-align={@align}
         role="dialog"
         aria-hidden="true"
-        phx-click-away={hide_popover(@id)}
-        phx-window-keydown={hide_popover(@id)}
-        phx-key="escape"
       >
         {render_slot(@inner_block)}
       </div>
     </div>
+
+    <script :type={ColocatedHook} name=".Popover">
+      export default {
+        mounted() {
+          this.trigger = this.el.querySelector('.popover-trigger');
+          this.content = this.el.querySelector('[data-popover]');
+          this.triggerClosed = this.el.querySelector('.popover-trigger-closed');
+          this.triggerOpen = this.el.querySelector('.popover-trigger-open');
+          this.side = this.el.dataset.side;
+          
+          // Close on click outside
+          this.outsideClickHandler = (e) => {
+            if (!this.el.contains(e.target) && this.isOpen()) {
+              this.close();
+            }
+          };
+          document.addEventListener('click', this.outsideClickHandler);
+          
+          // Close on Escape key
+          this.escapeHandler = (e) => {
+            if (e.key === 'Escape' && this.isOpen()) {
+              this.close();
+              this.trigger.focus();
+            }
+          };
+          document.addEventListener('keydown', this.escapeHandler);
+          
+          if (this.side === 'auto') {
+            // Calculate optimal position before showing
+            this.trigger.addEventListener('click', () => {
+              this.calculatePosition();
+            });
+          }
+          
+          // Watch for aria-expanded changes to toggle button text
+          this.observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.attributeName === 'aria-expanded') {
+                const isOpen = this.trigger.getAttribute('aria-expanded') === 'true';
+                this.updateTriggerText(isOpen);
+              }
+            });
+          });
+          this.observer.observe(this.trigger, { attributes: true, attributeFilter: ['aria-expanded'] });
+        },
+        
+        destroyed() {
+          document.removeEventListener('click', this.outsideClickHandler);
+          document.removeEventListener('keydown', this.escapeHandler);
+          this.observer?.disconnect();
+        },
+        
+        isOpen() {
+          return this.trigger.getAttribute('aria-expanded') === 'true';
+        },
+        
+        close() {
+          this.trigger.setAttribute('aria-expanded', 'false');
+          this.content.setAttribute('aria-hidden', 'true');
+          this.updateTriggerText(false);
+        },
+        
+        updateTriggerText(isOpen) {
+          if (this.triggerClosed && this.triggerOpen) {
+            this.triggerClosed.style.display = isOpen ? 'none' : '';
+            this.triggerOpen.style.display = isOpen ? '' : 'none';
+          }
+        },
+        
+        calculatePosition() {
+          const rect = this.trigger.getBoundingClientRect();
+          const contentHeight = 200; // Estimate or measure
+          const contentWidth = 280;
+          const padding = 8;
+          
+          const spaceTop = rect.top;
+          const spaceBottom = window.innerHeight - rect.bottom;
+          const spaceLeft = rect.left;
+          const spaceRight = window.innerWidth - rect.right;
+          
+          let side = 'bottom';
+          
+          // Prefer bottom, then top, then right, then left
+          if (spaceBottom >= contentHeight + padding) {
+            side = 'bottom';
+          } else if (spaceTop >= contentHeight + padding) {
+            side = 'top';
+          } else if (spaceRight >= contentWidth + padding) {
+            side = 'right';
+          } else if (spaceLeft >= contentWidth + padding) {
+            side = 'left';
+          }
+          
+          this.content.setAttribute('data-side', side);
+        }
+      }
+    </script>
     """
   end
 

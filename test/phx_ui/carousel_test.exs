@@ -118,7 +118,7 @@ defmodule PhxUI.CarouselTest do
       refute html =~ "carousel-indicators"
     end
 
-    test "renders correct number of indicators as anchor links" do
+    test "renders correct number of indicator buttons" do
       assigns = %{}
 
       html =
@@ -130,8 +130,8 @@ defmodule PhxUI.CarouselTest do
         </Carousel.carousel>
         """)
 
-      # Count indicator anchors by their href attribute
-      indicator_count = Regex.scan(~r/href="#test-carousel-item-/, html) |> length()
+      # Count indicator buttons by their data-carousel-indicator attribute
+      indicator_count = Regex.scan(~r/data-carousel-indicator="/, html) |> length()
       assert indicator_count == 3
     end
 
@@ -280,7 +280,7 @@ defmodule PhxUI.CarouselTest do
       assert html =~ ~s(aria-roledescription="carousel")
     end
 
-    test "indicators use anchor links for navigation" do
+    test "indicators use buttons for navigation" do
       assigns = %{}
 
       html =
@@ -291,8 +291,8 @@ defmodule PhxUI.CarouselTest do
         </Carousel.carousel>
         """)
 
-      assert html =~ ~s(href="#test-carousel-item-0")
-      assert html =~ ~s(href="#test-carousel-item-1")
+      assert html =~ ~s(data-carousel-indicator="0")
+      assert html =~ ~s(data-carousel-indicator="1")
     end
   end
 end

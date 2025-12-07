@@ -37,6 +37,7 @@ defmodule PhxUI.Command do
 
   use Phoenix.Component
   alias Phoenix.LiveView.JS
+  alias Phoenix.LiveView.ColocatedHook
 
   import PhxUI.Icon, only: [icon: 1]
 
@@ -68,6 +69,7 @@ defmodule PhxUI.Command do
       class={["command", @class]}
       data-command
       data-command-initialized="true"
+      phx-hook=".Command"
       {@rest}
     >
       <header>
@@ -82,7 +84,6 @@ defmodule PhxUI.Command do
           role="combobox"
           aria-expanded="true"
           aria-controls={"#{@id}-menu"}
-          phx-keydown={handle_input_keydown(@id)}
           phx-debounce="100"
         />
       </header>
@@ -90,6 +91,123 @@ defmodule PhxUI.Command do
         {render_slot(@inner_block)}
       </div>
     </div>
+
+    <script :type={ColocatedHook} name=".Command">
+      export default {
+        mounted() {
+          this.input = this.el.querySelector('input');
+          this.menu = this.el.querySelector('[role="menu"]');
+          this.items = [];
+          this.activeIndex = -1;
+          
+          this.refreshItems();
+          
+          // Search/filter
+          this.input.addEventListener('input', (e) => this.handleSearch(e.target.value));
+          
+          // Keyboard navigation
+          this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
+          
+          // Item click
+          this.menu.addEventListener('click', (e) => {
+            const item = e.target.closest('[role="menuitem"]');
+            if (item && !item.hasAttribute('aria-disabled')) {
+              this.selectItem(item);
+            }
+          });
+        },
+        
+        refreshItems() {
+          this.items = Array.from(this.el.querySelectorAll('[role="menuitem"]'));
+        },
+        
+        handleSearch(query) {
+          const normalizedQuery = query.toLowerCase().trim();
+          
+          this.items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            const keywords = (item.dataset.keywords || '').toLowerCase();
+            const matches = !normalizedQuery || 
+                           text.includes(normalizedQuery) || 
+                           keywords.includes(normalizedQuery);
+            
+            item.setAttribute('aria-hidden', !matches);
+          });
+          
+          // Reset active item
+          this.setActiveItem(-1);
+          
+          // Auto-select first visible item
+          const visibleItems = this.getVisibleItems();
+          if (visibleItems.length > 0) {
+            this.setActiveItem(0);
+          }
+        },
+        
+        getVisibleItems() {
+          return this.items.filter(item => item.getAttribute('aria-hidden') !== 'true');
+        },
+        
+        handleKeydown(e) {
+          const visibleItems = this.getVisibleItems();
+          if (visibleItems.length === 0) return;
+          
+          switch(e.key) {
+            case 'ArrowDown':
+              e.preventDefault();
+              this.moveActive(1, visibleItems);
+              break;
+            case 'ArrowUp':
+              e.preventDefault();
+              this.moveActive(-1, visibleItems);
+              break;
+            case 'Home':
+              e.preventDefault();
+              this.setActiveItem(0, visibleItems);
+              break;
+            case 'End':
+              e.preventDefault();
+              this.setActiveItem(visibleItems.length - 1, visibleItems);
+              break;
+            case 'Enter':
+              e.preventDefault();
+              if (this.activeIndex >= 0 && visibleItems[this.activeIndex]) {
+                this.selectItem(visibleItems[this.activeIndex]);
+              }
+              break;
+            case 'Escape':
+              // Let it bubble for dialog close
+              break;
+          }
+        },
+        
+        moveActive(delta, visibleItems) {
+          const newIndex = Math.max(0, Math.min(visibleItems.length - 1, this.activeIndex + delta));
+          this.setActiveItem(newIndex, visibleItems);
+        },
+        
+        setActiveItem(index, visibleItems = this.getVisibleItems()) {
+          // Remove active class from all
+          this.items.forEach(item => item.classList.remove('active'));
+          
+          this.activeIndex = index;
+          
+          if (index >= 0 && visibleItems[index]) {
+            visibleItems[index].classList.add('active');
+            visibleItems[index].scrollIntoView({ block: 'nearest' });
+          }
+        },
+        
+        selectItem(item) {
+          if (item.hasAttribute('aria-disabled') && item.getAttribute('aria-disabled') === 'true') {
+            return;
+          }
+          
+          // Trigger click event for phx-click handlers
+          item.click();
+        }
+      }
+    </script>
     """
   end
 
@@ -155,8 +273,9 @@ defmodule PhxUI.Command do
     assigns = assign(assigns, :keywords_str, keywords)
 
     ~H"""
-    <div
+    <button
       id={@id}
+      type="button"
       class={@class}
       role="menuitem"
       data-keywords={@keywords_str}
@@ -165,7 +284,7 @@ defmodule PhxUI.Command do
       {@rest}
     >
       {render_slot(@inner_block)}
-    </div>
+    </button>
     """
   end
 
@@ -221,11 +340,5 @@ defmodule PhxUI.Command do
   def hide_command_dialog(js \\ %JS{}, id) when is_binary(id) do
     js
     |> JS.dispatch("phx:hide-dialog", to: "##{id}")
-  end
-
-  # Handles keyboard navigation within the command input
-  defp handle_input_keydown(_id) do
-    # Basic JS for filtering - real filtering handled by CSS :has() selectors
-    %JS{}
   end
 end

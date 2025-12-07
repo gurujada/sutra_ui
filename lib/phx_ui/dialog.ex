@@ -35,6 +35,7 @@ defmodule PhxUI.Dialog do
 
   use Phoenix.Component
   alias Phoenix.LiveView.JS
+  alias Phoenix.LiveView.ColocatedHook
 
   import PhxUI.Icon, only: [icon: 1]
 
@@ -55,6 +56,7 @@ defmodule PhxUI.Dialog do
     ~H"""
     <dialog
       id={@id}
+      phx-hook=".Dialog"
       class="dialog"
       aria-labelledby={"#{@id}-title"}
       aria-describedby={"#{@id}-description"}
@@ -79,12 +81,36 @@ defmodule PhxUI.Dialog do
         </footer>
 
         <form method="dialog">
-          <button type="submit" aria-label="Close">
+          <button type="submit" aria-label="Close" class="cursor-pointer">
             <.icon name="hero-x-mark" />
           </button>
         </form>
       </div>
     </dialog>
+
+    <script :type={ColocatedHook} name=".Dialog">
+      export default {
+        mounted() {
+          this.showHandler = (e) => this.el.showModal();
+          this.hideHandler = (e) => this.el.close();
+
+          this.el.addEventListener("phx:show-dialog", this.showHandler);
+          this.el.addEventListener("phx:hide-dialog", this.hideHandler);
+          
+          // Close on backdrop click
+          this.el.addEventListener("click", (e) => {
+            if (e.target === this.el) {
+              this.el.close();
+            }
+          });
+        },
+
+        destroyed() {
+          this.el.removeEventListener("phx:show-dialog", this.showHandler);
+          this.el.removeEventListener("phx:hide-dialog", this.hideHandler);
+        }
+      }
+    </script>
     """
   end
 

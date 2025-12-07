@@ -53,7 +53,7 @@ defmodule PhxUI.TooltipTest do
       end
     end
 
-    test "defaults to top side" do
+    test "defaults to auto side" do
       assigns = %{}
 
       html =
@@ -63,7 +63,7 @@ defmodule PhxUI.TooltipTest do
         </Tooltip.tooltip>
         """)
 
-      assert html =~ ~s(data-side="top")
+      assert html =~ ~s(data-side="auto")
     end
   end
 

@@ -256,7 +256,9 @@ defmodule PhxUI.DropdownMenuTest do
         </DropdownMenu.dropdown_menu>
         """)
 
-      refute html =~ "dropdown-item-icon"
+      # Items without icons get a placeholder for alignment
+      assert html =~ "dropdown-item-icon-placeholder"
+      refute html =~ ~r/dropdown-item-icon[^-]/
       assert html =~ "No Icon"
     end
 
@@ -572,7 +574,7 @@ defmodule PhxUI.DropdownMenuTest do
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ ~s(style="display: none;")
+      assert html =~ ~s(aria-hidden="true")
     end
   end
 

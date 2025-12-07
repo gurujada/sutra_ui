@@ -81,7 +81,7 @@ defmodule PhxUI.PopoverTest do
       end
     end
 
-    test "defaults to bottom side" do
+    test "defaults to auto side" do
       assigns = %{}
 
       html =
@@ -94,7 +94,7 @@ defmodule PhxUI.PopoverTest do
         </Popover.popover>
         """)
 
-      assert html =~ ~s(data-side="bottom")
+      assert html =~ ~s(data-side="auto")
     end
   end
 

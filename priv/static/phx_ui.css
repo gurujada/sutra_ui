@@ -900,6 +900,9 @@
             @apply p-4;
         }
     }
+    .popover-trigger {
+        @apply inline-flex items-center cursor-pointer bg-transparent border-0 p-0;
+    }
 }
 
 /* Radio */
@@ -1309,55 +1312,60 @@
 /* Tooltip */
 @layer components {
     [data-tooltip] {
-        @apply relative;
+        @apply relative inline-flex;
 
         &:before {
-            @apply absolute content-[attr(data-tooltip)] bg-primary text-primary-foreground z-[60] truncate max-w-xs w-fit rounded-md px-3 py-1.5 text-xs invisible opacity-0 scale-95 transition-all pointer-events-none;
+            @apply absolute content-[attr(data-tooltip)] bg-primary text-primary-foreground z-[60] truncate max-w-xs w-fit rounded-md px-3 py-1.5 text-xs invisible opacity-0 scale-95 transition-all pointer-events-none whitespace-nowrap;
         }
         &:hover:before {
             @apply visible opacity-100 scale-100;
         }
-        &:focus-visible:not(:hover):before {
-            @apply hidden;
+        /* Top positioning (default) */
+        &:not([data-side]):before,
+        &[data-side="top"]:before,
+        &[data-side="auto"]:not([data-computed-side]):before,
+        &[data-side="auto"][data-computed-side="top"]:before {
+            @apply bottom-full left-1/2 -translate-x-1/2 mb-2;
         }
-        &:not([data-side]),
-        &[data-side="top"] {
-            @apply before:bottom-full before:mb-1.5 before:translate-y-2 hover:before:translate-y-0;
+        /* Bottom positioning */
+        &[data-side="bottom"]:before,
+        &[data-side="auto"][data-computed-side="bottom"]:before {
+            @apply top-full left-1/2 -translate-x-1/2 mt-2;
         }
-        &[data-side="bottom"] {
-            @apply before:top-full before:mt-1.5 before:-translate-y-2 hover:before:translate-y-0;
+        /* Left positioning */
+        &[data-side="left"]:before,
+        &[data-side="auto"][data-computed-side="left"]:before {
+            @apply right-full top-1/2 -translate-y-1/2 mr-2;
         }
+        /* Right positioning */
+        &[data-side="right"]:before,
+        &[data-side="auto"][data-computed-side="right"]:before {
+            @apply left-full top-1/2 -translate-y-1/2 ml-2;
+        }
+        /* Alignment overrides for top/bottom */
         &:not([data-side]),
         &[data-side="top"],
-        &[data-side="bottom"] {
-            &[data-align="start"] {
-                @apply before:left-0;
+        &[data-side="bottom"],
+        &[data-side="auto"]:not([data-computed-side]),
+        &[data-side="auto"][data-computed-side="top"],
+        &[data-side="auto"][data-computed-side="bottom"] {
+            &[data-align="start"]:before {
+                @apply left-0 translate-x-0;
             }
-            &[data-align="end"] {
-                @apply before:right-0;
-            }
-            &:not([data-align]),
-            &[data-align="center"] {
-                @apply before:left-1/2 before:-translate-x-1/2;
+            &[data-align="end"]:before {
+                @apply left-auto right-0 translate-x-0;
             }
         }
-        &[data-side="left"] {
-            @apply before:right-full before:mr-1.5 before:translate-x-2 hover:before:translate-x-0;
-        }
-        &[data-side="right"] {
-            @apply before:left-full before:ml-1.5 before:-translate-x-2 hover:before:translate-x-0;
-        }
+        /* Alignment overrides for left/right */
         &[data-side="left"],
-        &[data-side="right"] {
-            &[data-align="start"] {
-                @apply before:top-0;
+        &[data-side="right"],
+        &[data-side="auto"][data-computed-side="left"],
+        &[data-side="auto"][data-computed-side="right"] {
+            &[data-align="start"]:before {
+                @apply top-0 translate-y-0;
             }
-            &[data-align="end"] {
-                @apply before:bottom-0;
-            }
-            &:not([data-align]),
-            &[data-align="center"] {
-                @apply before:top-1/2 before:-translate-y-1/2;
+            &[data-align="end"]:before {
+                @apply top-auto bottom-0 translate-y-0;
             }
         }
     }
@@ -1434,15 +1442,23 @@
         @apply relative inline-flex;
     }
     .dropdown-trigger {
-        @apply inline-flex;
+        @apply inline-flex items-center gap-2 cursor-pointer bg-transparent border rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors;
+    }
+    .dropdown-chevron {
+        @apply size-4 opacity-50 transition-transform duration-200;
+    }
+    .dropdown-open .dropdown-chevron {
+        @apply rotate-180;
     }
     .dropdown-content {
-        @apply absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md;
-        @apply opacity-100 scale-100 transition-all flex flex-col;
-
-        &[hidden] {
-            @apply hidden;
-        }
+        @apply absolute z-50 min-w-[12rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md;
+        @apply hidden opacity-0 scale-95 transition-all flex-col;
+    }
+    .dropdown-open .dropdown-content {
+        @apply flex opacity-100 scale-100;
+    }
+    .dropdown-content[aria-hidden="false"] {
+        @apply flex opacity-100 scale-100;
     }
     .dropdown-bottom {
         @apply top-full mt-1;
@@ -1466,19 +1482,26 @@
         @apply right-0;
     }
     .dropdown-item {
-        @apply relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0;
+        @apply relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground;
+
+        &:disabled {
+            @apply opacity-50 pointer-events-none;
+        }
     }
     .dropdown-item-icon {
-        @apply flex-shrink-0 text-muted-foreground [&>span]:size-4;
+        @apply flex-shrink-0 w-4 h-4 mr-2 flex items-center justify-center text-muted-foreground [&>span]:size-4 [&>span>svg]:size-4;
+    }
+    .dropdown-item-icon-placeholder {
+        @apply w-4 mr-2;
     }
     .dropdown-item-label {
-        @apply flex-1;
+        @apply flex-1 text-left;
     }
     .dropdown-item-shortcut {
-        @apply ml-auto text-xs tracking-widest text-muted-foreground;
+        @apply flex-shrink-0 ml-auto pl-4 text-[10px] tracking-widest text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono;
     }
     .dropdown-item-destructive {
-        @apply text-destructive focus:text-destructive hover:text-destructive;
+        @apply text-destructive focus:text-destructive hover:text-destructive focus:bg-destructive/10 hover:bg-destructive/10;
     }
     .dropdown-item-disabled {
         @apply opacity-50 pointer-events-none;
@@ -1488,12 +1511,6 @@
     }
     .dropdown-separator {
         @apply -mx-1 my-1 h-px bg-border;
-    }
-    .dropdown-icon {
-        @apply transition-transform duration-200;
-    }
-    .dropdown-open .dropdown-icon {
-        @apply rotate-180;
     }
 }
 
@@ -1947,7 +1964,7 @@ markdown-toolbar md-header-3::before { content: "H3"; @apply font-bold text-xs; 
         @apply aspect-square size-full object-cover;
     }
     .avatar-fallback {
-        @apply flex size-full items-center justify-center bg-muted text-muted-foreground font-medium;
+        @apply flex size-full items-center justify-center bg-muted text-muted-foreground font-medium [&>span]:flex [&>span]:items-center [&>span]:justify-center [&_svg]:size-[60%];
     }
     .avatar-fallback-hidden {
         @apply hidden;
@@ -1967,7 +1984,7 @@ markdown-toolbar md-header-3::before { content: "H3"; @apply font-bold text-xs; 
         @apply relative w-full;
     }
     .carousel-viewport {
-        @apply flex overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-none;
+        @apply flex flex-row flex-nowrap overflow-x-auto snap-x snap-mandatory scroll-smooth;
         -ms-overflow-style: none;
         scrollbar-width: none;
 
@@ -1979,7 +1996,17 @@ markdown-toolbar md-header-3::before { content: "H3"; @apply font-bold text-xs; 
         }
     }
     .carousel-item {
-        @apply flex-none snap-start w-full;
+        @apply flex-shrink-0 flex-grow-0 snap-start w-full min-w-full;
+    }
+    .carousel-prev,
+    .carousel-next {
+        @apply absolute top-1/2 -translate-y-1/2 z-10 size-8 rounded-full bg-background/80 border shadow-sm flex items-center justify-center cursor-pointer transition-all hover:bg-background hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    .carousel-prev {
+        @apply left-2;
+    }
+    .carousel-next {
+        @apply right-2;
     }
     .carousel-indicators {
         @apply flex justify-center gap-2 mt-4;
