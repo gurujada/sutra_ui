@@ -12,7 +12,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:panel value="tab1">Panel 1</:panel>
         </Tabs.tabs>
@@ -26,7 +26,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:panel value="tab1">Panel 1</:panel>
         </Tabs.tabs>
@@ -41,7 +41,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Account</:tab>
           <:tab value="tab2">Password</:tab>
           <:panel value="tab1">Account content</:panel>
@@ -59,7 +59,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:panel value="tab1">Content for tab 1</:panel>
         </Tabs.tabs>
@@ -76,7 +76,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab2">
+        <Tabs.tabs id="test-tabs" default_value="tab2">
           <:tab value="tab1">Tab 1</:tab>
           <:tab value="tab2">Tab 2</:tab>
           <:panel value="tab1">Panel 1</:panel>
@@ -93,7 +93,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:tab value="tab2">Tab 2</:tab>
           <:panel value="tab1">Panel 1</:panel>
@@ -110,7 +110,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:tab value="tab2">Tab 2</:tab>
           <:panel value="tab1">Panel 1</:panel>
@@ -129,7 +129,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:tab value="tab2" disabled={true}>Tab 2</:tab>
           <:panel value="tab1">Panel 1</:panel>
@@ -157,20 +157,6 @@ defmodule PhxUI.TabsTest do
       assert html =~ ~s(id="my-tabs-tab-tab1")
       assert html =~ ~s(id="my-tabs-panel-tab1")
     end
-
-    test "generates unique id when not provided" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
-          <:tab value="tab1">Tab 1</:tab>
-          <:panel value="tab1">Panel 1</:panel>
-        </Tabs.tabs>
-        """)
-
-      assert html =~ ~s(id="tabs-)
-    end
   end
 
   describe "tabs/1 custom class" do
@@ -179,7 +165,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1" class="my-tabs">
+        <Tabs.tabs id="test-tabs" default_value="tab1" class="my-tabs">
           <:tab value="tab1">Tab 1</:tab>
           <:panel value="tab1">Panel 1</:panel>
         </Tabs.tabs>
@@ -195,7 +181,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:panel value="tab1">Panel 1</:panel>
         </Tabs.tabs>
@@ -209,7 +195,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:panel value="tab1">Panel 1</:panel>
         </Tabs.tabs>
@@ -223,7 +209,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:panel value="tab1">Panel 1</:panel>
         </Tabs.tabs>
@@ -265,7 +251,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:tab value="tab2">Tab 2</:tab>
           <:panel value="tab1">Panel 1</:panel>
@@ -284,7 +270,7 @@ defmodule PhxUI.TabsTest do
 
       html =
         rendered_to_string(~H"""
-        <Tabs.tabs default_value="tab1">
+        <Tabs.tabs id="test-tabs" default_value="tab1">
           <:tab value="tab1">Tab 1</:tab>
           <:panel value="tab1">Panel 1</:panel>
         </Tabs.tabs>

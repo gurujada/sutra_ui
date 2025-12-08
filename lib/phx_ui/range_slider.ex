@@ -198,8 +198,8 @@ defmodule PhxUI.RangeSlider do
 
         updated() {
           // Sync values from server after LiveView update
-          const newMin = parseInt(this.el.dataset.valueMin);
-          const newMax = parseInt(this.el.dataset.valueMax);
+          const newMin = parseFloat(this.el.dataset.valueMin);
+          const newMax = parseFloat(this.el.dataset.valueMax);
           if (!this.isDragging && (newMin !== this.valueMin || newMax !== this.valueMax)) {
             this.valueMin = newMin;
             this.valueMax = newMax;
@@ -212,11 +212,11 @@ defmodule PhxUI.RangeSlider do
         },
 
         initializeState() {
-          this.min = parseInt(this.el.dataset.min);
-          this.max = parseInt(this.el.dataset.max);
-          this.step = parseInt(this.el.dataset.step) || 1;
-          this.valueMin = parseInt(this.el.dataset.valueMin);
-          this.valueMax = parseInt(this.el.dataset.valueMax);
+          this.min = parseFloat(this.el.dataset.min);
+          this.max = parseFloat(this.el.dataset.max);
+          this.step = parseFloat(this.el.dataset.step) || 1;
+          this.valueMin = parseFloat(this.el.dataset.valueMin);
+          this.valueMax = parseFloat(this.el.dataset.valueMax);
           this.name = this.el.dataset.name;
           this.onSlide = this.el.dataset.onSlide;
           this.onChange = this.el.dataset.onChange;
@@ -495,7 +495,7 @@ defmodule PhxUI.RangeSlider do
 
         emitSlide() {
           // Dispatch custom event for vanilla JS listeners
-          this.el.dispatchEvent(new CustomEvent('range-slide', {
+          this.el.dispatchEvent(new CustomEvent('phx-ui:range-slide', {
             detail: { min: this.valueMin, max: this.valueMax },
             bubbles: true
           }));
@@ -513,7 +513,7 @@ defmodule PhxUI.RangeSlider do
 
         emitChange() {
           // Dispatch custom event for vanilla JS listeners
-          this.el.dispatchEvent(new CustomEvent('range-change', {
+          this.el.dispatchEvent(new CustomEvent('phx-ui:range-change', {
             detail: { min: this.valueMin, max: this.valueMax },
             bubbles: true
           }));

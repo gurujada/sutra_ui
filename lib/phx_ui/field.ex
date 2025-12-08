@@ -102,9 +102,17 @@ defmodule PhxUI.Field do
   end
 
   def field(assigns) do
+    field_class =
+      case assigns.orientation do
+        "horizontal" -> "field-horizontal"
+        _ -> "field-vertical"
+      end
+
+    assigns = assign(assigns, :field_class, field_class)
+
     ~H"""
     <div
-      class={field_class(@orientation, @class)}
+      class={[@field_class, @class]}
       role="group"
       data-orientation={@orientation != "vertical" && @orientation}
       data-invalid={@invalid || nil}
@@ -135,7 +143,7 @@ defmodule PhxUI.Field do
 
     ~H"""
     <%= for label <- @label do %>
-      <label for={label[:for]} class={label_class(label[:class])}>
+      <label for={label[:for]} class={["field-label", label[:class]]}>
         {render_slot([label])}
       </label>
     <% end %>
@@ -149,7 +157,7 @@ defmodule PhxUI.Field do
 
     ~H"""
     <%= for desc <- @description do %>
-      <p id={desc[:id]} class="text-sm text-muted-foreground">
+      <p id={desc[:id]} class="field-description">
         {render_slot([desc])}
       </p>
     <% end %>
@@ -161,36 +169,11 @@ defmodule PhxUI.Field do
 
     ~H"""
     <%= for err <- @error do %>
-      <p id={err[:id]} class="text-sm text-destructive">
+      <p id={err[:id]} class="field-error">
         {render_slot([err])}
       </p>
     <% end %>
     """
-  end
-
-  defp field_class(orientation, extra_class) do
-    base =
-      case orientation do
-        "horizontal" -> "flex items-center gap-4"
-        _ -> "flex flex-col gap-2"
-      end
-
-    if extra_class do
-      "#{base} #{extra_class}"
-    else
-      base
-    end
-  end
-
-  defp label_class(extra_class) do
-    base =
-      "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-
-    if extra_class do
-      "#{base} #{extra_class}"
-    else
-      base
-    end
   end
 
   @doc """
@@ -249,25 +232,15 @@ defmodule PhxUI.Field do
 
   def fieldset(assigns) do
     ~H"""
-    <fieldset class={fieldset_class(@class)} {@rest}>
-      <legend class="text-base font-semibold leading-7">{render_slot(@legend)}</legend>
+    <fieldset class={["fieldset-base", @class]} {@rest}>
+      <legend class="fieldset-legend">{render_slot(@legend)}</legend>
       <%= if @description != [] do %>
-        <p class="mt-1 text-sm text-muted-foreground">{render_slot(@description)}</p>
+        <p class="fieldset-description">{render_slot(@description)}</p>
       <% end %>
-      <div class="mt-4 space-y-4">
+      <div class="fieldset-fields">
         {render_slot(@fields)}
       </div>
     </fieldset>
     """
-  end
-
-  defp fieldset_class(extra_class) do
-    base = "border-none p-0 m-0"
-
-    if extra_class do
-      "#{base} #{extra_class}"
-    else
-      base
-    end
   end
 end

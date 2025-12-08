@@ -32,6 +32,8 @@ defmodule PhxUI.Select do
 
   alias Phoenix.LiveView.ColocatedHook
 
+  import PhxUI.Icon, only: [icon: 1]
+
   @doc """
   Renders a custom select component.
 
@@ -92,70 +94,40 @@ defmodule PhxUI.Select do
     ~H"""
     <div
       id={@id}
-      class={select_class(@class)}
+      class={["select", @class]}
       data-select-value={@value}
       phx-hook=".Select"
       {@rest}
     >
       <button
         type="button"
-        class={trigger_class(@trigger_class)}
+        class={["select-trigger", @trigger_class]}
         id={"#{@id}-trigger"}
         aria-haspopup="listbox"
         aria-expanded="false"
         aria-controls={"#{@id}-listbox"}
         disabled={@disabled}
       >
-        <span class="truncate" data-selected-label>
+        <span class="select-value" data-selected-label>
           <%= if @trigger != [] do %>
             {render_slot(@trigger)}
           <% else %>
             Select...
           <% end %>
         </span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="ml-2 shrink-0 opacity-50"
-          aria-hidden="true"
-        >
-          <%= if @searchable do %>
-            <path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" />
-          <% else %>
-            <path d="m6 9 6 6 6-6" />
-          <% end %>
-        </svg>
+        <.icon
+          name={if @searchable, do: "hero-chevron-up-down", else: "hero-chevron-down"}
+          class="select-icon"
+        />
       </button>
-      <div id={"#{@id}-popover"} class={popover_class()} data-popover aria-hidden="true">
+      <div id={"#{@id}-popover"} class="select-popover" data-popover aria-hidden="true">
         <%= if @searchable do %>
-          <div class="flex items-center border-b px-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="mr-2 shrink-0 opacity-50"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-            </svg>
+          <header>
+            <.icon name="hero-magnifying-glass" />
             <input
               type="text"
               value=""
               placeholder={@search_placeholder}
-              class="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
               autocomplete="off"
               autocorrect="off"
               spellcheck="false"
@@ -165,12 +137,12 @@ defmodule PhxUI.Select do
               aria-controls={"#{@id}-listbox"}
               aria-labelledby={"#{@id}-trigger"}
             />
-          </div>
+          </header>
         <% end %>
         <div
           role="listbox"
           id={"#{@id}-listbox"}
-          class="max-h-[300px] overflow-y-auto p-1"
+          class="select-listbox"
           aria-orientation="vertical"
           aria-labelledby={"#{@id}-trigger"}
           data-empty={@empty_message}
@@ -498,7 +470,7 @@ defmodule PhxUI.Select do
       data-value={@value}
       data-label={@label}
       aria-disabled={to_string(@disabled)}
-      class={option_class(@class, @disabled)}
+      class={["select-option", @disabled && "select-option-disabled", @class]}
       tabindex="-1"
       {@rest}
     >
@@ -527,8 +499,8 @@ defmodule PhxUI.Select do
 
   def select_group(assigns) do
     ~H"""
-    <div role="group" class={@class} {@rest}>
-      <div role="presentation" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+    <div role="group" class={["select-group", @class]} {@rest}>
+      <div role="heading" class="select-group-label">
         {@label}
       </div>
       {render_slot(@inner_block)}
@@ -548,43 +520,7 @@ defmodule PhxUI.Select do
 
   def select_separator(assigns) do
     ~H"""
-    <div role="separator" class="-mx-1 my-1 h-px bg-muted" {@rest} />
+    <div role="separator" class="select-separator" {@rest} />
     """
-  end
-
-  defp select_class(extra_class) do
-    base = "relative inline-block w-full"
-
-    if extra_class do
-      "#{base} #{extra_class}"
-    else
-      base
-    end
-  end
-
-  defp trigger_class(extra_class) do
-    base =
-      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-
-    if extra_class do
-      "#{base} #{extra_class}"
-    else
-      base
-    end
-  end
-
-  defp popover_class do
-    "absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none data-[aria-hidden=true]:hidden"
-  end
-
-  defp option_class(extra_class, disabled) do
-    base =
-      "relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-
-    disabled_class = if disabled, do: "cursor-not-allowed opacity-50", else: ""
-
-    [base, disabled_class, extra_class]
-    |> Enum.filter(&(&1 && &1 != ""))
-    |> Enum.join(" ")
   end
 end

@@ -46,7 +46,7 @@ defmodule PhxUI.DropdownMenu do
   @doc """
   Renders a dropdown menu component.
   """
-  attr(:id, :string, default: nil, doc: "Unique identifier for the dropdown")
+  attr(:id, :string, required: true, doc: "Unique identifier for the dropdown")
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
 
   attr(:align, :string,
@@ -77,9 +77,6 @@ defmodule PhxUI.DropdownMenu do
   slot(:label, doc: "Non-interactive label/header for a group")
 
   def dropdown_menu(assigns) do
-    assigns =
-      assign(assigns, :id, assigns[:id] || "dropdown-#{System.unique_integer([:positive])}")
-
     # Collect shortcuts for keyboard handling
     shortcuts =
       assigns.item
@@ -100,20 +97,7 @@ defmodule PhxUI.DropdownMenu do
     >
       <button type="button" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">
         {render_slot(@trigger)}
-        <svg
-          class="dropdown-chevron"
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        <.icon name="hero-chevron-down" class="dropdown-chevron size-4" />
       </button>
       <div
         id={"#{@id}-content"}

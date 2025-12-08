@@ -81,6 +81,8 @@ defmodule PhxUI.LiveSelect do
 
   alias Phoenix.LiveView.ColocatedHook
 
+  import PhxUI.Icon, only: [icon: 1]
+
   @default_debounce 100
   @default_update_min_len 1
 
@@ -565,7 +567,7 @@ defmodule PhxUI.LiveSelect do
     <div
       id={@id}
       class={["live-select", @disabled && "live-select-disabled", @class]}
-      phx-hook=".PhxUI.LiveSelect.LiveSelect"
+      phx-hook=".LiveSelect"
       data-mode={@mode}
       data-debounce={@debounce}
       data-update-min-len={@update_min_len}
@@ -597,14 +599,7 @@ defmodule PhxUI.LiveSelect do
               phx-target={@myself}
               aria-label="Remove"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                class="size-3"
-              >
-                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-              </svg>
+              <.icon name="hero-x-mark" class="size-3" />
             </button>
           </span>
         <% end %>
@@ -622,9 +617,12 @@ defmodule PhxUI.LiveSelect do
           name={text_input_name(@field)}
           id={"#{@id}_text_input"}
           role="combobox"
-          aria-expanded={@dropdown_open}
+          aria-haspopup="listbox"
+          aria-expanded={to_string(@dropdown_open)}
           aria-controls={"#{@id}_dropdown"}
           aria-activedescendant={if @active_index >= 0, do: "#{@id}_option_#{@active_index}"}
+          aria-autocomplete="list"
+          aria-label={@placeholder}
         />
 
         <%!-- Clear button (single mode with allow_clear) --%>
@@ -639,14 +637,7 @@ defmodule PhxUI.LiveSelect do
           <%= if @clear_button_slot != [] do %>
             {render_slot(@clear_button_slot)}
           <% else %>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              class="size-4"
-            >
-              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-            </svg>
+            <.icon name="hero-x-mark" class="size-4" />
           <% end %>
         </button>
       </div>
@@ -657,6 +648,8 @@ defmodule PhxUI.LiveSelect do
         id={"#{@id}_dropdown"}
         class="live-select-dropdown"
         role="listbox"
+        aria-label="Options"
+        aria-multiselectable={to_string(@mode in [:tags, :quick_tags])}
       >
         <%= for {option, index} <- Enum.with_index(@available_options) do %>
           <li
@@ -673,7 +666,6 @@ defmodule PhxUI.LiveSelect do
             phx-click={if @mode == :quick_tags, do: "toggle_option", else: "select_option"}
             phx-value-index={index}
             phx-target={@myself}
-            phx-mouseover="set_active"
           >
             <%= if @option_slot != [] do %>
               {render_slot(
@@ -691,6 +683,8 @@ defmodule PhxUI.LiveSelect do
       <div
         :if={@dropdown_open && @available_options == [] && @text != ""}
         class="live-select-empty"
+        role="status"
+        aria-live="polite"
       >
         No results found
       </div>
@@ -714,7 +708,7 @@ defmodule PhxUI.LiveSelect do
         <% end %>
       <% end %>
 
-      <script :type={ColocatedHook} name=".PhxUI.LiveSelect.LiveSelect">
+      <script :type={ColocatedHook} name=".LiveSelect">
         export default {
           mounted() {
             this.mode = this.el.dataset.mode;

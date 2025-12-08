@@ -50,6 +50,8 @@ defmodule PhxUI.Carousel do
   use Phoenix.Component
   alias Phoenix.LiveView.ColocatedHook
 
+  import PhxUI.Icon, only: [icon: 1]
+
   @doc """
   Renders a carousel component.
   """
@@ -131,19 +133,7 @@ defmodule PhxUI.Carousel do
         data-carousel-prev
         disabled={!@loop}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="m15 18-6-6 6-6" />
-        </svg>
+        <.icon name="hero-chevron-left" class="size-6" />
       </button>
 
       <button
@@ -153,19 +143,7 @@ defmodule PhxUI.Carousel do
         aria-label="Next slide"
         data-carousel-next
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="m9 18 6-6-6-6" />
-        </svg>
+        <.icon name="hero-chevron-right" class="size-6" />
       </button>
 
       <div :if={@show_indicators && @item_count > 1} class="carousel-indicators" role="tablist">

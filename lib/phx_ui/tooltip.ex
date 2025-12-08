@@ -46,18 +46,13 @@ defmodule PhxUI.Tooltip do
   )
 
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
+  attr(:id, :string, required: true, doc: "Unique identifier for the tooltip")
 
-  attr(:rest, :global,
-    include: ~w(id),
-    doc: "Additional HTML attributes"
-  )
+  attr(:rest, :global, doc: "Additional HTML attributes")
 
   slot(:inner_block, required: true, doc: "The element that triggers the tooltip on hover")
 
   def tooltip(assigns) do
-    id = assigns[:id] || "tooltip-#{System.unique_integer([:positive])}"
-    assigns = assign(assigns, :id, id)
-
     ~H"""
     <span
       id={@id}

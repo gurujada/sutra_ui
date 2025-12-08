@@ -232,7 +232,7 @@ defmodule PhxUI.AccordionTest do
         """)
 
       assert html =~ "accordion-chevron"
-      assert html =~ "<svg"
+      assert html =~ "hero-chevron-down"
     end
   end
 end

@@ -90,7 +90,7 @@ defmodule PhxUI.RadioGroup do
       |> assign(:error_id, "#{assigns[:id] || "radio-group-#{assigns.name}"}-error")
 
     ~H"""
-    <div class={["flex flex-col gap-3", @class]}>
+    <div class={["radio-group", @class]}>
       <label
         :if={@label}
         id={@label_id}
@@ -105,7 +105,7 @@ defmodule PhxUI.RadioGroup do
       <fieldset
         id={@id}
         role="radiogroup"
-        class="grid gap-3"
+        class="radio-group-fieldset"
         aria-labelledby={@label && @label_id}
         aria-invalid={@errors != [] && "true"}
         aria-describedby={@errors != [] && @error_id}
@@ -115,8 +115,8 @@ defmodule PhxUI.RadioGroup do
         <label
           :for={radio <- @radio}
           class={[
-            "flex cursor-pointer items-center gap-2 text-sm font-normal",
-            (radio[:disabled] || @disabled) && "cursor-not-allowed opacity-50"
+            "radio-group-label",
+            (radio[:disabled] || @disabled) && "radio-group-label-disabled"
           ]}
         >
           <input
@@ -130,17 +130,17 @@ defmodule PhxUI.RadioGroup do
             class="input"
             aria-invalid={@errors != [] && "true"}
           />
-          <div class="flex flex-col gap-0.5">
-            <span class="text-sm font-medium">{radio.label}</span>
+          <div class="radio-group-label-content">
+            <span class="radio-group-label-text">{radio.label}</span>
             <%= if radio[:inner_block] do %>
-              <span class="text-muted-foreground text-sm">{render_slot(radio)}</span>
+              <span class="radio-group-label-description">{render_slot(radio)}</span>
             <% end %>
           </div>
         </label>
       </fieldset>
 
-      <div :if={@errors != []} id={@error_id} class="flex flex-col gap-1">
-        <p :for={error <- @errors} class="text-destructive text-sm">
+      <div :if={@errors != []} id={@error_id} class="radio-group-errors">
+        <p :for={error <- @errors} class="radio-group-error">
           {error}
         </p>
       </div>
@@ -198,10 +198,10 @@ defmodule PhxUI.RadioGroup do
       |> assign(:error_id, "#{assigns[:id] || "radio-#{assigns.name}-#{assigns.value}"}-error")
 
     ~H"""
-    <div class={["flex flex-col gap-1", @class]}>
+    <div class={["radio-group", @class]}>
       <label class={[
-        "flex cursor-pointer items-center gap-2 text-sm font-normal",
-        @disabled && "cursor-not-allowed opacity-50"
+        "radio-group-label",
+        @disabled && "radio-group-label-disabled"
       ]}>
         <input
           type="radio"
@@ -215,16 +215,16 @@ defmodule PhxUI.RadioGroup do
           aria-describedby={@errors != [] && @error_id}
           {@rest}
         />
-        <div class="flex flex-col gap-0.5">
-          <span class="text-sm font-medium">{@label}</span>
+        <div class="radio-group-label-content">
+          <span class="radio-group-label-text">{@label}</span>
           <%= if @inner_block != [] do %>
-            <span class="text-muted-foreground text-sm">{render_slot(@inner_block)}</span>
+            <span class="radio-group-label-description">{render_slot(@inner_block)}</span>
           <% end %>
         </div>
       </label>
 
-      <div :if={@errors != []} id={@error_id} class="ml-6 flex flex-col gap-1">
-        <p :for={error <- @errors} class="text-destructive text-sm">
+      <div :if={@errors != []} id={@error_id} class="ml-6 radio-group-errors">
+        <p :for={error <- @errors} class="radio-group-error">
           {error}
         </p>
       </div>

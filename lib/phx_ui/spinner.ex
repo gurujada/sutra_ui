@@ -86,13 +86,13 @@ defmodule PhxUI.Spinner do
   def spinner(assigns) do
     ~H"""
     <div
-      class={["inline-flex items-center gap-2", @class]}
+      class={["spinner", @class]}
       role="status"
       aria-label={@label}
       {@rest}
     >
       <.icon name="hero-arrow-path" class={["animate-spin", size_class(@size)]} />
-      <span :if={@text != []} class="text-sm">
+      <span :if={@text != []} class="spinner-text">
         {render_slot(@text)}
       </span>
       <span :if={@text == []} class="sr-only">{@label}</span>

@@ -113,7 +113,7 @@ defmodule PhxUI.BreadcrumbTest do
         """)
 
       assert html =~ "breadcrumb-separator"
-      assert html =~ "<svg"
+      assert html =~ "hero-chevron-right"
     end
 
     test "renders slash separator" do

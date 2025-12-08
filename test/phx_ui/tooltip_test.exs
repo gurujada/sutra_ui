@@ -12,7 +12,7 @@ defmodule PhxUI.TooltipTest do
 
       html =
         rendered_to_string(~H"""
-        <Tooltip.tooltip tooltip="Hello">
+        <Tooltip.tooltip id="test-tooltip" tooltip="Hello">
           <button>Hover me</button>
         </Tooltip.tooltip>
         """)
@@ -27,7 +27,7 @@ defmodule PhxUI.TooltipTest do
 
       html =
         rendered_to_string(~H"""
-        <Tooltip.tooltip tooltip="Info">
+        <Tooltip.tooltip id="test-tooltip" tooltip="Info">
           <span class="custom-trigger">Custom content</span>
         </Tooltip.tooltip>
         """)
@@ -44,7 +44,7 @@ defmodule PhxUI.TooltipTest do
 
         html =
           rendered_to_string(~H"""
-          <Tooltip.tooltip tooltip="Test" side={@side}>
+          <Tooltip.tooltip id="test-tooltip" tooltip="Test" side={@side}>
             <button>Hover</button>
           </Tooltip.tooltip>
           """)
@@ -58,7 +58,7 @@ defmodule PhxUI.TooltipTest do
 
       html =
         rendered_to_string(~H"""
-        <Tooltip.tooltip tooltip="Test">
+        <Tooltip.tooltip id="test-tooltip" tooltip="Test">
           <button>Hover</button>
         </Tooltip.tooltip>
         """)
@@ -74,7 +74,7 @@ defmodule PhxUI.TooltipTest do
 
         html =
           rendered_to_string(~H"""
-          <Tooltip.tooltip tooltip="Test" align={@align}>
+          <Tooltip.tooltip id="test-tooltip" tooltip="Test" align={@align}>
             <button>Hover</button>
           </Tooltip.tooltip>
           """)
@@ -88,7 +88,7 @@ defmodule PhxUI.TooltipTest do
 
       html =
         rendered_to_string(~H"""
-        <Tooltip.tooltip tooltip="Test">
+        <Tooltip.tooltip id="test-tooltip" tooltip="Test">
           <button>Hover</button>
         </Tooltip.tooltip>
         """)
@@ -103,7 +103,7 @@ defmodule PhxUI.TooltipTest do
 
       html =
         rendered_to_string(~H"""
-        <Tooltip.tooltip tooltip="Test" class="my-tooltip-class">
+        <Tooltip.tooltip id="test-tooltip" tooltip="Test" class="my-tooltip-class">
           <button>Hover</button>
         </Tooltip.tooltip>
         """)
@@ -133,7 +133,7 @@ defmodule PhxUI.TooltipTest do
 
       html =
         rendered_to_string(~H"""
-        <Tooltip.tooltip tooltip="Bottom start" side="bottom" align="start">
+        <Tooltip.tooltip id="test-tooltip" tooltip="Bottom start" side="bottom" align="start">
           <button>Hover</button>
         </Tooltip.tooltip>
         """)
@@ -147,7 +147,7 @@ defmodule PhxUI.TooltipTest do
 
       html =
         rendered_to_string(~H"""
-        <Tooltip.tooltip tooltip="Left end" side="left" align="end">
+        <Tooltip.tooltip id="test-tooltip" tooltip="Left end" side="left" align="end">
           <button>Hover</button>
         </Tooltip.tooltip>
         """)

@@ -99,6 +99,7 @@ defmodule PhxUI do
 
   ### Advanced Form Controls (Phase 8)
   - `PhxUI.RangeSlider` - Dual-handle range slider for selecting value ranges
+  - `PhxUI.LiveSelect` - Dynamic searchable select with async options loading
 
   ## Tailwind CSS
 
@@ -200,6 +201,7 @@ defmodule PhxUI do
 
       # Phase 8: Advanced Form Controls
       import PhxUI.RangeSlider
+      import PhxUI.LiveSelect
     end
   end
 end

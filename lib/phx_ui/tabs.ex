@@ -7,7 +7,7 @@ defmodule PhxUI.Tabs do
 
   ## Examples
 
-      <.tabs default_value="tab1">
+      <.tabs id="settings-tabs" default_value="tab1">
         <:tab value="tab1">Account</:tab>
         <:tab value="tab2">Password</:tab>
         <:panel value="tab1">Account settings content</:panel>
@@ -31,7 +31,7 @@ defmodule PhxUI.Tabs do
   """
   attr(:default_value, :string, required: true, doc: "The value of the initially active tab")
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
-  attr(:id, :string, default: nil, doc: "Unique identifier for the tabs component")
+  attr(:id, :string, required: true, doc: "Unique identifier for the tabs component")
 
   attr(:rest, :global, doc: "Additional HTML attributes")
 
@@ -45,8 +45,6 @@ defmodule PhxUI.Tabs do
   end
 
   def tabs(assigns) do
-    assigns = assign(assigns, :id, assigns[:id] || "tabs-#{System.unique_integer([:positive])}")
-
     ~H"""
     <div
       id={@id}

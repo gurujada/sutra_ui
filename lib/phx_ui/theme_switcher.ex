@@ -9,12 +9,12 @@ defmodule PhxUI.ThemeSwitcher do
   ## Theme Management
 
   The theme switcher integrates with a theme system that:
-  - Persists theme preference in localStorage (key: 'phx:theme')
+  - Persists theme preference in localStorage (key: 'phx-ui:theme')
   - Applies theme before page load to prevent flash of unstyled content
   - Syncs theme changes across browser tabs
   - Respects system preferences (prefers-color-scheme) as fallback
 
-  The component dispatches `phx:toggle-theme` events to integrate with this system.
+  The component dispatches `phx-ui:set-theme` events to integrate with this system.
 
   ## Examples
 
@@ -43,14 +43,18 @@ defmodule PhxUI.ThemeSwitcher do
 
       <script>
         (function() {
-          const theme = localStorage.getItem('phx:theme') ||
+          const theme = localStorage.getItem('phx-ui:theme') ||
             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           if (theme === 'dark') document.documentElement.classList.add('dark');
           
-          window.addEventListener('phx:toggle-theme', () => {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            localStorage.setItem('phx:theme', isDark ? 'dark' : 'light');
+          window.addEventListener('phx-ui:set-theme', (e) => {
+            const newTheme = e.detail?.theme;
+            if (newTheme === 'dark') {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
+            localStorage.setItem('phx-ui:theme', newTheme);
           });
         })();
       </script>
@@ -147,7 +151,7 @@ defmodule PhxUI.ThemeSwitcher do
           this.el.addEventListener('click', () => {
             const isDark = document.documentElement.classList.contains('dark');
             const newTheme = isDark ? 'light' : 'dark';
-            window.dispatchEvent(new CustomEvent('phx:set-theme', { detail: { theme: newTheme } }));
+            window.dispatchEvent(new CustomEvent('phx-ui:set-theme', { detail: { theme: newTheme } }));
           });
         }
       }

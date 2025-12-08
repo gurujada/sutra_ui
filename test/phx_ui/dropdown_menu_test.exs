@@ -12,7 +12,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger>
             <button>Open</button>
           </:trigger>
@@ -43,22 +43,6 @@ defmodule PhxUI.DropdownMenuTest do
       assert html =~ ~s(id="my-dropdown")
       assert html =~ ~s(id="my-dropdown-content")
     end
-
-    test "generates unique id when not provided" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
-          <:trigger>
-            <button>Open</button>
-          </:trigger>
-          <:item>Item</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ ~r/id="dropdown-\d+"/
-    end
   end
 
   describe "dropdown_menu/1 alignment and side" do
@@ -67,7 +51,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -81,7 +65,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu align="center">
+        <DropdownMenu.dropdown_menu id="test-dropdown" align="center">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -95,7 +79,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu align="end">
+        <DropdownMenu.dropdown_menu id="test-dropdown" align="end">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -109,7 +93,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -123,7 +107,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu side="top">
+        <DropdownMenu.dropdown_menu id="test-dropdown" side="top">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -137,7 +121,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu side="left">
+        <DropdownMenu.dropdown_menu id="test-dropdown" side="left">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -151,7 +135,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu side="right">
+        <DropdownMenu.dropdown_menu id="test-dropdown" side="right">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -167,7 +151,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Profile</:item>
           <:item>Settings</:item>
@@ -187,7 +171,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item variant="destructive">Delete</:item>
         </DropdownMenu.dropdown_menu>
@@ -202,7 +186,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item disabled>Disabled Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -218,7 +202,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item on_click="handle_profile">Profile</:item>
         </DropdownMenu.dropdown_menu>
@@ -234,7 +218,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item icon="hero-user">Profile</:item>
         </DropdownMenu.dropdown_menu>
@@ -250,7 +234,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>No Icon</:item>
         </DropdownMenu.dropdown_menu>
@@ -267,7 +251,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item icon="hero-user">Profile</:item>
           <:item icon="hero-cog-6-tooth">Settings</:item>
@@ -287,7 +271,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item shortcut="⌘K">Search</:item>
         </DropdownMenu.dropdown_menu>
@@ -303,7 +287,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>No Shortcut</:item>
         </DropdownMenu.dropdown_menu>
@@ -318,7 +302,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item shortcut="⌘S">Save</:item>
           <:item shortcut="⌘⇧S">Save As</:item>
@@ -340,7 +324,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item icon="hero-scissors" shortcut="⌘X">Cut</:item>
         </DropdownMenu.dropdown_menu>
@@ -358,7 +342,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Edit</button></:trigger>
           <:item icon="hero-arrow-uturn-left" shortcut="⌘Z">Undo</:item>
           <:item icon="hero-arrow-uturn-right" shortcut="⌘⇧Z">Redo</:item>
@@ -398,7 +382,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Profile</:item>
           <:separator />
@@ -415,7 +399,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Item 1</:item>
           <:separator />
@@ -435,7 +419,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:label>My Account</:label>
           <:item>Profile</:item>
@@ -452,7 +436,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:label>Account</:label>
           <:item>Profile</:item>
@@ -475,7 +459,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Profile</:item>
         </DropdownMenu.dropdown_menu>
@@ -491,7 +475,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Profile</:item>
         </DropdownMenu.dropdown_menu>
@@ -505,7 +489,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
           <:separator />
@@ -521,7 +505,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:label>Group</:label>
           <:item>Item</:item>
@@ -538,7 +522,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu class="my-custom-dropdown">
+        <DropdownMenu.dropdown_menu id="test-dropdown" class="my-custom-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -554,7 +538,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -568,7 +552,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -584,7 +568,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu align="center">
+        <DropdownMenu.dropdown_menu id="test-dropdown" align="center">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>
@@ -598,7 +582,7 @@ defmodule PhxUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu side="top">
+        <DropdownMenu.dropdown_menu id="test-dropdown" side="top">
           <:trigger><button>Open</button></:trigger>
           <:item>Item</:item>
         </DropdownMenu.dropdown_menu>

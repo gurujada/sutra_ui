@@ -22,6 +22,8 @@ defmodule PhxUI.Breadcrumb do
 
   use Phoenix.Component
 
+  import PhxUI.Icon, only: [icon: 1]
+
   @doc """
   Renders a breadcrumb navigation component.
   """
@@ -52,7 +54,7 @@ defmodule PhxUI.Breadcrumb do
           <li class={["breadcrumb-item", item[:class]]}>
             <%= if index > 0 do %>
               <span class="breadcrumb-separator" aria-hidden="true">
-                {separator_icon(@separator)}
+                <.icon name={separator_icon_name(@separator)} class="size-4" />
               </span>
             <% end %>
             <%= if item[:navigate] do %>
@@ -77,15 +79,6 @@ defmodule PhxUI.Breadcrumb do
     """
   end
 
-  defp separator_icon("chevron") do
-    Phoenix.HTML.raw("""
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-    """)
-  end
-
-  defp separator_icon("slash") do
-    Phoenix.HTML.raw("""
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22 19 2"/></svg>
-    """)
-  end
+  defp separator_icon_name("chevron"), do: "hero-chevron-right"
+  defp separator_icon_name("slash"), do: "hero-slash"
 end
