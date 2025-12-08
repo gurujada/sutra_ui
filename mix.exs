@@ -15,7 +15,8 @@ defmodule PhxUI.MixProject do
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
 
       # Hex
-      description: "A pure Phoenix LiveView UI component library. No dependencies, no nonsense.",
+      description:
+        "A Phoenix LiveView UI component library inspired by shadcn/ui. 44 accessible components with CSS-first theming.",
       package: package(),
 
       # Docs
@@ -53,7 +54,7 @@ defmodule PhxUI.MixProject do
       links: %{
         "GitHub" => @source_url
       },
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE)
+      files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
