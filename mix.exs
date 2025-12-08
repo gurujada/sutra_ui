@@ -42,7 +42,7 @@ defmodule PhxUI.MixProject do
       # Dev/Test
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:floki, ">= 0.30.0", only: :test},
-      {:jason, "~> 1.0", only: :test}
+      {:jason, "~> 1.0", optional: true}
     ]
   end
 

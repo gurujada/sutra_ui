@@ -217,4 +217,39 @@ defmodule PhxUI.PopoverTest do
       assert html =~ ~s(aria-hidden="true")
     end
   end
+
+  describe "show_popover/2, hide_popover/2, and toggle_popover/2" do
+    test "show_popover returns JS struct" do
+      js = Popover.show_popover("test-popover")
+      assert %Phoenix.LiveView.JS{} = js
+    end
+
+    test "hide_popover returns JS struct" do
+      js = Popover.hide_popover("test-popover")
+      assert %Phoenix.LiveView.JS{} = js
+    end
+
+    test "toggle_popover returns JS struct" do
+      js = Popover.toggle_popover("test-popover")
+      assert %Phoenix.LiveView.JS{} = js
+    end
+
+    test "show_popover with existing JS struct" do
+      existing_js = Phoenix.LiveView.JS.push("some-event")
+      js = Popover.show_popover(existing_js, "test-popover")
+      assert %Phoenix.LiveView.JS{} = js
+    end
+
+    test "hide_popover with existing JS struct" do
+      existing_js = Phoenix.LiveView.JS.push("some-event")
+      js = Popover.hide_popover(existing_js, "test-popover")
+      assert %Phoenix.LiveView.JS{} = js
+    end
+
+    test "toggle_popover with existing JS struct" do
+      existing_js = Phoenix.LiveView.JS.push("some-event")
+      js = Popover.toggle_popover(existing_js, "test-popover")
+      assert %Phoenix.LiveView.JS{} = js
+    end
+  end
 end

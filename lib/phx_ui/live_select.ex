@@ -31,7 +31,19 @@ defmodule PhxUI.LiveSelect do
 
   ## Handling Selection
 
-  Selections trigger standard form change events:
+  When a selection is made, LiveSelect sends a message to the parent process:
+
+      def handle_info({:live_select_selected, %{id: "city-select"} = payload}, socket) do
+        # For single mode: payload has :value and :label
+        {:noreply, assign(socket, :selected_city, payload[:value])}
+      end
+
+      def handle_info({:live_select_selected, %{id: "tags-select"} = payload}, socket) do
+        # For tags modes: payload has :selection (list of maps with :value, :label, :tag_label)
+        {:noreply, assign(socket, :selected_tags, payload[:selection])}
+      end
+
+  Selections also trigger standard form change events via hidden inputs:
 
       def handle_event("change", %{"form" => %{"city" => city_value}}, socket) do
         # city_value is JSON-encoded if complex, use PhxUI.LiveSelect.decode/1
@@ -200,7 +212,8 @@ defmodule PhxUI.LiveSelect do
       field = socket.assigns.field
       value = field.value
 
-      if value && value != "" && value != [] do
+      # Skip empty/nil values and empty JSON array strings
+      if value && value != "" && value != [] && value != "[]" do
         set_selection(socket, value)
       else
         socket
@@ -335,6 +348,7 @@ defmodule PhxUI.LiveSelect do
     options = socket.assigns.available_options
 
     cond do
+      # If an option is highlighted, select it
       index >= 0 && index < length(options) ->
         option = Enum.at(options, index)
 
@@ -344,8 +358,18 @@ defmodule PhxUI.LiveSelect do
           {:noreply, select_option(socket, option)}
         end
 
+      # If no option highlighted but options exist, select the first non-disabled one
+      length(options) > 0 ->
+        first_enabled = Enum.find(options, fn opt -> !opt.disabled end)
+
+        if first_enabled do
+          {:noreply, select_option(socket, first_enabled)}
+        else
+          {:noreply, socket}
+        end
+
+      # If no options but user_defined_options is enabled, create from text
       socket.assigns.user_defined_options && socket.assigns.text != "" ->
-        # Create user-defined option
         option = normalize_option(socket.assigns.text)
         {:noreply, select_option(socket, option)}
 
@@ -525,8 +549,38 @@ defmodule PhxUI.LiveSelect do
   end
 
   defp push_change_event(socket) do
-    # Push event to trigger form change
-    push_event(socket, "live_select:change", %{id: socket.assigns.id})
+    # Push event to trigger form change (client-side)
+    socket = push_event(socket, "live_select:change", %{id: socket.assigns.id})
+
+    # Notify parent LiveView of selection change
+    notify_parent(socket)
+
+    socket
+  end
+
+  defp notify_parent(socket) do
+    selection = socket.assigns.selection
+    mode = socket.assigns.mode
+    id = socket.assigns.id
+
+    event_payload =
+      case mode do
+        :single ->
+          case selection do
+            [opt | _] -> %{id: id, value: opt.value, label: opt.label}
+            _ -> %{id: id, value: nil, label: nil}
+          end
+
+        _ ->
+          # Tags modes
+          %{
+            id: id,
+            selection: Enum.map(selection, &Map.take(&1, [:value, :label, :tag_label]))
+          }
+      end
+
+    # Send message to parent LiveView process
+    send(self(), {:live_select_selected, event_payload})
   end
 
   # Helpers for rendering

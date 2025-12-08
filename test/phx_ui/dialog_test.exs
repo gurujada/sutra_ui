@@ -205,4 +205,20 @@ defmodule PhxUI.DialogTest do
       assert %Phoenix.LiveView.JS{} = js
     end
   end
+
+  describe "dialog/1 phx-hook" do
+    test "has phx-hook for dialog behavior" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Dialog.dialog id="test-dialog" on_cancel="close">
+          <:title>Title</:title>
+          Content
+        </Dialog.dialog>
+        """)
+
+      assert html =~ "phx-hook"
+    end
+  end
 end

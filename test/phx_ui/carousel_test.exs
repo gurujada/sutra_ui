@@ -295,4 +295,19 @@ defmodule PhxUI.CarouselTest do
       assert html =~ ~s(data-carousel-indicator="1")
     end
   end
+
+  describe "carousel/1 phx-hook" do
+    test "has phx-hook for carousel behavior" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Carousel.carousel id="test-carousel">
+          <:item>Item</:item>
+        </Carousel.carousel>
+        """)
+
+      assert html =~ "phx-hook"
+    end
+  end
 end

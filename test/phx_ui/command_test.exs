@@ -305,4 +305,19 @@ defmodule PhxUI.CommandTest do
       assert %Phoenix.LiveView.JS{} = js
     end
   end
+
+  describe "command/1 phx-hook" do
+    test "has phx-hook for command behavior" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Command.command id="cmd">
+          <Command.command_item id="item">Item</Command.command_item>
+        </Command.command>
+        """)
+
+      assert html =~ "phx-hook"
+    end
+  end
 end

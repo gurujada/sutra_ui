@@ -156,4 +156,19 @@ defmodule PhxUI.TooltipTest do
       assert html =~ ~s(data-align="end")
     end
   end
+
+  describe "tooltip/1 phx-hook" do
+    test "has phx-hook for tooltip behavior" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Tooltip.tooltip id="test-tooltip" tooltip="Test">
+          <button>Hover</button>
+        </Tooltip.tooltip>
+        """)
+
+      assert html =~ "phx-hook"
+    end
+  end
 end
