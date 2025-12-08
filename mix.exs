@@ -1,12 +1,12 @@
-defmodule PhxUI.MixProject do
+defmodule SutraUI.MixProject do
   use Mix.Project
 
   @version "0.1.0"
-  @source_url "https://github.com/gurujada/phx_ui"
+  @source_url "https://github.com/gurujada/sutra_ui"
 
   def project do
     [
-      app: :phx_ui,
+      app: :sutra_ui,
       version: @version,
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
@@ -16,11 +16,11 @@ defmodule PhxUI.MixProject do
 
       # Hex
       description:
-        "A Phoenix LiveView UI component library inspired by shadcn/ui. 44 accessible components with CSS-first theming.",
+        "Sutra UI - We define the rules, so you don't have to. A Phoenix LiveView component library with 44 accessible components and CSS-first theming.",
       package: package(),
 
       # Docs
-      name: "PhxUI",
+      name: "Sutra UI",
       docs: docs(),
       source_url: @source_url
     ]
@@ -60,12 +60,12 @@ defmodule PhxUI.MixProject do
 
   defp docs do
     [
-      main: "PhxUI",
+      main: "SutraUI",
       source_ref: "v#{@version}",
       source_url: @source_url,
       extras: ["README.md"],
       groups_for_modules: [
-        Components: ~r/PhxUI\..*/
+        Components: ~r/SutraUI\..*/
       ]
     ]
   end

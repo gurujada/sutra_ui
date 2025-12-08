@@ -1,13 +1,13 @@
-defmodule PhxUI.ComponentCase do
+defmodule SutraUI.ComponentCase do
   @moduledoc """
-  Test case for PhxUI components.
+  Test case for SutraUI components.
 
   Provides helpers for rendering and testing Phoenix components.
 
   ## Example
 
-      defmodule PhxUI.ButtonTest do
-        use PhxUI.ComponentCase
+      defmodule SutraUI.ButtonTest do
+        use SutraUI.ComponentCase
 
         describe "button/1" do
           test "renders with default variant" do
@@ -15,7 +15,7 @@ defmodule PhxUI.ComponentCase do
 
             html =
               rendered_to_string(~H\"""
-              <PhxUI.Button.button>Click me</PhxUI.Button.button>
+              <SutraUI.Button.button>Click me</SutraUI.Button.button>
               \""")
 
             assert html =~ "Click me"
@@ -30,7 +30,7 @@ defmodule PhxUI.ComponentCase do
     quote do
       import Phoenix.LiveViewTest
       import Phoenix.Component
-      import PhxUI.ComponentCase
+      import SutraUI.ComponentCase
     end
   end
 

@@ -1,16 +1,19 @@
-# PhxUI
+# Sutra UI
+
+*We define the rules, so you don't have to.*
 
 A pure Phoenix LiveView UI component library inspired by shadcn/ui.
 
 Built for **Tailwind CSS v4** and **Phoenix LiveView 1.0+**.
 
-## Why PhxUI?
+## Why Sutra UI?
 
 - **Zero JavaScript dependencies** - No React, no npm packages, no node_modules bloat. Just Phoenix LiveView.
 - **CSS-first theming** - Customize colors with CSS variables. No build step, no config files.
 - **Copy-paste friendly** - Like shadcn/ui, components are meant to be understood and modified.
 - **Server-driven** - All state lives on the server. No client-side state sync headaches.
-- **Production-ready** - 668 tests, full accessibility support, dark mode included.
+- **Production-ready** - 677 tests, full accessibility support, dark mode included.
+- **LLM-friendly** - Includes `usage_rules.md` with guidelines for AI assistants working with this codebase.
 
 ## Features
 
@@ -30,7 +33,7 @@ Built for **Tailwind CSS v4** and **Phoenix LiveView 1.0+**.
 # mix.exs
 def deps do
   [
-    {:phx_ui, "~> 0.1.0"},
+    {:sutra_ui, "~> 0.1.0"},
     {:jason, "~> 1.0"}  # Required for dropdown_menu and live_select
   ]
 end
@@ -49,26 +52,26 @@ In your `assets/css/app.css`:
 ```css
 @import "tailwindcss";
 
-/* Add PhxUI source paths for Tailwind to scan */
-@source "../../deps/phx_ui/lib";
+/* Add Sutra UI source paths for Tailwind to scan */
+@source "../../deps/sutra_ui/lib";
 
-/* Import PhxUI component styles */
-@import "../../deps/phx_ui/priv/static/phx_ui.css";
+/* Import Sutra UI component styles */
+@import "../../deps/sutra_ui/priv/static/sutra_ui.css";
 
 /* Your app's custom styles... */
 ```
 
 ### 3. Setup JavaScript Hooks
 
-PhxUI components use Phoenix LiveView's colocated hooks. In your `assets/js/app.js`:
+Sutra UI components use Phoenix LiveView's colocated hooks. In your `assets/js/app.js`:
 
 ```javascript
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
-import {hooks as phxUiHooks} from "phoenix-colocated/phx_ui"
+import {hooks as sutraUiHooks} from "phoenix-colocated/sutra_ui"
 
 const liveSocket = new LiveSocket("/live", Socket, {
-  hooks: {...phxUiHooks},
+  hooks: {...sutraUiHooks},
   // ... other options
 })
 ```
@@ -82,7 +85,7 @@ In your `my_app_web.ex`:
 ```elixir
 defp html_helpers do
   quote do
-    use PhxUI
+    use SutraUI
     # ... other imports
   end
 end
@@ -91,8 +94,8 @@ end
 Or import specific components:
 
 ```elixir
-import PhxUI.Button
-import PhxUI.Dialog
+import SutraUI.Button
+import SutraUI.Dialog
 ```
 
 ## Usage
@@ -119,10 +122,10 @@ import PhxUI.Dialog
 
 ## Theme Customization
 
-PhxUI uses CSS custom properties for theming. Override them in your `app.css` **after** importing `phx_ui.css`:
+Sutra UI uses CSS custom properties for theming. Override them in your `app.css` **after** importing `sutra_ui.css`:
 
 ```css
-@import "../../deps/phx_ui/priv/static/phx_ui.css";
+@import "../../deps/sutra_ui/priv/static/sutra_ui.css";
 
 /* Custom theme overrides */
 :root {
@@ -141,6 +144,42 @@ PhxUI uses CSS custom properties for theming. Override them in your `app.css` **
 .dark {
   --primary: oklch(0.70 0.18 145);
   --destructive: oklch(0.65 0.22 25);
+}
+```
+
+### Using shadcn/ui Themes
+
+Since Sutra UI uses the same CSS variable names as shadcn/ui, you can copy theme variables directly from [shadcn/ui themes](https://ui.shadcn.com/themes) and paste them into your `app.css`:
+
+```css
+@import "../../deps/sutra_ui/priv/static/sutra_ui.css";
+
+/* Paste your shadcn theme here - it just works! */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+  --primary: oklch(0.21 0.006 285.885);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.21 0.006 285.885);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.705 0.015 286.067);
+  --radius: 0.5rem;
+}
+
+.dark {
+  /* Dark mode variables from shadcn */
 }
 ```
 
@@ -171,7 +210,7 @@ PhxUI uses CSS custom properties for theming. Override them in your `app.css` **
 
 ### Color Format
 
-PhxUI uses **OKLCH** colors for better perceptual uniformity:
+Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 
 ```css
 --primary: oklch(0.623 0.214 259.815);
@@ -242,6 +281,18 @@ PhxUI uses **OKLCH** colors for better perceptual uniformity:
 - `label` - Form labels
 - `theme_switcher` - Light/dark mode toggle
 
+## For AI Assistants
+
+This library includes `usage_rules.md` with detailed guidelines for AI assistants (LLMs) working with this codebase. The file covers:
+
+- CSS-first styling patterns
+- Required ID attributes for hook-based components
+- Event naming conventions (`phx-ui:*` namespace)
+- Component structure patterns
+- Testing conventions
+
+If you're using an AI assistant to help modify or extend Sutra UI components, point it to `usage_rules.md` for context.
+
 ## Accessibility
 
 All components follow WAI-ARIA patterns:
@@ -271,6 +322,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Links
 
-- [Documentation](https://hexdocs.pm/phx_ui)
-- [GitHub](https://github.com/gurujada/phx_ui)
+- [Documentation](https://hexdocs.pm/sutra_ui)
+- [GitHub](https://github.com/gurujada/sutra_ui)
 - [Changelog](CHANGELOG.md)

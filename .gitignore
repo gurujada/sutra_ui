@@ -27,3 +27,5 @@ phx_ui-*.tar
 .lexical/
 *.swp
 *~
+MIGRATION.md
+RANGE_SLIDER_GAPS.md

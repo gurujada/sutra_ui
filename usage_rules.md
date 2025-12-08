@@ -1,19 +1,19 @@
-# PhxUI Usage Rules for LLMs
+# Sutra UI Usage Rules for LLMs
 
-This document provides guidelines for AI assistants when working with the PhxUI component library.
+This document provides guidelines for AI assistants when working with the Sutra UI component library.
 
 ## Overview
 
-PhxUI is a pure Phoenix LiveView UI component library with no external dependencies. Components use colocated JavaScript hooks where interactivity is needed.
+Sutra UI is a pure Phoenix LiveView UI component library with no external dependencies. Components use colocated JavaScript hooks where interactivity is needed.
 
 ## Core Principles
 
 ### 1. CSS-First Styling
 
-All component styling is defined in `priv/static/phx_ui.css`. When modifying components:
+All component styling is defined in `priv/static/sutra_ui.css`. When modifying components:
 
-- **DO**: Use CSS classes from `phx_ui.css`
-- **DO**: Add new CSS classes to `phx_ui.css` when needed
+- **DO**: Use CSS classes from `sutra_ui.css`
+- **DO**: Add new CSS classes to `sutra_ui.css` when needed
 - **DON'T**: Add inline Tailwind classes directly in component templates
 - **DON'T**: Use helper functions to generate Tailwind class strings
 
@@ -87,7 +87,7 @@ end
 ### Basic Component Structure
 
 ```elixir
-defmodule PhxUI.ComponentName do
+defmodule SutraUI.ComponentName do
   @moduledoc """
   Brief description of the component.
 
@@ -128,7 +128,7 @@ end
 ### Hook-Based Component Structure
 
 ```elixir
-defmodule PhxUI.InteractiveComponent do
+defmodule SutraUI.InteractiveComponent do
   use Phoenix.Component
   alias Phoenix.LiveView.ColocatedHook
 
@@ -221,7 +221,7 @@ end
 
 ## CSS Class Naming
 
-CSS classes in `phx_ui.css` follow these conventions:
+CSS classes in `sutra_ui.css` follow these conventions:
 
 ```css
 /* Component base */
@@ -242,13 +242,13 @@ CSS classes in `phx_ui.css` follow these conventions:
 
 ## Testing Components
 
-Tests are in `test/phx_ui/` and use `ComponentCase`:
+Tests are in `test/sutra_ui/` and use `ComponentCase`:
 
 ```elixir
-defmodule PhxUI.ComponentNameTest do
+defmodule SutraUI.ComponentNameTest do
   use ComponentCase, async: true
 
-  import PhxUI.ComponentName
+  import SutraUI.ComponentName
 
   describe "component_name/1" do
     test "renders with required attributes" do
@@ -271,20 +271,20 @@ end
 3. **Auto-generating IDs** instead of requiring them
 4. **Missing accessibility attributes** (ARIA, roles, keyboard support)
 5. **Not updating moduledoc examples** when changing required attrs
-6. **Forgetting to add new components** to `lib/phx_ui.ex` imports
+6. **Forgetting to add new components** to `lib/sutra_ui.ex` imports
 
 ## File Structure
 
 ```
 lib/
-  phx_ui/
+  sutra_ui/
     component_name.ex    # Component module
-  phx_ui.ex              # Main module with imports
+  sutra_ui.ex            # Main module with imports
 priv/
   static/
-    phx_ui.css           # All component styles
+    sutra_ui.css         # All component styles
 test/
-  phx_ui/
+  sutra_ui/
     component_name_test.exs
   support/
     component_case.ex    # Test helpers
@@ -292,9 +292,9 @@ test/
 
 ## Adding a New Component
 
-1. Create `lib/phx_ui/component_name.ex` with moduledoc and examples
-2. Add CSS classes to `priv/static/phx_ui.css`
-3. Add import to `lib/phx_ui.ex` in `__using__` macro
-4. Update component list in `lib/phx_ui.ex` moduledoc
-5. Create tests in `test/phx_ui/component_name_test.exs`
+1. Create `lib/sutra_ui/component_name.ex` with moduledoc and examples
+2. Add CSS classes to `priv/static/sutra_ui.css`
+3. Add import to `lib/sutra_ui.ex` in `__using__` macro
+4. Update component list in `lib/sutra_ui.ex` moduledoc
+5. Create tests in `test/sutra_ui/component_name_test.exs`
 6. Update this file if the component introduces new patterns
