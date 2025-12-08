@@ -39,24 +39,54 @@ defmodule PhxUI.SliderTest do
         <Slider.slider id="volume" />
         """)
 
-      assert html =~ ~s(min="0")
-      assert html =~ ~s(max="100")
-      assert html =~ ~s(step="1")
+      # Float format for min/max/step, integer for value (since step is 1)
+      assert html =~ ~s(min="0.0")
+      assert html =~ ~s(max="100.0")
+      assert html =~ ~s(step="1.0")
       assert html =~ ~s(value="50")
     end
 
-    test "renders with custom values" do
+    test "renders with custom integer values" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Slider.slider id="temp" min="-10" max="40" step="0.5" value="20" />
+        <Slider.slider id="temp" min={-10} max={40} step={1} value={20} />
         """)
 
-      assert html =~ ~s(min="-10")
-      assert html =~ ~s(max="40")
-      assert html =~ ~s(step="0.5")
+      assert html =~ ~s(min="-10.0")
+      assert html =~ ~s(max="40.0")
+      assert html =~ ~s(step="1.0")
       assert html =~ ~s(value="20")
+      assert html =~ ~s(data-precision="0")
+    end
+
+    test "renders with float step and value" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Slider.slider id="temp" min={-10} max={40} step={0.5} value={20.5} />
+        """)
+
+      assert html =~ ~s(min="-10.0")
+      assert html =~ ~s(max="40.0")
+      assert html =~ ~s(step="0.5")
+      assert html =~ ~s(value="20.5")
+      assert html =~ ~s(data-precision="1")
+    end
+
+    test "renders with high precision float step" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Slider.slider id="weight" min={0} max={10} step={0.01} value={5.25} />
+        """)
+
+      assert html =~ ~s(step="0.01")
+      assert html =~ ~s(value="5.25")
+      assert html =~ ~s(data-precision="2")
     end
 
     test "renders with name" do
@@ -68,6 +98,30 @@ defmodule PhxUI.SliderTest do
         """)
 
       assert html =~ ~s(name="settings[volume]")
+    end
+
+    test "snaps value to step" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Slider.slider id="volume" min={0} max={100} step={10} value={23} />
+        """)
+
+      # 23 snaps to 20
+      assert html =~ ~s(value="20")
+    end
+
+    test "snaps float value to float step" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Slider.slider id="rating" min={0} max={5} step={0.5} value={2.3} />
+        """)
+
+      # 2.3 snaps to 2.5
+      assert html =~ ~s(value="2.5")
     end
   end
 
@@ -101,10 +155,10 @@ defmodule PhxUI.SliderTest do
 
       html =
         rendered_to_string(~H"""
-        <Slider.slider id="volume" min="10" />
+        <Slider.slider id="volume" min={10} />
         """)
 
-      assert html =~ ~s(aria-valuemin="10")
+      assert html =~ ~s(aria-valuemin="10.0")
     end
 
     test "renders aria-valuemax" do
@@ -112,21 +166,32 @@ defmodule PhxUI.SliderTest do
 
       html =
         rendered_to_string(~H"""
-        <Slider.slider id="volume" max="200" />
+        <Slider.slider id="volume" max={200} />
         """)
 
-      assert html =~ ~s(aria-valuemax="200")
+      assert html =~ ~s(aria-valuemax="200.0")
     end
 
-    test "renders aria-valuenow" do
+    test "renders aria-valuenow with integer step" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Slider.slider id="volume" value="75" />
+        <Slider.slider id="volume" value={75} step={1} />
         """)
 
       assert html =~ ~s(aria-valuenow="75")
+    end
+
+    test "renders aria-valuenow with float step" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Slider.slider id="volume" value={75.5} step={0.5} />
+        """)
+
+      assert html =~ ~s(aria-valuenow="75.5")
     end
 
     test "renders aria-label" do

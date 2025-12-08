@@ -14,8 +14,8 @@ defmodule PhxUI.RangeSliderTest do
       assert html =~ ~s(class="range-slider)
       # phoenix_colocated transforms .RangeSlider to full module path
       assert html =~ ~s(phx-hook="PhxUI.RangeSlider.RangeSlider")
-      assert html =~ ~s(data-min="0")
-      assert html =~ ~s(data-max="100")
+      assert html =~ ~s(data-min="0.0")
+      assert html =~ ~s(data-max="100.0")
       assert html =~ ~s(name="price_min")
       assert html =~ ~s(name="price_max")
     end
@@ -28,13 +28,13 @@ defmodule PhxUI.RangeSliderTest do
           max: 1000
         })
 
-      assert html =~ ~s(data-min="100")
-      assert html =~ ~s(data-max="1000")
-      assert html =~ ~s(aria-valuemin="100")
-      assert html =~ ~s(aria-valuemax="1000")
+      assert html =~ ~s(data-min="100.0")
+      assert html =~ ~s(data-max="1.0e3")
+      assert html =~ ~s(aria-valuemin="100.0")
+      assert html =~ ~s(aria-valuemax="1.0e3")
     end
 
-    test "renders with custom value_min and value_max" do
+    test "renders with custom value_min and value_max (integers)" do
       html =
         render_component(&range_slider/1, %{
           name: "price",
@@ -44,6 +44,7 @@ defmodule PhxUI.RangeSliderTest do
           value_max: 80
         })
 
+      # With integer step, values are emitted as integers
       assert html =~ ~s(data-value-min="20")
       assert html =~ ~s(data-value-max="80")
       assert html =~ ~s(aria-valuenow="20")
@@ -52,14 +53,50 @@ defmodule PhxUI.RangeSliderTest do
       assert html =~ ~s(value="80")
     end
 
-    test "renders with custom step" do
+    test "renders with float step and values" do
+      html =
+        render_component(&range_slider/1, %{
+          name: "rating",
+          min: 0,
+          max: 5,
+          step: 0.5,
+          value_min: 1.5,
+          value_max: 4.0
+        })
+
+      # With float step, values are emitted as floats
+      assert html =~ ~s(data-step="0.5")
+      assert html =~ ~s(data-precision="1")
+      assert html =~ ~s(data-value-min="1.5")
+      assert html =~ ~s(data-value-max="4.0")
+    end
+
+    test "renders with high precision float step" do
+      html =
+        render_component(&range_slider/1, %{
+          name: "weight",
+          min: 0,
+          max: 10,
+          step: 0.01,
+          value_min: 2.55,
+          value_max: 7.75
+        })
+
+      assert html =~ ~s(data-step="0.01")
+      assert html =~ ~s(data-precision="2")
+      assert html =~ ~s(data-value-min="2.55")
+      assert html =~ ~s(data-value-max="7.75")
+    end
+
+    test "renders with custom step (integer)" do
       html =
         render_component(&range_slider/1, %{
           name: "price",
           step: 10
         })
 
-      assert html =~ ~s(data-step="10")
+      assert html =~ ~s(data-step="10.0")
+      assert html =~ ~s(data-precision="0")
     end
 
     test "renders with tooltips when enabled" do
@@ -134,6 +171,8 @@ defmodule PhxUI.RangeSliderTest do
       html =
         render_component(&range_slider/1, %{
           name: "budget",
+          min: 0,
+          max: 1000,
           value_min: 100,
           value_max: 500
         })
@@ -269,6 +308,38 @@ defmodule PhxUI.RangeSliderTest do
       # The hook name in phx-hook confirms colocated hooks are set up
       assert html =~ ~s(phx-hook="PhxUI.RangeSlider.RangeSlider")
       # The actual JS code is extracted by phoenix_colocated during compilation
+    end
+
+    test "snaps values to step" do
+      html =
+        render_component(&range_slider/1, %{
+          name: "price",
+          min: 0,
+          max: 100,
+          step: 10,
+          value_min: 23,
+          value_max: 77
+        })
+
+      # 23 snaps to 20, 77 snaps to 80
+      assert html =~ ~s(data-value-min="20")
+      assert html =~ ~s(data-value-max="80")
+    end
+
+    test "snaps float values to float step" do
+      html =
+        render_component(&range_slider/1, %{
+          name: "rating",
+          min: 0,
+          max: 5,
+          step: 0.5,
+          value_min: 1.3,
+          value_max: 3.7
+        })
+
+      # 1.3 snaps to 1.5, 3.7 snaps to 3.5
+      assert html =~ ~s(data-value-min="1.5")
+      assert html =~ ~s(data-value-max="3.5")
     end
   end
 end

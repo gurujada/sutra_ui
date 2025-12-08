@@ -5,13 +5,30 @@ defmodule PhxUI.RangeSlider do
   Similar to noUiSlider, this component provides two draggable handles
   to select a minimum and maximum value within a defined range.
 
+  ## Value Types
+
+  The slider automatically determines whether to emit integer or float values
+  based on the `step` attribute:
+
+  - Integer step (e.g., `step={1}`, `step={5}`) → emits integers
+  - Float step (e.g., `step={0.1}`, `step={0.5}`) → emits floats with matching precision
+
   ## Examples
 
-      # Basic range slider
+      # Basic range slider (integer mode)
       <.range_slider name="price" min={0} max={1000} value_min={200} value_max={800} />
 
-      # With step increments
+      # With step increments (integer mode)
       <.range_slider name="age" min={0} max={100} step={5} value_min={20} value_max={60} />
+
+      # Float mode - step determines precision
+      <.range_slider name="rating" min={0} max={5} step={0.5} value_min={1.5} value_max={4.0} />
+
+      # High precision floats
+      <.range_slider name="weight" min={0} max={10} step={0.01} value_min={2.50} value_max={7.75} />
+
+      # With custom formatting for display (does not affect emitted values)
+      <.range_slider name="price" min={0} max={100} format={&"$\#{&1}"} />
 
       # With tooltips always visible
       <.range_slider name="rating" min={1} max={10} value_min={3} value_max={8} tooltips />
@@ -32,7 +49,9 @@ defmodule PhxUI.RangeSlider do
   - `on_slide` - Fires while dragging (debounced) - pushEvent style
   - `on_change` - Fires on release - pushEvent style
 
-  Event payload: `%{name: "field", min: 200, max: 800, field_min: 200, field_max: 800}`
+  Event payload includes values formatted based on step:
+  - Integer step: `%{name: "field", min: 200, max: 800, field_min: 200, field_max: 800}`
+  - Float step: `%{name: "field", min: 2.5, max: 8.0, field_min: 2.5, field_max: 8.0}`
 
   ## Form Integration
 
@@ -67,9 +86,10 @@ defmodule PhxUI.RangeSlider do
   - `name` - Base name for the hidden inputs (required)
   - `min` - Minimum value of the range (default: 0)
   - `max` - Maximum value of the range (default: 100)
-  - `step` - Step increment for values (default: 1)
+  - `step` - Step increment for values (default: 1). Integer step = integer values, float step = float values.
   - `value_min` - Current minimum selected value (default: 25% of range)
   - `value_max` - Current maximum selected value (default: 75% of range)
+  - `format` - Optional function to format displayed values (does not affect emitted values)
   - `tooltips` - Show value tooltips on handles (default: false)
   - `disabled` - Disable the slider (default: false)
   - `on_slide` - Event to push while dragging (debounced)
@@ -80,11 +100,12 @@ defmodule PhxUI.RangeSlider do
   """
   attr(:name, :string, required: true, doc: "Base name for hidden inputs")
   attr(:id, :string, default: nil, doc: "Unique identifier")
-  attr(:min, :integer, default: 0, doc: "Minimum range value")
-  attr(:max, :integer, default: 100, doc: "Maximum range value")
-  attr(:step, :integer, default: 1, doc: "Step increment")
-  attr(:value_min, :integer, default: nil, doc: "Current minimum value")
-  attr(:value_max, :integer, default: nil, doc: "Current maximum value")
+  attr(:min, :any, default: 0, doc: "Minimum range value (integer or float)")
+  attr(:max, :any, default: 100, doc: "Maximum range value (integer or float)")
+  attr(:step, :any, default: 1, doc: "Step increment. Integer = integer mode, float = float mode")
+  attr(:value_min, :any, default: nil, doc: "Current minimum value")
+  attr(:value_max, :any, default: nil, doc: "Current maximum value")
+  attr(:format, :any, default: nil, doc: "Optional (value) -> string function for display")
   attr(:tooltips, :boolean, default: false, doc: "Show value tooltips")
   attr(:disabled, :boolean, default: false, doc: "Disable the slider")
   attr(:on_slide, :string, default: nil, doc: "Event to push while dragging")
@@ -94,35 +115,58 @@ defmodule PhxUI.RangeSlider do
   attr(:rest, :global, doc: "Additional HTML attributes")
 
   def range_slider(assigns) do
+    # Convert all numeric values to floats internally
+    min = to_float(assigns.min)
+    max = to_float(assigns.max)
+    step = to_float(assigns.step)
+
+    # Calculate precision from step
+    precision = infer_precision(assigns.step)
+
     # Calculate default values if not provided (25% and 75% of range)
-    range = assigns.max - assigns.min
-    default_min = assigns.min + div(range, 4)
-    default_max = assigns.max - div(range, 4)
+    range = max - min
+    default_min = min + range * 0.25
+    default_max = max - range * 0.25
 
-    # Use || instead of assign_new because attr defaults set keys to nil
-    value_min = assigns.value_min || default_min
-    value_max = assigns.value_max || default_max
-    id = assigns.id || "range-slider-#{assigns.name}"
+    # Use provided values or defaults
+    value_min = if assigns.value_min, do: to_float(assigns.value_min), else: default_min
+    value_max = if assigns.value_max, do: to_float(assigns.value_max), else: default_max
 
-    assigns =
-      assigns
-      |> assign(:value_min, value_min)
-      |> assign(:value_max, value_max)
-      |> assign(:id, id)
+    # Ensure values are within bounds and snapped to step
+    value_min = snap_to_step(clamp(value_min, min, max), step, min)
+    value_max = snap_to_step(clamp(value_max, min, max), step, min)
 
     # Ensure value_min <= value_max
-    assigns =
-      if assigns.value_min > assigns.value_max do
-        assign(assigns, :value_min, assigns.value_max)
-      else
-        assigns
-      end
+    value_min = Kernel.min(value_min, value_max)
+
+    id = assigns.id || "range-slider-#{assigns.name}"
 
     # Calculate percentages for positioning
+    percent_min = calculate_percent(value_min, min, max)
+    percent_max = calculate_percent(value_max, min, max)
+
+    # Format values for display
+    format_fn = assigns.format || (&format_value(&1, precision))
+    display_min = format_fn.(value_min)
+    display_max = format_fn.(value_max)
+
+    # Format values for emission (integers or floats based on step)
+    emit_min = format_for_emit(value_min, precision)
+    emit_max = format_for_emit(value_max, precision)
+
     assigns =
       assigns
-      |> assign(:percent_min, calculate_percent(assigns.value_min, assigns.min, assigns.max))
-      |> assign(:percent_max, calculate_percent(assigns.value_max, assigns.min, assigns.max))
+      |> assign(:min, min)
+      |> assign(:max, max)
+      |> assign(:step, step)
+      |> assign(:precision, precision)
+      |> assign(:value_min, emit_min)
+      |> assign(:value_max, emit_max)
+      |> assign(:display_min, display_min)
+      |> assign(:display_max, display_max)
+      |> assign(:id, id)
+      |> assign(:percent_min, percent_min)
+      |> assign(:percent_max, percent_max)
 
     ~H"""
     <div
@@ -132,6 +176,7 @@ defmodule PhxUI.RangeSlider do
       data-min={@min}
       data-max={@max}
       data-step={@step}
+      data-precision={@precision}
       data-value-min={@value_min}
       data-value-max={@value_max}
       data-name={@name}
@@ -162,7 +207,7 @@ defmodule PhxUI.RangeSlider do
         style={"left: #{@percent_min}%"}
       >
         <div :if={@tooltips} class="range-slider-tooltip">
-          {@value_min}
+          {@display_min}
         </div>
       </div>
 
@@ -178,7 +223,7 @@ defmodule PhxUI.RangeSlider do
         style={"left: #{@percent_max}%"}
       >
         <div :if={@tooltips} class="range-slider-tooltip">
-          {@value_max}
+          {@display_max}
         </div>
       </div>
 
@@ -215,6 +260,7 @@ defmodule PhxUI.RangeSlider do
           this.min = parseFloat(this.el.dataset.min);
           this.max = parseFloat(this.el.dataset.max);
           this.step = parseFloat(this.el.dataset.step) || 1;
+          this.precision = parseInt(this.el.dataset.precision) || 0;
           this.valueMin = parseFloat(this.el.dataset.valueMin);
           this.valueMax = parseFloat(this.el.dataset.valueMax);
           this.name = this.el.dataset.name;
@@ -430,14 +476,14 @@ defmodule PhxUI.RangeSlider do
           e.preventDefault();
 
           if (index === 0) {
-            const newMin = Math.max(this.min, Math.min(this.valueMax, this.valueMin + delta));
+            const newMin = this.snapToStep(Math.max(this.min, Math.min(this.valueMax, this.valueMin + delta)));
             if (newMin !== this.valueMin) {
               this.valueMin = newMin;
               this.updateUI();
               this.emitChange();
             }
           } else {
-            const newMax = Math.max(this.valueMin, Math.min(this.max, this.valueMax + delta));
+            const newMax = this.snapToStep(Math.max(this.valueMin, Math.min(this.max, this.valueMax + delta)));
             if (newMax !== this.valueMax) {
               this.valueMax = newMax;
               this.updateUI();
@@ -450,8 +496,20 @@ defmodule PhxUI.RangeSlider do
           const rect = this.track.getBoundingClientRect();
           const percent = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
           const rawValue = this.min + (percent / 100) * (this.max - this.min);
-          const steppedValue = Math.round(rawValue / this.step) * this.step;
-          return Math.max(this.min, Math.min(this.max, steppedValue));
+          return this.snapToStep(rawValue);
+        },
+
+        snapToStep(value) {
+          const steppedValue = Math.round((value - this.min) / this.step) * this.step + this.min;
+          // Round to precision to avoid floating point errors
+          const rounded = this.precision === 0 
+            ? Math.round(steppedValue) 
+            : parseFloat(steppedValue.toFixed(this.precision));
+          return Math.max(this.min, Math.min(this.max, rounded));
+        },
+
+        formatValue(value) {
+          return this.precision === 0 ? Math.round(value) : parseFloat(value.toFixed(this.precision));
         },
 
         updateUI() {
@@ -466,37 +524,46 @@ defmodule PhxUI.RangeSlider do
           this.range.style.left = percentMin + '%';
           this.range.style.width = (percentMax - percentMin) + '%';
 
+          // Format values for display and emission
+          const formattedMin = this.formatValue(this.valueMin);
+          const formattedMax = this.formatValue(this.valueMax);
+
           // Update ARIA attributes
-          this.thumbs[0].setAttribute('aria-valuenow', this.valueMin);
-          this.thumbs[1].setAttribute('aria-valuenow', this.valueMax);
+          this.thumbs[0].setAttribute('aria-valuenow', formattedMin);
+          this.thumbs[1].setAttribute('aria-valuenow', formattedMax);
 
           // Update hidden inputs
-          this.inputs.min.value = this.valueMin;
-          this.inputs.max.value = this.valueMax;
+          this.inputs.min.value = formattedMin;
+          this.inputs.max.value = formattedMax;
 
           // Update tooltips if present
           if (this.tooltips) {
             const tooltipMin = this.thumbs[0].querySelector('.range-slider-tooltip');
             const tooltipMax = this.thumbs[1].querySelector('.range-slider-tooltip');
-            if (tooltipMin) tooltipMin.textContent = this.valueMin;
-            if (tooltipMax) tooltipMax.textContent = this.valueMax;
+            if (tooltipMin) tooltipMin.textContent = formattedMin;
+            if (tooltipMax) tooltipMax.textContent = formattedMax;
           }
         },
 
         getPayload() {
+          const formattedMin = this.formatValue(this.valueMin);
+          const formattedMax = this.formatValue(this.valueMax);
           return {
             name: this.name,
-            min: this.valueMin,
-            max: this.valueMax,
-            [`${this.name}_min`]: this.valueMin,
-            [`${this.name}_max`]: this.valueMax
+            min: formattedMin,
+            max: formattedMax,
+            [`${this.name}_min`]: formattedMin,
+            [`${this.name}_max`]: formattedMax
           };
         },
 
         emitSlide() {
+          const formattedMin = this.formatValue(this.valueMin);
+          const formattedMax = this.formatValue(this.valueMax);
+
           // Dispatch custom event for vanilla JS listeners
           this.el.dispatchEvent(new CustomEvent('phx-ui:range-slide', {
-            detail: { min: this.valueMin, max: this.valueMax },
+            detail: { min: formattedMin, max: formattedMax },
             bubbles: true
           }));
 
@@ -512,9 +579,12 @@ defmodule PhxUI.RangeSlider do
         },
 
         emitChange() {
+          const formattedMin = this.formatValue(this.valueMin);
+          const formattedMax = this.formatValue(this.valueMax);
+
           // Dispatch custom event for vanilla JS listeners
           this.el.dispatchEvent(new CustomEvent('phx-ui:range-change', {
-            detail: { min: this.valueMin, max: this.valueMax },
+            detail: { min: formattedMin, max: formattedMax },
             bubbles: true
           }));
 
@@ -531,14 +601,62 @@ defmodule PhxUI.RangeSlider do
     """
   end
 
+  # Convert any numeric type to float
+  defp to_float(value) when is_integer(value), do: value * 1.0
+  defp to_float(value) when is_float(value), do: value
+
+  defp to_float(value) when is_binary(value) do
+    case Float.parse(value) do
+      {float, _} -> float
+      :error -> 0.0
+    end
+  end
+
+  defp to_float(_), do: 0.0
+
+  # Infer precision from step value
+  defp infer_precision(step) when is_integer(step), do: 0
+
+  defp infer_precision(step) when is_float(step) do
+    step
+    |> Float.to_string()
+    |> String.split(".")
+    |> case do
+      [_, decimal] -> String.length(decimal)
+      _ -> 0
+    end
+  end
+
+  defp infer_precision(_), do: 0
+
+  # Format value for display based on precision
+  defp format_value(value, 0), do: trunc(value)
+  defp format_value(value, precision), do: Float.round(value, precision)
+
+  # Format value for emission (integer or float based on precision)
+  defp format_for_emit(value, 0), do: trunc(value)
+  defp format_for_emit(value, precision), do: Float.round(value, precision)
+
+  # Clamp value to bounds
+  defp clamp(value, min, max) do
+    value
+    |> Kernel.max(min)
+    |> Kernel.min(max)
+  end
+
+  # Snap value to nearest step
+  defp snap_to_step(value, step, min) do
+    steps = Float.round((value - min) / step)
+    min + steps * step
+  end
+
   defp calculate_percent(value, min, max) do
     range = max - min
 
     if range == 0 do
-      0
+      0.0
     else
-      ((value - min) / range * 100)
-      |> Float.round(2)
+      Float.round((value - min) / range * 100, 2)
     end
   end
 end
