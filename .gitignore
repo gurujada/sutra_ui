@@ -28,4 +28,5 @@ phx_ui-*.tar
 *.swp
 *~
 MIGRATION.md
-RANGE_SLIDER_GAPS.md
+plan.md
+.beads/
