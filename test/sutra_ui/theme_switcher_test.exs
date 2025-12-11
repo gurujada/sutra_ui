@@ -56,7 +56,7 @@ defmodule SutraUI.ThemeSwitcherTest do
   end
 
   describe "theme_switcher/1 tooltip" do
-    test "includes default tooltip" do
+    test "has no tooltip by default" do
       assigns = %{}
 
       html =
@@ -64,7 +64,7 @@ defmodule SutraUI.ThemeSwitcherTest do
         <ThemeSwitcher.theme_switcher id="theme-toggle" />
         """)
 
-      assert html =~ ~s(data-tooltip="Toggle theme")
+      refute html =~ ~s(data-tooltip=)
       assert html =~ ~s(aria-label="Toggle theme")
     end
 

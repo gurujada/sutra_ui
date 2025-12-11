@@ -42,6 +42,8 @@ defmodule SutraUI.FilterBarTest do
 
       assert html =~ ~s(name="search")
       assert html =~ ~s(name="status")
+      # Should have 2 filter-bar-item divs
+      assert length(Regex.scan(~r/filter-bar-item/, html)) == 2
     end
 
     test "renders clear button when show_clear and on_clear are provided" do
@@ -58,7 +60,7 @@ defmodule SutraUI.FilterBarTest do
 
       assert html =~ "filter-bar-clear"
       assert html =~ ~s(phx-click="clear")
-      assert html =~ "Clear Filters"
+      assert html =~ "Clear"
     end
 
     test "does not render clear button when show_clear is false" do
@@ -75,35 +77,20 @@ defmodule SutraUI.FilterBarTest do
 
       refute html =~ "filter-bar-clear"
     end
-  end
 
-  describe "filter_bar/1 grid columns" do
-    test "defaults to 3 columns" do
+    test "does not render clear button when on_clear is nil" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter">
-          <:filter><input name="a" /></:filter>
+        <FilterBar.filter_bar on_change="filter" show_clear>
+          <:filter>
+            <input type="text" name="search" />
+          </:filter>
         </FilterBar.filter_bar>
         """)
 
-      assert html =~ "filter-bar-cols-3"
-    end
-
-    test "accepts cols from 1 to 6" do
-      for cols <- 1..6 do
-        assigns = %{cols: cols}
-
-        html =
-          rendered_to_string(~H"""
-          <FilterBar.filter_bar on_change="filter" cols={@cols}>
-            <:filter><input name="a" /></:filter>
-          </FilterBar.filter_bar>
-          """)
-
-        assert html =~ "filter-bar-cols-#{cols}"
-      end
+      refute html =~ "filter-bar-clear"
     end
   end
 

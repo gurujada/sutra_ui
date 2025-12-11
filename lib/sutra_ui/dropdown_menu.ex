@@ -201,10 +201,7 @@ defmodule SutraUI.DropdownMenu do
           this.content.setAttribute('aria-hidden', 'false');
           this.el.classList.add('dropdown-open');
           this.items = Array.from(this.content.querySelectorAll('[role="menuitem"]:not([disabled])'));
-          if (this.items.length > 0) {
-            this.currentIndex = 0;
-            this.items[0].focus();
-          }
+          this.currentIndex = -1;
         },
         
         close() {

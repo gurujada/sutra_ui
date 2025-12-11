@@ -28,5 +28,3 @@ phx_ui-*.tar
 *.swp
 *~
 MIGRATION.md
-plan.md
-.beads/

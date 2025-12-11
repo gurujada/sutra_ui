@@ -5,32 +5,60 @@ defmodule SutraUI.RangeSlider do
   Similar to noUiSlider, this component provides two draggable handles
   to select a minimum and maximum value within a defined range.
 
-  ## Value Types
+  ## Integer vs Float Mode
 
-  The slider automatically determines whether to emit integer or float values
-  based on the `step` attribute:
+  **The `step` attribute determines the type of values emitted by the slider.**
+  This is important for database compatibility (e.g., Postgrex expects matching types).
 
-  - Integer step (e.g., `step={1}`, `step={5}`) → emits integers
-  - Float step (e.g., `step={0.1}`, `step={0.5}`) → emits floats with matching precision
+  ### Integer Mode (default)
+
+  When `step` is an integer (e.g., `1`, `5`, `10`), all values are integers:
+
+      # Integer step = integer values
+      <.range_slider name="price" min={0} max={1000} step={1} value_min={200} value_max={800} />
+
+      # Event payload: %{"price_min" => 200, "price_max" => 800}
+      # Hidden inputs: value="200", value="800"
+
+  ### Float Mode
+
+  When `step` is a float (e.g., `0.1`, `0.5`, `1.0`), all values are floats:
+
+      # Float step = float values
+      <.range_slider name="rating" min={0} max={5} step={0.5} value_min={1.5} value_max={4.0} />
+
+      # Event payload: %{"rating_min" => 1.5, "rating_max" => 4.0}
+      # Hidden inputs: value="1.5", value="4.0"
+
+  ### Choosing the Right Mode
+
+      # For integer database columns (e.g., price in cents, age, quantity)
+      <.range_slider name="price" step={1} ... />      # emits integers
+
+      # For float/decimal database columns (e.g., ratings, percentages, weights)
+      <.range_slider name="rating" step={0.5} ... />   # emits floats
+
+      # Want floats but whole number increments? Use a float step like 1.0
+      <.range_slider name="score" step={1.0} ... />    # emits floats: 1.0, 2.0, 3.0
 
   ## Examples
 
-      # Basic range slider (integer mode)
+      # Basic range slider (integer mode, step defaults to 1)
       <.range_slider name="price" min={0} max={1000} value_min={200} value_max={800} />
 
       # With step increments (integer mode)
       <.range_slider name="age" min={0} max={100} step={5} value_min={20} value_max={60} />
 
-      # Float mode - step determines precision
+      # Float mode with 0.5 increments
       <.range_slider name="rating" min={0} max={5} step={0.5} value_min={1.5} value_max={4.0} />
 
-      # High precision floats
+      # High precision floats (0.01 increments)
       <.range_slider name="weight" min={0} max={10} step={0.01} value_min={2.50} value_max={7.75} />
 
       # With custom formatting for display (does not affect emitted values)
       <.range_slider name="price" min={0} max={100} format={&"$\#{&1}"} />
 
-      # With tooltips always visible
+      # With tooltips (shown on hover/drag)
       <.range_slider name="rating" min={1} max={10} value_min={3} value_max={8} tooltips />
 
       # Emit events while dragging (debounced)
@@ -42,16 +70,35 @@ defmodule SutraUI.RangeSlider do
       # Disabled state
       <.range_slider name="locked" min={0} max={100} value_min={25} value_max={75} disabled />
 
-  ## Event Modes
+  ## Pips (Scale Markers)
 
-  The slider supports different event modes similar to noUiSlider:
+  Display scale markers below the slider track using the `pips` attribute:
 
-  - `on_slide` - Fires while dragging (debounced) - pushEvent style
-  - `on_change` - Fires on release - pushEvent style
+      # Default pips at 0%, 25%, 50%, 75%, 100%
+      <.range_slider name="price" min={0} max={100} pips />
 
-  Event payload includes values formatted based on step:
-  - Integer step: `%{name: "field", min: 200, max: 800, field_min: 200, field_max: 800}`
-  - Float step: `%{name: "field", min: 2.5, max: 8.0, field_min: 2.5, field_max: 8.0}`
+      # Custom percentage positions
+      <.range_slider name="price" min={0} max={1000} pips={%{mode: :positions, values: [0, 50, 100]}} />
+
+      # Fixed count of evenly distributed pips
+      <.range_slider name="price" min={0} max={100} pips={%{mode: :count, count: 5}} />
+
+      # Pip at each step value (good for small ranges)
+      <.range_slider name="rating" min={1} max={5} step={1} pips={%{mode: :steps}} />
+
+      # Pips at specific values
+      <.range_slider name="price" min={0} max={1000} pips={%{mode: :values, values: [0, 250, 500, 1000]}} />
+
+  ## Event Payloads
+
+  The slider emits events via `on_slide` (during drag) and `on_change` (on release).
+  The payload type matches the step type:
+
+      # Integer step (step={1}, step={5}, etc.)
+      def handle_event("price_changed", %{"price_min" => 200, "price_max" => 800}, socket)
+
+      # Float step (step={0.5}, step={0.1}, etc.)
+      def handle_event("rating_changed", %{"rating_min" => 1.5, "rating_max" => 4.0}, socket)
 
   ## Form Integration
 
@@ -59,7 +106,7 @@ defmodule SutraUI.RangeSlider do
   - `{name}_min` - The minimum selected value
   - `{name}_max` - The maximum selected value
 
-  These are automatically submitted with forms.
+  These are automatically submitted with forms. The value type matches the step type.
 
   ## Setting Values from Server
 
@@ -86,7 +133,7 @@ defmodule SutraUI.RangeSlider do
   - `name` - Base name for the hidden inputs (required)
   - `min` - Minimum value of the range (default: 0)
   - `max` - Maximum value of the range (default: 100)
-  - `step` - Step increment for values (default: 1). Integer step = integer values, float step = float values.
+  - `step` - Step increment (default: 1). **Determines output type: integer step → integers, float step → floats**
   - `value_min` - Current minimum selected value (default: 25% of range)
   - `value_max` - Current maximum selected value (default: 75% of range)
   - `format` - Optional function to format displayed values (does not affect emitted values)
@@ -102,7 +149,12 @@ defmodule SutraUI.RangeSlider do
   attr(:id, :string, default: nil, doc: "Unique identifier")
   attr(:min, :any, default: 0, doc: "Minimum range value (integer or float)")
   attr(:max, :any, default: 100, doc: "Maximum range value (integer or float)")
-  attr(:step, :any, default: 1, doc: "Step increment. Integer = integer mode, float = float mode")
+
+  attr(:step, :any,
+    default: 1,
+    doc: "Step increment. Integer (1, 5) emits integers; float (0.5, 1.0) emits floats"
+  )
+
   attr(:value_min, :any, default: nil, doc: "Current minimum value")
   attr(:value_max, :any, default: nil, doc: "Current maximum value")
   attr(:format, :any, default: nil, doc: "Optional (value) -> string function for display")
@@ -112,61 +164,68 @@ defmodule SutraUI.RangeSlider do
   attr(:on_change, :string, default: nil, doc: "Event to push on release")
   attr(:debounce, :integer, default: 50, doc: "Debounce interval in ms for slide events")
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
+
+  attr(:pips, :any,
+    default: nil,
+    doc: "Show scale markers. true for defaults, or map with :mode and options"
+  )
+
   attr(:rest, :global, doc: "Additional HTML attributes")
 
   def range_slider(assigns) do
-    # Convert all numeric values to floats internally
-    min = to_float(assigns.min)
-    max = to_float(assigns.max)
-    step = to_float(assigns.step)
+    # Determine mode from step type
+    float_mode = is_float(assigns.step)
 
-    # Calculate precision from step
-    precision = infer_precision(assigns.step)
+    # Keep values in their native type based on step
+    min = ensure_numeric(assigns.min, float_mode)
+    max = ensure_numeric(assigns.max, float_mode)
+    step = ensure_numeric(assigns.step, float_mode)
 
     # Calculate default values if not provided (25% and 75% of range)
     range = max - min
-    default_min = min + range * 0.25
-    default_max = max - range * 0.25
+    default_min = min + div_or_mult(range, 4, float_mode)
+    default_max = max - div_or_mult(range, 4, float_mode)
 
     # Use provided values or defaults
-    value_min = if assigns.value_min, do: to_float(assigns.value_min), else: default_min
-    value_max = if assigns.value_max, do: to_float(assigns.value_max), else: default_max
+    value_min =
+      if assigns.value_min, do: ensure_numeric(assigns.value_min, float_mode), else: default_min
+
+    value_max =
+      if assigns.value_max, do: ensure_numeric(assigns.value_max, float_mode), else: default_max
 
     # Ensure values are within bounds and snapped to step
-    value_min = snap_to_step(clamp(value_min, min, max), step, min)
-    value_max = snap_to_step(clamp(value_max, min, max), step, min)
+    value_min = snap_to_step(clamp(value_min, min, max), step, min, float_mode)
+    value_max = snap_to_step(clamp(value_max, min, max), step, min, float_mode)
 
     # Ensure value_min <= value_max
     value_min = Kernel.min(value_min, value_max)
 
     id = assigns.id || "range-slider-#{assigns.name}"
 
-    # Calculate percentages for positioning
+    # Calculate percentages for positioning (always float for CSS)
     percent_min = calculate_percent(value_min, min, max)
     percent_max = calculate_percent(value_max, min, max)
 
     # Format values for display
-    format_fn = assigns.format || (&format_value(&1, precision))
+    format_fn = assigns.format || (&to_string/1)
     display_min = format_fn.(value_min)
     display_max = format_fn.(value_max)
-
-    # Format values for emission (integers or floats based on step)
-    emit_min = format_for_emit(value_min, precision)
-    emit_max = format_for_emit(value_max, precision)
 
     assigns =
       assigns
       |> assign(:min, min)
       |> assign(:max, max)
       |> assign(:step, step)
-      |> assign(:precision, precision)
-      |> assign(:value_min, emit_min)
-      |> assign(:value_max, emit_max)
+      |> assign(:float_mode, float_mode)
+      |> assign(:value_min, value_min)
+      |> assign(:value_max, value_max)
       |> assign(:display_min, display_min)
       |> assign(:display_max, display_max)
       |> assign(:id, id)
       |> assign(:percent_min, percent_min)
       |> assign(:percent_max, percent_max)
+      |> assign(:pips_data, generate_pips(assigns.pips, min, max, step, float_mode))
+      |> Map.delete(:pips)
 
     ~H"""
     <div
@@ -176,7 +235,7 @@ defmodule SutraUI.RangeSlider do
       data-min={@min}
       data-max={@max}
       data-step={@step}
-      data-precision={@precision}
+      data-float-mode={@float_mode}
       data-value-min={@value_min}
       data-value-max={@value_max}
       data-name={@name}
@@ -229,6 +288,17 @@ defmodule SutraUI.RangeSlider do
 
       <input type="hidden" name={"#{@name}_min"} value={@value_min} />
       <input type="hidden" name={"#{@name}_max"} value={@value_max} />
+
+      <div :if={@pips_data != []} class="range-slider-pips">
+        <div
+          :for={pip <- @pips_data}
+          class={["range-slider-pip", pip.large && "range-slider-pip-large"]}
+          style={"left: #{pip.percent}%"}
+        >
+          <div class="range-slider-pip-marker"></div>
+          <div :if={pip.large} class="range-slider-pip-label">{pip.value}</div>
+        </div>
+      </div>
     </div>
 
     <script :type={ColocatedHook} name=".RangeSlider">
@@ -260,7 +330,7 @@ defmodule SutraUI.RangeSlider do
           this.min = parseFloat(this.el.dataset.min);
           this.max = parseFloat(this.el.dataset.max);
           this.step = parseFloat(this.el.dataset.step) || 1;
-          this.precision = parseInt(this.el.dataset.precision) || 0;
+          this.floatMode = this.el.dataset.floatMode === 'true';
           this.valueMin = parseFloat(this.el.dataset.valueMin);
           this.valueMax = parseFloat(this.el.dataset.valueMax);
           this.name = this.el.dataset.name;
@@ -501,15 +571,13 @@ defmodule SutraUI.RangeSlider do
 
         snapToStep(value) {
           const steppedValue = Math.round((value - this.min) / this.step) * this.step + this.min;
-          // Round to precision to avoid floating point errors
-          const rounded = this.precision === 0 
-            ? Math.round(steppedValue) 
-            : parseFloat(steppedValue.toFixed(this.precision));
+          // In integer mode, round to nearest integer to avoid floating point errors
+          const rounded = this.floatMode ? steppedValue : Math.round(steppedValue);
           return Math.max(this.min, Math.min(this.max, rounded));
         },
 
         formatValue(value) {
-          return this.precision === 0 ? Math.round(value) : parseFloat(value.toFixed(this.precision));
+          return this.floatMode ? value : Math.round(value);
         },
 
         updateUI() {
@@ -536,22 +604,24 @@ defmodule SutraUI.RangeSlider do
           this.inputs.min.value = formattedMin;
           this.inputs.max.value = formattedMax;
 
-          // Update tooltips if present
-          if (this.tooltips) {
-            const tooltipMin = this.thumbs[0].querySelector('.range-slider-tooltip');
-            const tooltipMax = this.thumbs[1].querySelector('.range-slider-tooltip');
-            if (tooltipMin) tooltipMin.textContent = formattedMin;
-            if (tooltipMax) tooltipMax.textContent = formattedMax;
-          }
+          // Update tooltips
+          this.updateTooltips();
+        },
+
+        updateTooltips() {
+          if (!this.tooltips) return;
+          const formattedMin = this.formatValue(this.valueMin);
+          const formattedMax = this.formatValue(this.valueMax);
+          const tooltipMin = this.thumbs[0]?.querySelector('.range-slider-tooltip');
+          const tooltipMax = this.thumbs[1]?.querySelector('.range-slider-tooltip');
+          if (tooltipMin) tooltipMin.textContent = formattedMin;
+          if (tooltipMax) tooltipMax.textContent = formattedMax;
         },
 
         getPayload() {
           const formattedMin = this.formatValue(this.valueMin);
           const formattedMax = this.formatValue(this.valueMax);
           return {
-            name: this.name,
-            min: formattedMin,
-            max: formattedMax,
             [`${this.name}_min`]: formattedMin,
             [`${this.name}_max`]: formattedMax
           };
@@ -601,42 +671,6 @@ defmodule SutraUI.RangeSlider do
     """
   end
 
-  # Convert any numeric type to float
-  defp to_float(value) when is_integer(value), do: value * 1.0
-  defp to_float(value) when is_float(value), do: value
-
-  defp to_float(value) when is_binary(value) do
-    case Float.parse(value) do
-      {float, _} -> float
-      :error -> 0.0
-    end
-  end
-
-  defp to_float(_), do: 0.0
-
-  # Infer precision from step value
-  defp infer_precision(step) when is_integer(step), do: 0
-
-  defp infer_precision(step) when is_float(step) do
-    step
-    |> Float.to_string()
-    |> String.split(".")
-    |> case do
-      [_, decimal] -> String.length(decimal)
-      _ -> 0
-    end
-  end
-
-  defp infer_precision(_), do: 0
-
-  # Format value for display based on precision
-  defp format_value(value, 0), do: trunc(value)
-  defp format_value(value, precision), do: Float.round(value, precision)
-
-  # Format value for emission (integer or float based on precision)
-  defp format_for_emit(value, 0), do: trunc(value)
-  defp format_for_emit(value, precision), do: Float.round(value, precision)
-
   # Clamp value to bounds
   defp clamp(value, min, max) do
     value
@@ -645,8 +679,13 @@ defmodule SutraUI.RangeSlider do
   end
 
   # Snap value to nearest step
-  defp snap_to_step(value, step, min) do
+  defp snap_to_step(value, step, min, true) do
     steps = Float.round((value - min) / step)
+    min + steps * step
+  end
+
+  defp snap_to_step(value, step, min, false) do
+    steps = round((value - min) / step)
     min + steps * step
   end
 
@@ -659,4 +698,86 @@ defmodule SutraUI.RangeSlider do
       Float.round((value - min) / range * 100, 2)
     end
   end
+
+  # Coerce value to integer or float based on mode
+  defp ensure_numeric(value, true) when is_integer(value), do: value * 1.0
+  defp ensure_numeric(value, true) when is_float(value), do: value
+
+  defp ensure_numeric(value, true) when is_binary(value) do
+    case Float.parse(value) do
+      {float, _} -> float
+      :error -> 0.0
+    end
+  end
+
+  defp ensure_numeric(value, false) when is_integer(value), do: value
+  defp ensure_numeric(value, false) when is_float(value), do: trunc(value)
+
+  defp ensure_numeric(value, false) when is_binary(value) do
+    case Integer.parse(value) do
+      {int, _} -> int
+      :error -> 0
+    end
+  end
+
+  defp ensure_numeric(_, true), do: 0.0
+  defp ensure_numeric(_, false), do: 0
+
+  # Division helper that returns int or float based on mode
+  defp div_or_mult(range, divisor, true), do: range / divisor
+  defp div_or_mult(range, divisor, false), do: div(range, divisor)
+
+  # Pips generation helpers
+  defp generate_pips(nil, _min, _max, _step, _float_mode), do: []
+
+  defp generate_pips(true, min, max, step, float_mode) do
+    generate_pips(%{mode: :positions, values: [0, 25, 50, 75, 100]}, min, max, step, float_mode)
+  end
+
+  defp generate_pips(%{mode: :positions, values: positions}, min, max, _step, float_mode) do
+    range = max - min
+
+    Enum.map(positions, fn percent ->
+      value = min + range * percent / 100
+      %{percent: percent, value: format_pip_value(value, float_mode), large: true}
+    end)
+  end
+
+  defp generate_pips(%{mode: :count, count: count}, min, max, _step, float_mode)
+       when count > 1 do
+    range = max - min
+
+    Enum.map(0..(count - 1), fn i ->
+      percent = i * 100 / (count - 1)
+      value = min + range * percent / 100
+      %{percent: percent, value: format_pip_value(value, float_mode), large: true}
+    end)
+  end
+
+  defp generate_pips(%{mode: :steps}, min, max, step, float_mode) do
+    range = max - min
+    step_count = trunc(range / step)
+
+    Enum.map(0..step_count, fn i ->
+      value = min + i * step
+      percent = (value - min) / range * 100
+      # Show label on first, last, and roughly every 5th pip (avoid clutter)
+      large = i == 0 or i == step_count or rem(i, max(1, div(step_count, 5))) == 0
+      %{percent: percent, value: format_pip_value(value, float_mode), large: large}
+    end)
+  end
+
+  defp generate_pips(%{mode: :values, values: values}, min, max, _step, float_mode) do
+    range = max - min
+
+    Enum.map(values, fn value ->
+      percent = (value - min) / range * 100
+      %{percent: percent, value: format_pip_value(value, float_mode), large: true}
+    end)
+  end
+
+  defp generate_pips(_, _min, _max, _step, _float_mode), do: []
+
+  defp format_pip_value(value, true), do: value
+  defp format_pip_value(value, false), do: trunc(value)
 end

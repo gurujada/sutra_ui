@@ -28,14 +28,6 @@ defmodule SutraUI.FilterBar do
           <.input type="text" name="search" value={@search} />
         </:filter>
       </.filter_bar>
-
-      # With custom column count
-      <.filter_bar on_change="filter" cols={4}>
-        <:filter><.input name="a" /></:filter>
-        <:filter><.input name="b" /></:filter>
-        <:filter><.input name="c" /></:filter>
-        <:filter><.input name="d" /></:filter>
-      </.filter_bar>
   """
 
   use Phoenix.Component
@@ -50,7 +42,6 @@ defmodule SutraUI.FilterBar do
   * `on_change` - Required. The phx-change event name.
   * `on_clear` - Optional. The phx-click event name for the clear button.
   * `show_clear` - Whether to show the clear filters button. Defaults to `false`.
-  * `cols` - Number of columns in the grid (1-6). Defaults to `3`.
   * `class` - Additional CSS classes.
 
   ## Slots
@@ -72,12 +63,6 @@ defmodule SutraUI.FilterBar do
     doc: "Whether to show clear filters button"
   )
 
-  attr(:cols, :integer,
-    default: 3,
-    values: [1, 2, 3, 4, 5, 6],
-    doc: "Number of columns in the grid"
-  )
-
   attr(:class, :any,
     default: nil,
     doc: "Additional CSS classes"
@@ -90,27 +75,19 @@ defmodule SutraUI.FilterBar do
 
   def filter_bar(assigns) do
     ~H"""
-    <div class={["filter-bar", @class]}>
-      <.form for={%{}} phx-change={@on_change} class={["filter-bar-grid", grid_class(@cols)]}>
-        <div :for={filter <- @filter} class="filter-bar-item">
-          {render_slot(filter)}
-        </div>
-      </.form>
-
-      <div :if={@show_clear && @on_clear} class="filter-bar-actions">
-        <button type="button" phx-click={@on_clear} class="filter-bar-clear">
-          <.icon name="hero-x-mark" class="size-4" /> Clear Filters
-        </button>
+    <.form for={%{}} phx-change={@on_change} class={["filter-bar", @class]}>
+      <div :for={filter <- @filter} class="filter-bar-item">
+        {render_slot(filter)}
       </div>
-    </div>
+      <button
+        :if={@show_clear && @on_clear}
+        type="button"
+        phx-click={@on_clear}
+        class="filter-bar-clear"
+      >
+        <.icon name="hero-x-mark" class="size-4" /> Clear
+      </button>
+    </.form>
     """
   end
-
-  defp grid_class(1), do: "filter-bar-cols-1"
-  defp grid_class(2), do: "filter-bar-cols-2"
-  defp grid_class(3), do: "filter-bar-cols-3"
-  defp grid_class(4), do: "filter-bar-cols-4"
-  defp grid_class(5), do: "filter-bar-cols-5"
-  defp grid_class(6), do: "filter-bar-cols-6"
-  defp grid_class(_), do: "filter-bar-cols-3"
 end

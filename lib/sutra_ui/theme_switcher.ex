@@ -98,8 +98,8 @@ defmodule SutraUI.ThemeSwitcher do
   )
 
   attr(:tooltip, :string,
-    default: "Toggle theme",
-    doc: "Tooltip text displayed on hover"
+    default: nil,
+    doc: "Tooltip text displayed on hover (optional)"
   )
 
   attr(:tooltip_side, :string,
@@ -131,7 +131,7 @@ defmodule SutraUI.ThemeSwitcher do
       phx-hook=".ThemeSwitcher"
       data-tooltip={@tooltip}
       data-side={@tooltip_side}
-      aria-label={@tooltip}
+      aria-label={@tooltip || "Toggle theme"}
       class={[button_class(@variant, @size), @class]}
       {@rest}
     >

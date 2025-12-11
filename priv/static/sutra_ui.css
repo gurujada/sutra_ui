@@ -1126,6 +1126,104 @@
     }
 }
 
+/* LiveSelect - Dynamic searchable selection */
+@layer components {
+    .live-select {
+        @apply relative w-full;
+    }
+
+    .live-select-disabled {
+        @apply opacity-50 pointer-events-none;
+    }
+
+    /* Tags container */
+    .live-select-tags {
+        @apply flex flex-wrap gap-1 mb-2;
+    }
+
+    .live-select-tag {
+        @apply inline-flex items-center gap-1 px-2 py-1 text-sm bg-secondary text-secondary-foreground rounded-md;
+    }
+
+    .live-select-tag-sticky {
+        @apply bg-primary/20 text-primary;
+    }
+
+    .live-select-tag-label {
+        @apply truncate max-w-[150px];
+    }
+
+    .live-select-tag-remove {
+        @apply flex-shrink-0 rounded-sm opacity-70 hover:opacity-100 hover:bg-secondary-foreground/20 transition-opacity cursor-pointer;
+    }
+
+    /* Input container */
+    .live-select-input-container {
+        @apply relative flex items-center;
+    }
+
+    .live-select-input {
+        @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background;
+        @apply placeholder:text-muted-foreground;
+        @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+        @apply disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .live-select-clear {
+        @apply absolute right-2 p-1 rounded-sm opacity-50 hover:opacity-100 hover:bg-muted transition-opacity cursor-pointer;
+    }
+
+    /* Dropdown */
+    .live-select-dropdown {
+        @apply absolute z-50 top-full left-0 right-0 mt-1 max-h-60 overflow-auto;
+        @apply rounded-md border bg-popover text-popover-foreground shadow-md;
+        animation: live-select-dropdown-in 0.15s ease-out;
+
+        &[hidden] {
+            @apply hidden;
+        }
+    }
+
+    @keyframes live-select-dropdown-in {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .live-select-option {
+        @apply relative flex cursor-pointer select-none items-center px-3 py-2 text-sm outline-none;
+        @apply hover:bg-accent hover:text-accent-foreground;
+        @apply transition-colors;
+    }
+
+    .live-select-option[data-active="true"] {
+        @apply bg-accent text-accent-foreground;
+    }
+
+    .live-select-option-selected {
+        @apply bg-primary/10;
+
+        &::after {
+            content: '✓';
+            @apply absolute right-3 text-primary;
+        }
+    }
+
+    .live-select-option-disabled {
+        @apply opacity-50 cursor-not-allowed pointer-events-none;
+    }
+
+    /* Empty state inside dropdown */
+    .live-select-empty-item {
+        @apply px-3 py-6 text-center text-sm text-muted-foreground;
+    }
+}
+
 /* Switch */
 @layer components {
     .switch {
@@ -1704,37 +1802,13 @@
 /* Filter Bar */
 @layer components {
     .filter-bar {
-        @apply space-y-4;
-    }
-    .filter-bar-grid {
-        @apply grid gap-4;
-    }
-    .filter-bar-cols-1 {
-        @apply grid-cols-1;
-    }
-    .filter-bar-cols-2 {
-        @apply grid-cols-1 sm:grid-cols-2;
-    }
-    .filter-bar-cols-3 {
-        @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
-    }
-    .filter-bar-cols-4 {
-        @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
-    }
-    .filter-bar-cols-5 {
-        @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-5;
-    }
-    .filter-bar-cols-6 {
-        @apply grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6;
+        @apply flex flex-wrap items-end gap-4;
     }
     .filter-bar-item {
-        @apply min-w-0;
-    }
-    .filter-bar-actions {
-        @apply flex items-center justify-end;
+        @apply min-w-48 flex-1;
     }
     .filter-bar-clear {
-        @apply inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer;
+        @apply btn-sm-ghost text-muted-foreground;
     }
 }
 
@@ -2194,7 +2268,7 @@
 /* Range Slider (dual-handle) */
 @layer components {
     .range-slider {
-        @apply relative w-full h-8 flex items-center select-none;
+        @apply relative w-full select-none;
         /* Larger touch target area */
         padding: 0.5rem 0;
     }
@@ -2225,7 +2299,14 @@
     }
     .range-slider-tooltip {
         @apply absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-primary text-primary-foreground text-xs rounded whitespace-nowrap pointer-events-none;
+        @apply opacity-0;
         transition: opacity 150ms ease;
+    }
+    /* Show tooltip on thumb hover or active drag */
+    .range-slider-thumb:hover .range-slider-tooltip,
+    .range-slider-thumb:focus .range-slider-tooltip,
+    .range-slider-thumb-active .range-slider-tooltip {
+        @apply opacity-100;
     }
     .range-slider-disabled {
         @apply opacity-50 pointer-events-none;
@@ -2244,6 +2325,28 @@
         .range-slider-range {
             transition: none;
         }
+    }
+
+    /* Pips (scale markers) */
+    .range-slider-pips {
+        @apply relative w-full mt-3 h-6;
+    }
+
+    .range-slider-pip {
+        @apply absolute flex flex-col items-center;
+        transform: translateX(-50%);
+    }
+
+    .range-slider-pip-marker {
+        @apply w-px h-1.5 bg-border;
+    }
+
+    .range-slider-pip-large .range-slider-pip-marker {
+        @apply h-2 w-0.5;
+    }
+
+    .range-slider-pip-label {
+        @apply text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap;
     }
 }
 
