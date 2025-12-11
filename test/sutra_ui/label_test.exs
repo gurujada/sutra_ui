@@ -81,8 +81,7 @@ defmodule SutraUI.LabelTest do
       html =
         rendered_to_string(~H"""
         <Label.label for="password">
-          Password
-          <span class="required">*</span>
+          Password <span class="required">*</span>
         </Label.label>
         """)
 
@@ -96,8 +95,7 @@ defmodule SutraUI.LabelTest do
       html =
         rendered_to_string(~H"""
         <Label.label>
-          <input type="checkbox" name="terms" />
-          Accept terms
+          <input type="checkbox" name="terms" /> Accept terms
         </Label.label>
         """)
 

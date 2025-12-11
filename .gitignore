@@ -27,4 +27,9 @@ phx_ui-*.tar
 .lexical/
 *.swp
 *~
+
+# Internal docs and agent configs (not for public distribution)
+/docs/
+/.opencode/
+/agents.md
 MIGRATION.md
