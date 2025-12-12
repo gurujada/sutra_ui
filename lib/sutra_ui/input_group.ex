@@ -30,7 +30,7 @@ defmodule SutraUI.InputGroup do
       # Icon prefix
       <.input_group>
         <:prefix type="icon">
-          <.icon name="hero-magnifying-glass" />
+          <.icon name="lucide-search" />
         </:prefix>
         <input type="text" class="input pl-9" placeholder="Search..." />
       </.input_group>
@@ -46,7 +46,7 @@ defmodule SutraUI.InputGroup do
       <.input_group>
         <:suffix type="interactive">
           <button type="button" class="btn-icon-ghost size-6">
-            <.icon name="hero-clipboard" />
+            <.icon name="lucide-clipboard" />
           </button>
         </:suffix>
         <input type="text" class="input pr-9" value="https://example.com" readonly />
@@ -57,7 +57,7 @@ defmodule SutraUI.InputGroup do
         <textarea class="textarea min-h-27 pb-12" placeholder="Enter message..."></textarea>
         <:footer>
           <button type="button" class="btn-icon-outline rounded-full size-6">
-            <.icon name="hero-plus" />
+            <.icon name="lucide-plus" />
           </button>
           <div class="text-muted-foreground text-sm ml-auto">52% used</div>
         </:footer>

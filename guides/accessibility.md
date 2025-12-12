@@ -82,7 +82,7 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 <!-- Renders with proper button semantics -->
 
 <.button size="icon" aria-label="Close">
-  <.icon name="hero-x-mark" />
+  <.icon name="lucide-x" />
 </.button>
 <!-- Icon buttons MUST have aria-label -->
 
@@ -226,12 +226,12 @@ Always provide an `aria-label`:
 ```heex
 <!-- Good -->
 <.button size="icon" aria-label="Delete item">
-  <.icon name="hero-trash" />
+  <.icon name="lucide-trash-2" />
 </.button>
 
 <!-- Bad - no accessible name -->
 <.button size="icon">
-  <.icon name="hero-trash" />
+  <.icon name="lucide-trash-2" />
 </.button>
 ```
 

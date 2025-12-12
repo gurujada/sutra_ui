@@ -82,7 +82,7 @@ defmodule SutraUI.Pagination do
             <%= if @previous != [] do %>
               {render_slot(@previous)}
             <% else %>
-              <.icon name="hero-chevron-left" class="size-4" />
+              <.icon name="lucide-chevron-left" class="size-4" />
             <% end %>
           </button>
         </li>
@@ -120,7 +120,7 @@ defmodule SutraUI.Pagination do
             <%= if @next != [] do %>
               {render_slot(@next)}
             <% else %>
-              <.icon name="hero-chevron-right" class="size-4" />
+              <.icon name="lucide-chevron-right" class="size-4" />
             <% end %>
           </button>
         </li>

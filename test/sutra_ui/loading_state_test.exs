@@ -38,8 +38,8 @@ defmodule SutraUI.LoadingStateTest do
         <LoadingState.loading_state />
         """)
 
-      # Uses hero-arrow-path with animate-spin
-      assert html =~ "hero-arrow-path"
+      # Uses lucide-loader-2 with animate-spin
+      assert html =~ "lucide-loader-2"
       assert html =~ "animate-spin"
     end
   end

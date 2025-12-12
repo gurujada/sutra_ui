@@ -16,7 +16,7 @@ defmodule SutraUI.Avatar do
       # Avatar with icon fallback
       <.avatar src="/avatar.jpg" alt="User">
         <:fallback>
-          <.icon name="hero-user" />
+          <.icon name="lucide-user" />
         </:fallback>
       </.avatar>
 
@@ -92,7 +92,7 @@ defmodule SutraUI.Avatar do
           <%= if @initials do %>
             {@initials}
           <% else %>
-            <.icon name="hero-user" />
+            <.icon name="lucide-user" />
           <% end %>
         <% end %>
       </span>

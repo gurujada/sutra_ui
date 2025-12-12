@@ -344,7 +344,7 @@ test/
     <.dropdown_menu id={"user-actions-#{user.id}"}>
       <:trigger>
         <.button variant="ghost" size="icon" aria-label="Actions">
-          <.icon name="hero-ellipsis-horizontal" />
+          <.icon name="lucide-more-horizontal" />
         </.button>
       </:trigger>
       <:content>
@@ -513,10 +513,10 @@ end
 2. **Verify hook import** - Ensure colocated hooks are imported in `app.js`:
    ```javascript
    // app.js
-   import { getHooks } from "phoenix_live_view"
+   import { hooks as sutraUiHooks } from "phoenix-colocated/sutra_ui";
    
    let liveSocket = new LiveSocket("/live", Socket, {
-     hooks: getHooks()
+     hooks: { ...sutraUiHooks }
    })
    ```
 
@@ -654,8 +654,8 @@ end
 ### From Phoenix 1.7 to 1.8+
 
 1. Update dependencies in `mix.exs`
-2. Update `app.js` to use `getHooks()` instead of manual hook imports
-3. Remove any manual hook registrations from `hooks.js`
+2. Update `app.js` to import colocated hooks from `phoenix-colocated/sutra_ui`
+3. Remove any manual hook registrations from old `hooks.js` files - colocated hooks are now extracted automatically
 
 ### From Tailwind v3 to v4
 

@@ -39,6 +39,7 @@ defmodule SutraUI.MixProject do
     [
       {:phoenix_live_view, "~> 1.1"},
       {:phoenix_html, "~> 4.0"},
+      {:lucide_icons, "~> 2.0"},
 
       # Dev/Test
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},

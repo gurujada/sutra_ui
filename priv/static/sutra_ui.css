@@ -1351,6 +1351,20 @@
     }
 }
 
+/* Spin animation for spinners/loaders */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@utility animate-spin {
+    animation: spin 1s linear infinite;
+}
+
 /* Tooltip */
 @layer components {
     [data-tooltip] {

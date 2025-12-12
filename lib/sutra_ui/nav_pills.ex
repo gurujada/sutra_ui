@@ -109,7 +109,7 @@ defmodule SutraUI.NavPills do
           aria-expanded="false"
         >
           {@active_label}
-          <.icon name="hero-chevron-down" class="nav-pills-mobile-chevron" />
+          <.icon name="lucide-chevron-down" class="nav-pills-mobile-chevron" />
         </button>
         <div class="nav-pills-mobile-menu" role="menu" aria-hidden="true">
           <%= for item <- @item do %>

@@ -52,7 +52,7 @@ defmodule SutraUI.AvatarTest do
         <Avatar.avatar />
         """)
 
-      assert html =~ "hero-user"
+      assert html =~ "lucide-user"
     end
 
     test "renders custom fallback content" do

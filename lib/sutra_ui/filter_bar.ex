@@ -109,7 +109,7 @@ defmodule SutraUI.FilterBar do
           phx-click={@on_clear}
           class="filter-bar-clear"
         >
-          <.icon name="hero-x-mark" class="size-4" /> Clear
+          <.icon name="lucide-x" class="size-4" /> Clear
         </button>
       </div>
     </div>

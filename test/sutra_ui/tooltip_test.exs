@@ -170,5 +170,20 @@ defmodule SutraUI.TooltipTest do
 
       assert html =~ "phx-hook"
     end
+
+    test "has correctly expanded hook name (not .Tooltip)" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Tooltip.tooltip id="test-tooltip" tooltip="Test">
+          <button>Hover</button>
+        </Tooltip.tooltip>
+        """)
+
+      # The hook should be expanded to full module path, not .Tooltip
+      assert html =~ ~s(phx-hook="SutraUI.Tooltip.Tooltip")
+      refute html =~ ~s(phx-hook=".Tooltip")
+    end
   end
 end

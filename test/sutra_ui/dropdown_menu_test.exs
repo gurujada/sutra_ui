@@ -220,12 +220,12 @@ defmodule SutraUI.DropdownMenuTest do
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
-          <:item icon="hero-user">Profile</:item>
+          <:item icon="lucide-user">Profile</:item>
         </DropdownMenu.dropdown_menu>
         """)
 
       assert html =~ "dropdown-item-icon"
-      assert html =~ "hero-user"
+      assert html =~ "lucide-user"
       assert html =~ "Profile"
     end
 
@@ -253,15 +253,15 @@ defmodule SutraUI.DropdownMenuTest do
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
-          <:item icon="hero-user">Profile</:item>
-          <:item icon="hero-cog-6-tooth">Settings</:item>
-          <:item icon="hero-arrow-right-on-rectangle">Logout</:item>
+          <:item icon="lucide-user">Profile</:item>
+          <:item icon="lucide-settings">Settings</:item>
+          <:item icon="lucide-log-out">Logout</:item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ "hero-user"
-      assert html =~ "hero-cog-6-tooth"
-      assert html =~ "hero-arrow-right-on-rectangle"
+      assert html =~ "lucide-user"
+      assert html =~ "lucide-settings"
+      assert html =~ "lucide-log-out"
     end
   end
 
@@ -326,12 +326,12 @@ defmodule SutraUI.DropdownMenuTest do
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Open</button></:trigger>
-          <:item icon="hero-scissors" shortcut="⌘X">Cut</:item>
+          <:item icon="lucide-scissors" shortcut="⌘X">Cut</:item>
         </DropdownMenu.dropdown_menu>
         """)
 
       assert html =~ "dropdown-item-icon"
-      assert html =~ "hero-scissors"
+      assert html =~ "lucide-scissors"
       assert html =~ "dropdown-item-shortcut"
       assert html =~ "⌘X"
       assert html =~ "Cut"
@@ -344,21 +344,21 @@ defmodule SutraUI.DropdownMenuTest do
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger><button>Edit</button></:trigger>
-          <:item icon="hero-arrow-uturn-left" shortcut="⌘Z">Undo</:item>
-          <:item icon="hero-arrow-uturn-right" shortcut="⌘⇧Z">Redo</:item>
+          <:item icon="lucide-undo-2" shortcut="⌘Z">Undo</:item>
+          <:item icon="lucide-redo-2" shortcut="⌘⇧Z">Redo</:item>
           <:separator />
-          <:item icon="hero-scissors" shortcut="⌘X">Cut</:item>
-          <:item icon="hero-document-duplicate" shortcut="⌘C">Copy</:item>
-          <:item icon="hero-clipboard" shortcut="⌘V">Paste</:item>
+          <:item icon="lucide-scissors" shortcut="⌘X">Cut</:item>
+          <:item icon="lucide-copy" shortcut="⌘C">Copy</:item>
+          <:item icon="lucide-clipboard" shortcut="⌘V">Paste</:item>
         </DropdownMenu.dropdown_menu>
         """)
 
       # Check icons
-      assert html =~ "hero-arrow-uturn-left"
-      assert html =~ "hero-arrow-uturn-right"
-      assert html =~ "hero-scissors"
-      assert html =~ "hero-document-duplicate"
-      assert html =~ "hero-clipboard"
+      assert html =~ "lucide-undo-2"
+      assert html =~ "lucide-redo-2"
+      assert html =~ "lucide-scissors"
+      assert html =~ "lucide-copy"
+      assert html =~ "lucide-clipboard"
 
       # Check shortcuts
       assert html =~ "⌘Z"

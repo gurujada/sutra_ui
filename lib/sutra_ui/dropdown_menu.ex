@@ -11,10 +11,10 @@ defmodule SutraUI.DropdownMenu do
         <:trigger>
           <span>Options</span>
         </:trigger>
-        <:item icon="hero-user">Profile</:item>
-        <:item icon="hero-cog-6-tooth" shortcut="Ctrl+S">Settings</:item>
+        <:item icon="lucide-user">Profile</:item>
+        <:item icon="lucide-settings" shortcut="Ctrl+S">Settings</:item>
         <:separator />
-        <:item variant="destructive" icon="hero-arrow-right-on-rectangle">Logout</:item>
+        <:item variant="destructive" icon="lucide-log-out">Logout</:item>
       </.dropdown_menu>
 
   ## With keyboard shortcuts
@@ -23,9 +23,9 @@ defmodule SutraUI.DropdownMenu do
         <:trigger>
           <span>Edit</span>
         </:trigger>
-        <:item icon="hero-scissors" shortcut="Ctrl+X">Cut</:item>
-        <:item icon="hero-document-duplicate" shortcut="Ctrl+C">Copy</:item>
-        <:item icon="hero-clipboard" shortcut="Ctrl+V">Paste</:item>
+        <:item icon="lucide-scissors" shortcut="Ctrl+X">Cut</:item>
+        <:item icon="lucide-copy" shortcut="Ctrl+C">Copy</:item>
+        <:item icon="lucide-clipboard" shortcut="Ctrl+V">Paste</:item>
       </.dropdown_menu>
 
   ## Accessibility
@@ -69,7 +69,7 @@ defmodule SutraUI.DropdownMenu do
     attr(:variant, :string, doc: "Visual variant (default or destructive)")
     attr(:disabled, :boolean, doc: "Whether the item is disabled")
     attr(:on_click, :string, doc: "Event to send when clicked")
-    attr(:icon, :string, doc: "Icon name to display on the left (e.g., 'hero-user')")
+    attr(:icon, :string, doc: "Icon name to display on the left (e.g., 'lucide-user')")
     attr(:shortcut, :string, doc: "Keyboard shortcut to display on the right (e.g., 'Ctrl+K')")
   end
 
@@ -97,7 +97,7 @@ defmodule SutraUI.DropdownMenu do
     >
       <button type="button" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">
         {render_slot(@trigger)}
-        <.icon name="hero-chevron-down" class="dropdown-chevron size-4" />
+        <.icon name="lucide-chevron-down" class="dropdown-chevron size-4" />
       </button>
       <div
         id={"#{@id}-content"}

@@ -47,7 +47,7 @@ defmodule SutraUI.CommandTest do
         </Command.command>
         """)
 
-      assert html =~ "hero-magnifying-glass"
+      assert html =~ "lucide-search"
     end
   end
 

@@ -244,7 +244,8 @@ defmodule SutraUI do
 
       # Phase 8: Advanced Form Controls
       import SutraUI.RangeSlider
-      import SutraUI.LiveSelect
+      # LiveSelect is a LiveComponent - only import helper functions, not lifecycle callbacks
+      import SutraUI.LiveSelect, only: [decode: 1, normalize_options: 1]
     end
   end
 end

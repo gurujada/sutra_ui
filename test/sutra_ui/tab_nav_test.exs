@@ -94,12 +94,12 @@ defmodule SutraUI.TabNavTest do
       html =
         rendered_to_string(~H"""
         <TabNav.tab_nav>
-          <:tab patch="/overview" active={true} icon="hero-home">Overview</:tab>
+          <:tab patch="/overview" active={true} icon="lucide-home">Overview</:tab>
         </TabNav.tab_nav>
         """)
 
       assert html =~ "tab-nav-icon"
-      assert html =~ "hero-home"
+      assert html =~ "lucide-home"
     end
 
     test "does not render icon when not provided" do

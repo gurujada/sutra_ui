@@ -156,7 +156,7 @@ defmodule SutraUI.Dialog do
 
         <form method="dialog">
           <button type="submit" aria-label="Close" class="cursor-pointer">
-            <.icon name="hero-x-mark" />
+            <.icon name="lucide-x" />
           </button>
         </form>
       </div>

@@ -23,7 +23,7 @@ Quick reference for all 44 Sutra UI components.
 <.button size="default">Default</.button>
 <.button size="lg">Large</.button>
 <.button size="icon" aria-label="Settings">
-  <.icon name="hero-cog-6-tooth" />
+  <.icon name="lucide-settings" />
 </.button>
 ```
 
@@ -45,9 +45,8 @@ Quick reference for all 44 Sutra UI components.
 ### Icon
 
 ```heex
-<.icon name="hero-home" />
-<.icon name="hero-home-solid" />
-<.icon name="hero-home" class="h-6 w-6" />
+<.icon name="lucide-home" />
+<.icon name="lucide-home" class="h-6 w-6" />
 ```
 
 ### Badge
@@ -204,7 +203,7 @@ Quick reference for all 44 Sutra UI components.
 </.input_group>
 
 <.input_group>
-  <:prefix><.icon name="hero-magnifying-glass" /></:prefix>
+  <:prefix><.icon name="lucide-search" /></:prefix>
   <.input type="search" name="q" placeholder="Search..." />
 </.input_group>
 ```
@@ -277,7 +276,7 @@ Quick reference for all 44 Sutra UI components.
 
 ```heex
 <.item>
-  <:icon><.icon name="hero-document" /></:icon>
+  <:icon><.icon name="lucide-file-text" /></:icon>
   <:title>Document Title</:title>
   <:description>Description text</:description>
   <:action><.button size="sm">View</.button></:action>
@@ -292,11 +291,11 @@ Quick reference for all 44 Sutra UI components.
     <img src="/logo.svg" alt="Logo" />
   </:header>
   <:nav>
-    <.sidebar_item href="/" icon="hero-home">Home</.sidebar_item>
-    <.sidebar_item href="/users" icon="hero-users">Users</.sidebar_item>
+    <.sidebar_item href="/" icon="lucide-home">Home</.sidebar_item>
+    <.sidebar_item href="/users" icon="lucide-users">Users</.sidebar_item>
   </:nav>
   <:footer>
-    <.sidebar_item href="/settings" icon="hero-cog">Settings</.sidebar_item>
+    <.sidebar_item href="/settings" icon="lucide-settings">Settings</.sidebar_item>
   </:footer>
 </.sidebar>
 ```
@@ -333,7 +332,7 @@ Quick reference for all 44 Sutra UI components.
 
 ```heex
 <.empty>
-  <:icon><.icon name="hero-inbox" class="h-12 w-12" /></:icon>
+  <:icon><.icon name="lucide-inbox" class="h-12 w-12" /></:icon>
   <:title>No messages</:title>
   <:description>Get started by sending your first message.</:description>
   <:action><.button>Send Message</.button></:action>

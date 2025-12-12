@@ -136,10 +136,10 @@ defmodule SutraUI.ThemeSwitcher do
       {@rest}
     >
       <span class="theme-switcher-dark">
-        <.icon name="hero-sun" class={@icon_class} />
+        <.icon name="lucide-sun" class={@icon_class} />
       </span>
       <span class="theme-switcher-light">
-        <.icon name="hero-moon" class={@icon_class} />
+        <.icon name="lucide-moon" class={@icon_class} />
       </span>
     </button>
 

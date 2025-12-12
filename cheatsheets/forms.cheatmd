@@ -128,12 +128,12 @@ Quick reference for form controls and patterns in Sutra UI.
 
 ```heex
 <.input_group>
-  <:prefix><.icon name="hero-magnifying-glass" /></:prefix>
+  <:prefix><.icon name="lucide-search" /></:prefix>
   <.input type="search" name="q" placeholder="Search..." />
 </.input_group>
 
 <.input_group>
-  <:prefix><.icon name="hero-currency-dollar" /></:prefix>
+  <:prefix><.icon name="lucide-dollar-sign" /></:prefix>
   <.input type="number" name="price" />
   <:suffix>.00</:suffix>
 </.input_group>

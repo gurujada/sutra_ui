@@ -79,6 +79,6 @@ defmodule SutraUI.Breadcrumb do
     """
   end
 
-  defp separator_icon_name("chevron"), do: "hero-chevron-right"
-  defp separator_icon_name("slash"), do: "hero-slash"
+  defp separator_icon_name("chevron"), do: "lucide-chevron-right"
+  defp separator_icon_name("slash"), do: "lucide-slash"
 end

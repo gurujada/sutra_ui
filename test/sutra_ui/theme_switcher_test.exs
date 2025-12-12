@@ -39,7 +39,7 @@ defmodule SutraUI.ThemeSwitcherTest do
         """)
 
       assert html =~ "theme-switcher-dark"
-      assert html =~ "hero-sun"
+      assert html =~ "lucide-sun"
     end
 
     test "renders moon icon for light mode" do
@@ -51,7 +51,7 @@ defmodule SutraUI.ThemeSwitcherTest do
         """)
 
       assert html =~ "theme-switcher-light"
-      assert html =~ "hero-moon"
+      assert html =~ "lucide-moon"
     end
   end
 

@@ -206,14 +206,14 @@ defmodule SutraUI.Select do
           <% end %>
         </span>
         <.icon
-          name={if @searchable, do: "hero-chevron-up-down", else: "hero-chevron-down"}
+          name={if @searchable, do: "lucide-chevrons-up-down", else: "lucide-chevron-down"}
           class="select-icon"
         />
       </button>
       <div id={"#{@id}-popover"} class="select-popover" data-popover aria-hidden="true">
         <%= if @searchable do %>
           <header>
-            <.icon name="hero-magnifying-glass" />
+            <.icon name="lucide-search" />
             <input
               type="text"
               value=""

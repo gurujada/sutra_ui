@@ -32,7 +32,7 @@ defmodule SutraUI.Item do
       <.item variant="outline">
         <:leading>
           <div class="item-icon-box">
-            <.icon name="hero-shield-exclamation" />
+            <.icon name="lucide-shield-alert" />
           </div>
         </:leading>
         <:title>Security Alert</:title>
@@ -51,7 +51,7 @@ defmodule SutraUI.Item do
         <:description>Last seen 5 months ago</:description>
         <:trailing>
           <button class="btn-icon-outline rounded-full">
-            <.icon name="hero-plus" />
+            <.icon name="lucide-plus" />
           </button>
         </:trailing>
       </.item>
@@ -60,12 +60,12 @@ defmodule SutraUI.Item do
       <.item as="a" href="/profile" variant="default">
         <:leading>
           <div class="item-icon-inline">
-            <.icon name="hero-check-badge" />
+            <.icon name="lucide-badge-check" />
           </div>
         </:leading>
         <:title>Your profile has been verified.</:title>
         <:trailing>
-          <.icon name="hero-chevron-right" class="size-4" />
+          <.icon name="lucide-chevron-right" class="size-4" />
         </:trailing>
       </.item>
   """

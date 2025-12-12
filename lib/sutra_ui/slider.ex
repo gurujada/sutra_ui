@@ -68,7 +68,8 @@ defmodule SutraUI.Slider do
   - The visual progress indicator via CSS custom property `--slider-value`
   - The `aria-valuenow` attribute as the value changes
 
-  The hook is automatically available when you import colocated hooks in your app.js.
+  The hook is automatically available when you import colocated hooks via
+  `import { hooks as sutraUiHooks } from "phoenix-colocated/sutra_ui"` in your app.js.
   """
 
   use Phoenix.Component

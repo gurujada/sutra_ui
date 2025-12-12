@@ -73,7 +73,7 @@ defmodule SutraUI.Command do
       {@rest}
     >
       <header>
-        <.icon name="hero-magnifying-glass" />
+        <.icon name="lucide-search" />
         <input
           type="text"
           placeholder={@placeholder}

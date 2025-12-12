@@ -133,7 +133,7 @@ defmodule SutraUI.Carousel do
         data-carousel-prev
         disabled={!@loop}
       >
-        <.icon name="hero-chevron-left" class="size-6" />
+        <.icon name="lucide-chevron-left" class="size-6" />
       </button>
 
       <button
@@ -143,7 +143,7 @@ defmodule SutraUI.Carousel do
         aria-label="Next slide"
         data-carousel-next
       >
-        <.icon name="hero-chevron-right" class="size-6" />
+        <.icon name="lucide-chevron-right" class="size-6" />
       </button>
 
       <div :if={@show_indicators && @item_count > 1} class="carousel-indicators" role="tablist">

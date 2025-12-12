@@ -49,23 +49,53 @@ Then run:
 mix deps.get
 ```
 
-### 2. Setup CSS (Tailwind v4)
+### 2. Delete core_components.ex
+
+Sutra UI replaces Phoenix's default `core_components.ex`. Delete it and remove its import:
+
+```bash
+rm lib/my_app_web/components/core_components.ex
+```
+
+In your `my_app_web.ex`, remove the `import MyAppWeb.CoreComponents` line.
+
+### 3. Setup CSS (Tailwind v4)
 
 In your `assets/css/app.css`:
 
 ```css
 @import "tailwindcss";
 
-/* Add Sutra UI source paths for Tailwind to scan */
+/* Sutra UI */
 @source "../../deps/sutra_ui/lib";
-
-/* Import Sutra UI component styles */
 @import "../../deps/sutra_ui/priv/static/sutra_ui.css";
 
-/* Your app's custom styles... */
+/* Lucide Icons */
+@import "lucide-static/font/lucide.css";
 ```
 
-### 3. Import Components
+### 4. Install Lucide Icons
+
+Sutra UI uses [Lucide icons](https://lucide.dev/) (matching shadcn/ui):
+
+```bash
+cd assets && npm install lucide-static
+```
+
+### 5. Setup JavaScript Hooks
+
+In your `assets/js/app.js`:
+
+```javascript
+import { hooks as sutraUiHooks } from "phoenix-colocated/sutra_ui";
+
+const liveSocket = new LiveSocket("/live", Socket, {
+    params: { _csrf_token: csrfToken },
+    hooks: { ...sutraUiHooks },
+});
+```
+
+### 6. Import Components
 
 In your `my_app_web.ex`:
 
@@ -78,11 +108,17 @@ defp html_helpers do
 end
 ```
 
-Or import specific components:
+### 7. Deployment Setup
+
+Update your deployment aliases in `mix.exs`:
 
 ```elixir
-import SutraUI.Button
-import SutraUI.Dialog
+"assets.deploy": [
+  "compile",  # Required: extracts colocated hooks
+  "esbuild my_app --minify",
+  "tailwind my_app --minify",
+  "phx.digest"
+]
 ```
 
 ## Usage

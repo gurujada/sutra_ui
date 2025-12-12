@@ -18,7 +18,7 @@ defmodule SutraUI.Button do
 
       # Icon button (requires aria-label)
       <.button size="icon" aria-label="Settings">
-        <.icon name="hero-cog-6-tooth" />
+        <.icon name="lucide-settings" />
       </.button>
 
       # Loading state
@@ -66,7 +66,7 @@ defmodule SutraUI.Button do
   > When using `size="icon"`, always provide an `aria-label` for screen readers:
   >
   >     <.button size="icon" aria-label="Close dialog">
-  >       <.icon name="hero-x-mark" />
+  >       <.icon name="lucide-x" />
   >     </.button>
 
   ## Related

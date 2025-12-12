@@ -1010,7 +1010,7 @@ defmodule SutraUI.LiveSelect do
               phx-target={@myself}
               aria-label="Remove"
             >
-              <.icon name="hero-x-mark" class="size-3" />
+              <.icon name="lucide-x" class="size-3" />
             </button>
           </span>
         <% end %>
@@ -1041,7 +1041,7 @@ defmodule SutraUI.LiveSelect do
           phx-target={@myself}
           aria-label="Clear selection"
         >
-          <.icon name="hero-x-mark" class="size-4" />
+          <.icon name="lucide-x" class="size-4" />
         </button>
       </div>
 

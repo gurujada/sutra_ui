@@ -92,7 +92,7 @@ defmodule SutraUI.Accordion do
               phx-click={toggle_item(item.value, @type)}
             >
               <span>{item.title}</span>
-              <.icon name="hero-chevron-down" class="accordion-chevron size-4" />
+              <.icon name="lucide-chevron-down" class="accordion-chevron size-4" />
             </button>
           </h3>
           <div

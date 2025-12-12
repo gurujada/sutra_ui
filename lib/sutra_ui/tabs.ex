@@ -40,10 +40,10 @@ defmodule SutraUI.Tabs do
       # With icons in tabs
       <.tabs id="nav-tabs" default_value="home">
         <:tab value="home">
-          <.icon name="hero-home" class="size-4 mr-2" /> Home
+          <.icon name="lucide-home" class="size-4 mr-2" /> Home
         </:tab>
         <:tab value="settings">
-          <.icon name="hero-cog-6-tooth" class="size-4 mr-2" /> Settings
+          <.icon name="lucide-settings" class="size-4 mr-2" /> Settings
         </:tab>
         <:panel value="home">Home content</:panel>
         <:panel value="settings">Settings content</:panel>

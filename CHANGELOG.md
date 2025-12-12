@@ -5,9 +5,7 @@ All notable changes to Sutra UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-## [0.1.0] - 2025-12-08
+## [0.1.0]
 
 ### Added
 
@@ -24,4 +22,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Colocated JavaScript hooks
 - Full accessibility (ARIA) support
 - Tailwind CSS v4 compatibility
+- Lucide icons as standard icon system (matching shadcn ecosystem)
 - `usage_rules.md` for AI assistant guidance

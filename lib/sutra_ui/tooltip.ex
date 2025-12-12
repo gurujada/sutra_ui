@@ -60,7 +60,7 @@ defmodule SutraUI.Tooltip do
       data-side={@side}
       data-align={@align}
       class={@class}
-      phx-hook={@side == "auto" && ".Tooltip"}
+      phx-hook=".Tooltip"
       {@rest}
     >
       {render_slot(@inner_block)}
@@ -69,9 +69,11 @@ defmodule SutraUI.Tooltip do
     <script :type={ColocatedHook} name=".Tooltip">
       export default {
         mounted() {
+          // Only enable dynamic positioning for side="auto"
+          if (this.el.dataset.side !== 'auto') return;
+
           this.calculatePosition = () => {
             const rect = this.el.getBoundingClientRect();
-            const padding = 8;
             
             // Check available space on each side
             const spaceTop = rect.top;
@@ -95,8 +97,10 @@ defmodule SutraUI.Tooltip do
         },
         
         destroyed() {
-          this.el.removeEventListener('mouseenter', this.calculatePosition);
-          this.el.removeEventListener('focusin', this.calculatePosition);
+          if (this.calculatePosition) {
+            this.el.removeEventListener('mouseenter', this.calculatePosition);
+            this.el.removeEventListener('focusin', this.calculatePosition);
+          }
         }
       }
     </script>

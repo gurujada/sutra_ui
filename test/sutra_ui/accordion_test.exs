@@ -232,7 +232,7 @@ defmodule SutraUI.AccordionTest do
         """)
 
       assert html =~ "accordion-chevron"
-      assert html =~ "hero-chevron-down"
+      assert html =~ "lucide-chevron-down"
     end
   end
 end

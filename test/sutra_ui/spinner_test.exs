@@ -15,7 +15,7 @@ defmodule SutraUI.SpinnerTest do
         <Spinner.spinner />
         """)
 
-      assert html =~ "hero-arrow-path"
+      assert html =~ "lucide-loader-2"
       assert html =~ "animate-spin"
     end
 
@@ -171,7 +171,7 @@ defmodule SutraUI.SpinnerTest do
         <Spinner.spinner_icon />
         """)
 
-      assert html =~ "hero-arrow-path"
+      assert html =~ "lucide-loader-2"
       assert html =~ "animate-spin"
       assert html =~ ~s(role="status")
     end

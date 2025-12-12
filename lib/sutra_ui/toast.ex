@@ -255,7 +255,7 @@ defmodule SutraUI.Toast do
         aria-label="Close"
         phx-click={hide_toast(@id)}
       >
-        <.icon name="hero-x-mark" class="size-4" />
+        <.icon name="lucide-x" class="size-4" />
       </button>
     </div>
     """
