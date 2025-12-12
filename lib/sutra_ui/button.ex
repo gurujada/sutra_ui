@@ -1,70 +1,79 @@
 defmodule SutraUI.Button do
   @moduledoc """
-  A versatile button component with multiple variants and sizes.
+  A versatile button component with multiple variants, sizes, and navigation support.
 
-  Buttons can be rendered as `<button>`, `<a>`, or Phoenix LiveView navigation links.
-  They support multiple variants, sizes, and states including loading and disabled.
-
-  ## Variants
-
-  - `primary` (default) - Primary action button with solid background
-  - `secondary` - Secondary action with muted background
-  - `destructive` - Destructive actions (delete, remove)
-  - `outline` - Button with border and transparent background
-  - `ghost` - Minimal button with no background until hover
-  - `link` - Styled as an underlined link
-
-  ## Sizes
-
-  - `default` - Standard button height
-  - `sm` - Small button
-  - `lg` - Large button
-  - `icon` - Square icon-only button
-
-  ## Navigation
-
-  The button can function as a link:
-  - `navigate` - Client-side navigation (new LiveView)
-  - `patch` - Client-side navigation (same LiveView)
-  - `href` - Regular link or external URL
-
-  ## Accessibility
-
-  - Icon-only buttons (`size="icon"`) should include `aria-label`
-  - Loading state automatically sets `aria-busy="true"`
-  - Disabled state uses the `disabled` attribute
+  Buttons are the primary interactive element for triggering actions. They can render
+  as `<button>`, `<a>`, or Phoenix LiveView navigation links depending on the props.
 
   ## Examples
 
       # Basic button
       <.button>Click me</.button>
 
-      # Variants
-      <.button variant="secondary">Secondary</.button>
-      <.button variant="destructive">Delete</.button>
-      <.button variant="outline">Outline</.button>
-      <.button variant="ghost">Ghost</.button>
-      <.button variant="link">Link</.button>
+      # With variant and size
+      <.button variant="destructive" size="lg">Delete Account</.button>
 
-      # Sizes
-      <.button size="sm">Small</.button>
-      <.button size="lg">Large</.button>
+      # Navigation button
+      <.button navigate={~p"/dashboard"}>Go to Dashboard</.button>
 
-      # Icon button (MUST include aria-label)
-      <.button size="icon" aria-label="Close">
-        <.icon name="hero-x-mark" />
+      # Icon button (requires aria-label)
+      <.button size="icon" aria-label="Settings">
+        <.icon name="hero-cog-6-tooth" />
       </.button>
 
       # Loading state
-      <.button loading>Processing...</.button>
+      <.button loading phx-click="save">
+        <.spinner class="mr-2" /> Saving...
+      </.button>
 
-      # Navigation
-      <.button navigate={~p"/users"}>View Users</.button>
-      <.button patch={~p"/users/1/edit"}>Edit</.button>
-      <.button href="https://example.com">External</.button>
+  ## Variants
 
-      # Form submit
-      <.button type="submit">Submit</.button>
+  | Variant | Usage | Appearance |
+  |---------|-------|------------|
+  | `primary` | Main actions | Solid background |
+  | `secondary` | Secondary actions | Muted background |
+  | `destructive` | Delete, remove | Red/danger color |
+  | `outline` | Less emphasis | Border only |
+  | `ghost` | Minimal | Transparent until hover |
+  | `link` | Inline actions | Underlined text |
+
+  ## Sizes
+
+  | Size | Usage | Height |
+  |------|-------|--------|
+  | `default` | Most buttons | 40px |
+  | `sm` | Compact UI | 32px |
+  | `lg` | Hero sections | 48px |
+  | `icon` | Icon-only | 40px square |
+
+  ## Navigation
+
+  The button automatically renders as a link when navigation props are provided:
+
+  - `navigate` - Full page navigation (new LiveView)
+  - `patch` - Same LiveView navigation
+  - `href` - Regular link or external URL
+
+  ## Accessibility
+
+  - Uses semantic `<button>` element (or `<a>` for links)
+  - Loading state sets `aria-busy="true"`
+  - Disabled state uses native `disabled` attribute
+  - Icon-only buttons **must** have `aria-label`
+
+  > #### Icon Buttons Need Labels {: .warning}
+  >
+  > When using `size="icon"`, always provide an `aria-label` for screen readers:
+  >
+  >     <.button size="icon" aria-label="Close dialog">
+  >       <.icon name="hero-x-mark" />
+  >     </.button>
+
+  ## Related
+
+  - `SutraUI.Icon` - For button icons
+  - `SutraUI.Spinner` - For loading states
+  - [Theming Guide](theming.md) - Customize button colors
   """
 
   use Phoenix.Component

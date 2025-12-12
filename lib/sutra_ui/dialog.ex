@@ -4,33 +4,107 @@ defmodule SutraUI.Dialog do
 
   Uses the native HTML `<dialog>` element for proper accessibility and behavior.
   Dialogs are used to display important content that requires user attention
-  or interaction before continuing.
+  or interaction before continuing - confirmations, forms, alerts, or any
+  focused interaction.
 
   ## Examples
 
+      # Basic confirmation dialog
       <.dialog id="confirm-dialog">
         <:title>Confirm Action</:title>
         <:description>Are you sure you want to proceed?</:description>
         This action cannot be undone.
         <:footer>
-          <.button variant="outline" onclick="this.closest('dialog').close()">Cancel</.button>
+          <.button variant="outline" phx-click={SutraUI.Dialog.hide_dialog("confirm-dialog")}>
+            Cancel
+          </.button>
           <.button phx-click="confirm">Confirm</.button>
         </:footer>
       </.dialog>
 
-      # Open dialog
-      <button onclick="document.getElementById('confirm-dialog').showModal()">Open</button>
+      # Open with JS commands (recommended)
+      <.button phx-click={SutraUI.Dialog.show_dialog("confirm-dialog")}>
+        Open Dialog
+      </.button>
 
-      # Or use JS commands
-      <.button phx-click={PhxUI.Dialog.show_dialog("confirm-dialog")}>Open</.button>
+      # Form inside dialog
+      <.dialog id="edit-user-dialog">
+        <:title>Edit Profile</:title>
+        <.simple_form for={@form} phx-submit="save_user">
+          <.input field={@form[:name]} label="Name" />
+          <.input field={@form[:email]} label="Email" type="email" />
+          <:actions>
+            <.button type="submit">Save Changes</.button>
+          </:actions>
+        </.simple_form>
+      </.dialog>
+
+  ## Opening and Closing
+
+  Use the provided helper functions for LiveView integration:
+
+  | Function | Description |
+  |----------|-------------|
+  | `show_dialog/1` | Opens dialog with `showModal()` |
+  | `show_dialog/2` | Chain with existing JS commands |
+  | `hide_dialog/1` | Closes dialog with `close()` |
+  | `hide_dialog/2` | Chain with existing JS commands |
+
+      # Open on button click
+      <.button phx-click={SutraUI.Dialog.show_dialog("my-dialog")}>Open</.button>
+
+      # Close from inside dialog
+      <.button phx-click={SutraUI.Dialog.hide_dialog("my-dialog")}>Cancel</.button>
+
+      # Chain with other JS commands
+      <.button phx-click={
+        JS.push("prepare_data")
+        |> SutraUI.Dialog.show_dialog("my-dialog")
+      }>
+        Load and Open
+      </.button>
+
+  ## Slots
+
+  | Slot | Description |
+  |------|-------------|
+  | `title` | Dialog header title |
+  | `description` | Explanatory text below title |
+  | `inner_block` | Main content area |
+  | `footer` | Action buttons, typically Cancel/Confirm |
+
+  ## Colocated Hook
+
+  The `.Dialog` hook handles:
+  - `phx:show-dialog` event → calls `showModal()`
+  - `phx:hide-dialog` event → calls `close()`
+  - Backdrop click to close
+
+  See [JavaScript Hooks](colocated-hooks.md) for more details.
 
   ## Accessibility
 
   - Uses native `<dialog>` element for proper modal behavior
-  - Escape key closes the dialog by default
+  - `Escape` key closes the dialog
   - Click on backdrop closes the dialog
   - Focus is trapped within the dialog when open
   - Focus returns to trigger element on close
+  - `aria-labelledby` links to title
+  - `aria-describedby` links to description
+
+  > #### Focus Management {: .tip}
+  >
+  > The native `<dialog>` element handles focus trapping automatically.
+  > When opened with `showModal()`, focus moves into the dialog and
+  > is trapped until closed. No JavaScript focus trap needed.
+
+  ## Related
+
+  - `SutraUI.Popover` - For non-modal floating content
+  - `SutraUI.DropdownMenu` - For menu interactions
+  - `SutraUI.Command` - For command palette dialogs
+  - [JavaScript Hooks Guide](colocated-hooks.md) - Hook details
+  - [Accessibility Guide](accessibility.md) - ARIA patterns
   """
 
   use Phoenix.Component

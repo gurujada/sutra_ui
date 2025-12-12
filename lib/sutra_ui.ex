@@ -2,128 +2,171 @@ defmodule SutraUI do
   @moduledoc """
   Sutra UI - We define the rules, so you don't have to.
 
-  A pure Phoenix LiveView UI component library. No dependencies, no nonsense.
-  Just LiveView components with colocated hooks where needed.
+  A pure Phoenix LiveView UI component library with **44 accessible components**,
+  CSS-first theming, and colocated JavaScript hooks. Built for Phoenix 1.8+ and
+  Tailwind CSS v4.
 
-  ## Installation
+  ## Quick Start
 
-  Add `sutra_ui` to your list of dependencies in `mix.exs`:
+      # mix.exs
+      {:sutra_ui, "~> 0.1"}
 
-      def deps do
-        [
-          {:sutra_ui, "~> 0.1.0"}
-        ]
-      end
-
-  ## Usage
-
-  Import all components in your web module:
-
-      defmodule MyAppWeb do
-        def html_helpers do
-          quote do
-            use SutraUI
-            # ... other imports
-          end
+      # lib/my_app_web.ex
+      defp html_helpers do
+        quote do
+          use SutraUI
         end
       end
 
-  Or import specific components:
+      # assets/css/app.css
+      @import "tailwindcss";
+      @source "../../deps/sutra_ui/lib";
+      @import "../../deps/sutra_ui/priv/static/sutra_ui.css";
 
-      defmodule MyAppWeb.SomeLive do
-        use Phoenix.LiveView
+  See the [Installation Guide](installation.md) for detailed setup instructions.
 
-        import SutraUI.Button
-        import SutraUI.Icon
+  ## Requirements
 
-        # ...
-      end
+  | Dependency | Version | Notes |
+  |------------|---------|-------|
+  | Elixir | 1.14+ | |
+  | Phoenix | **1.8+** | Required for colocated hooks |
+  | Phoenix LiveView | **1.1+** | `ColocatedHook` support |
+  | Tailwind CSS | **v4** | CSS-first configuration |
 
-  ## Available Components
+  > #### Why Phoenix 1.8+? {: .info}
+  >
+  > Sutra UI uses [colocated hooks](colocated-hooks.md) - JavaScript hooks defined
+  > alongside components. No separate `hooks.js` file needed.
 
-  ### Foundation (Phase 1)
-  - `SutraUI.Icon` - Icons (requires icon CSS setup)
-  - `SutraUI.Button` - Buttons with variants and states
-  - `SutraUI.Badge` - Status badges
-  - `SutraUI.Spinner` - Loading spinners
-  - `SutraUI.Kbd` - Keyboard shortcuts
+  ## Components by Category
 
-  ### Form Primitives (Phase 2)
-  - `SutraUI.Label` - Form labels
-  - `SutraUI.Input` - Text inputs, email, password, etc.
-  - `SutraUI.Textarea` - Multi-line text input
-  - `SutraUI.Checkbox` - Checkbox input
-  - `SutraUI.Switch` - Toggle switch
-  - `SutraUI.RadioGroup` - Radio button groups
-  - `SutraUI.Field` - Field container with label/description/error
-  - `SutraUI.Select` - Custom select dropdown (with JS hook)
-  - `SutraUI.Slider` - Range slider (with JS hook)
+  ### Foundation
 
-  ### Layout & Data Display (Phase 3)
-  - `SutraUI.Card` - Card container with header, content, footer
-  - `SutraUI.Header` - Page header with title, subtitle, actions
-  - `SutraUI.Table` - Data table with column definitions
-  - `SutraUI.Skeleton` - Loading placeholder
-  - `SutraUI.Empty` - Empty state with icon, title, description
-  - `SutraUI.Alert` - Alert/callout messages
-  - `SutraUI.Progress` - Progress bar indicator
+  Basic building blocks for any interface.
 
-  ### Navigation & Interactive (Phase 4)
-  - `SutraUI.Breadcrumb` - Breadcrumb navigation
-  - `SutraUI.Pagination` - Page navigation
-  - `SutraUI.Accordion` - Collapsible content sections
-  - `SutraUI.Tabs` - Tab panels (with JS hook)
-  - `SutraUI.DropdownMenu` - Dropdown menu (with JS hook)
-  - `SutraUI.Toast` - Toast notifications (with JS hook)
+  | Component | Description |
+  |-----------|-------------|
+  | `SutraUI.Button` | Buttons with 6 variants and 4 sizes |
+  | `SutraUI.Icon` | Heroicons integration |
+  | `SutraUI.Badge` | Status indicators |
+  | `SutraUI.Spinner` | Loading indicators |
+  | `SutraUI.Kbd` | Keyboard shortcut display |
 
-  ### Advanced UI (Phase 5)
-  - `SutraUI.Avatar` - User avatars with fallback support
-  - `SutraUI.Tooltip` - CSS-only hover tooltips
-  - `SutraUI.Dialog` - Modal dialogs
-  - `SutraUI.Popover` - Click-triggered popups
-  - `SutraUI.Command` - Command palette with search
-  - `SutraUI.Carousel` - CSS scroll-snap carousel
+  ### Form Controls
 
-  ### Form & Layout Helpers (Phase 6)
-  - `SutraUI.FilterBar` - Filter bar for index pages
-  - `SutraUI.InputGroup` - Input with prefix/suffix attachments
-  - `SutraUI.Item` - Versatile list item component
-  - `SutraUI.LoadingState` - Loading indicator with message
-  - `SutraUI.SimpleForm` - Simple form wrapper with auto-styling
+  Complete form toolkit with validation support.
 
-  ### Navigation (Phase 7)
-  - `SutraUI.NavPills` - Responsive navigation pills
-  - `SutraUI.Sidebar` - Collapsible sidebar navigation
-  - `SutraUI.TabNav` - Server-side routed tab navigation
-  - `SutraUI.ThemeSwitcher` - Light/dark theme toggle
+  | Component | Description |
+  |-----------|-------------|
+  | `SutraUI.Input` | Text, email, password, number, date inputs |
+  | `SutraUI.Textarea` | Multi-line text input |
+  | `SutraUI.Checkbox` | Checkbox input |
+  | `SutraUI.Switch` | Toggle switch |
+  | `SutraUI.RadioGroup` | Radio button groups |
+  | `SutraUI.Select` | Searchable dropdown (hook) |
+  | `SutraUI.Slider` | Range slider (hook) |
+  | `SutraUI.RangeSlider` | Dual-handle range (hook) |
+  | `SutraUI.LiveSelect` | Async searchable select (hook) |
+  | `SutraUI.Field` | Field wrapper with label/error |
+  | `SutraUI.Label` | Form labels |
+  | `SutraUI.SimpleForm` | Form with auto-styling |
+  | `SutraUI.InputGroup` | Input with prefix/suffix |
+  | `SutraUI.FilterBar` | Filter controls layout |
 
-  ### Advanced Form Controls (Phase 8)
-  - `SutraUI.RangeSlider` - Dual-handle range slider for selecting value ranges
-  - `SutraUI.LiveSelect` - Dynamic searchable select with async options loading
+  ### Layout
 
-  ## Tailwind CSS
+  Structure and organize content.
 
-  This library uses Tailwind CSS classes. Make sure your project has
-  Tailwind configured and includes the Sutra UI source in your content paths:
+  | Component | Description |
+  |-----------|-------------|
+  | `SutraUI.Card` | Content container |
+  | `SutraUI.Header` | Page headers |
+  | `SutraUI.Table` | Data tables |
+  | `SutraUI.Item` | List items |
+  | `SutraUI.Sidebar` | Navigation sidebar (hook) |
 
-      // tailwind.config.js
-      module.exports = {
-        content: [
-          // ...
-          "../deps/sutra_ui/**/*.*ex"
-        ],
-        // ...
+  ### Feedback
+
+  Communicate status and progress.
+
+  | Component | Description |
+  |-----------|-------------|
+  | `SutraUI.Alert` | Alert messages |
+  | `SutraUI.Toast` | Toast notifications (hook) |
+  | `SutraUI.Progress` | Progress bars |
+  | `SutraUI.Skeleton` | Loading placeholders |
+  | `SutraUI.Empty` | Empty states |
+  | `SutraUI.LoadingState` | Loading indicators |
+
+  ### Overlay
+
+  Layered UI elements.
+
+  | Component | Description |
+  |-----------|-------------|
+  | `SutraUI.Dialog` | Modal dialogs (hook) |
+  | `SutraUI.Popover` | Click-triggered popups (hook) |
+  | `SutraUI.Tooltip` | Hover tooltips (CSS-only) |
+  | `SutraUI.DropdownMenu` | Dropdown menus (hook) |
+  | `SutraUI.Command` | Command palette (hook) |
+
+  ### Navigation
+
+  Help users move through your app.
+
+  | Component | Description |
+  |-----------|-------------|
+  | `SutraUI.Tabs` | Tab panels (hook) |
+  | `SutraUI.Accordion` | Collapsible sections (hook) |
+  | `SutraUI.Breadcrumb` | Breadcrumb trails |
+  | `SutraUI.Pagination` | Page navigation |
+  | `SutraUI.NavPills` | Pill navigation |
+  | `SutraUI.TabNav` | Tab-style navigation |
+
+  ### Display
+
+  Present content and media.
+
+  | Component | Description |
+  |-----------|-------------|
+  | `SutraUI.Avatar` | User avatars |
+  | `SutraUI.Carousel` | Image carousels (hook) |
+  | `SutraUI.ThemeSwitcher` | Light/dark toggle (hook) |
+
+  ## Theming
+
+  Sutra UI uses CSS variables compatible with [shadcn/ui themes](https://ui.shadcn.com/themes).
+
+      :root {
+        --primary: oklch(0.65 0.20 260);
+        --primary-foreground: oklch(0.98 0 0);
       }
+
+  See the [Theming Guide](theming.md) for complete customization options.
 
   ## Accessibility
 
-  All components are built with accessibility in mind:
-  - Proper ARIA attributes
+  All components follow WAI-ARIA patterns with:
+
+  - Semantic HTML elements
   - Keyboard navigation
   - Focus management
   - Screen reader support
 
-  See individual component docs for specific accessibility notes.
+  See the [Accessibility Guide](accessibility.md) for details.
+
+  ## Guides
+
+  - [Installation](installation.md) - Setup and configuration
+  - [Theming](theming.md) - Customize colors and styles
+  - [Accessibility](accessibility.md) - ARIA and keyboard support
+  - [JavaScript Hooks](colocated-hooks.md) - Colocated hook patterns
+
+  ## Quick Reference
+
+  - [Components Cheatsheet](components.cheatmd) - All components at a glance
+  - [Forms Cheatsheet](forms.cheatmd) - Form patterns and validation
   """
 
   @doc """

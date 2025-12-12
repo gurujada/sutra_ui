@@ -49,10 +49,11 @@ defmodule SutraUI.MixProject do
 
   defp package do
     [
-      maintainers: ["Gurujada"],
+      maintainers: ["Chivukula Virinchi"],
       licenses: ["MIT"],
       links: %{
-        "GitHub" => @source_url
+        "GitHub" => @source_url,
+        "Docs" => "https://hexdocs.pm/sutra_ui"
       },
       files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
@@ -60,13 +61,86 @@ defmodule SutraUI.MixProject do
 
   defp docs do
     [
-      main: "SutraUI",
+      main: "readme",
       source_ref: "v#{@version}",
       source_url: @source_url,
-      extras: ["README.md"],
+      extras: [
+        "README.md": [title: "Overview"],
+        "guides/installation.md": [title: "Installation"],
+        "guides/theming.md": [title: "Theming"],
+        "guides/accessibility.md": [title: "Accessibility"],
+        "guides/colocated-hooks.md": [title: "JavaScript Hooks"],
+        "cheatsheets/components.cheatmd": [title: "Components Cheatsheet"],
+        "cheatsheets/forms.cheatmd": [title: "Forms Cheatsheet"],
+        "usage_rules.md": [title: "LLM Usage Rules"],
+        "CHANGELOG.md": [title: "Changelog"]
+      ],
+      groups_for_extras: [
+        Guides: ~r/guides\/.*/,
+        Cheatsheets: ~r/cheatsheets\/.*/,
+        Reference: ~r/(usage_rules|CHANGELOG).*/
+      ],
       groups_for_modules: [
-        Components: ~r/SutraUI\..*/
-      ]
+        Foundation: [
+          SutraUI.Icon,
+          SutraUI.Button,
+          SutraUI.Badge,
+          SutraUI.Spinner,
+          SutraUI.Kbd
+        ],
+        "Form Controls": [
+          SutraUI.Label,
+          SutraUI.Input,
+          SutraUI.Textarea,
+          SutraUI.Checkbox,
+          SutraUI.Switch,
+          SutraUI.RadioGroup,
+          SutraUI.Select,
+          SutraUI.Slider,
+          SutraUI.RangeSlider,
+          SutraUI.LiveSelect,
+          SutraUI.Field,
+          SutraUI.SimpleForm,
+          SutraUI.InputGroup,
+          SutraUI.FilterBar
+        ],
+        Layout: [
+          SutraUI.Card,
+          SutraUI.Header,
+          SutraUI.Table,
+          SutraUI.Item,
+          SutraUI.Sidebar
+        ],
+        Feedback: [
+          SutraUI.Alert,
+          SutraUI.Progress,
+          SutraUI.Skeleton,
+          SutraUI.Empty,
+          SutraUI.LoadingState,
+          SutraUI.Toast
+        ],
+        Overlay: [
+          SutraUI.Dialog,
+          SutraUI.Popover,
+          SutraUI.Tooltip,
+          SutraUI.DropdownMenu,
+          SutraUI.Command
+        ],
+        Navigation: [
+          SutraUI.Tabs,
+          SutraUI.Accordion,
+          SutraUI.Breadcrumb,
+          SutraUI.Pagination,
+          SutraUI.NavPills,
+          SutraUI.TabNav
+        ],
+        Display: [
+          SutraUI.Avatar,
+          SutraUI.Carousel,
+          SutraUI.ThemeSwitcher
+        ]
+      ],
+      nest_modules_by_prefix: [SutraUI]
     ]
   end
 end

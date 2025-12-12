@@ -1,10 +1,14 @@
 # Sutra UI
 
+[![Hex.pm](https://img.shields.io/hexpm/v/sutra_ui.svg)](https://hex.pm/packages/sutra_ui)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/sutra_ui)
+[![License](https://img.shields.io/hexpm/l/sutra_ui.svg)](https://github.com/gurujada/sutra_ui/blob/main/LICENSE)
+
 *We define the rules, so you don't have to.*
 
 A pure Phoenix LiveView UI component library inspired by shadcn/ui.
 
-Built for **Tailwind CSS v4** and **Phoenix LiveView 1.1+**.
+Built for **Phoenix 1.8+**, **Tailwind CSS v4**, and **Phoenix LiveView 1.1+**.
 
 ## Why Sutra UI?
 
@@ -19,7 +23,7 @@ Built for **Tailwind CSS v4** and **Phoenix LiveView 1.1+**.
 
 - **44 Components** - Buttons, forms, dialogs, tables, and more
 - **Pure LiveView** - No external JavaScript frameworks
-- **Colocated Hooks** - JS hooks live with their components  
+- **Colocated Hooks** - JS hooks live with their components (Phoenix 1.8+)
 - **CSS Variables** - Override any color in one line
 - **Accessible** - WCAG 2.1 AA compliant, keyboard navigable
 - **Dark Mode** - Built-in light/dark theme support
@@ -33,7 +37,7 @@ Built for **Tailwind CSS v4** and **Phoenix LiveView 1.1+**.
 # mix.exs
 def deps do
   [
-    {:sutra_ui, "~> 0.1.0"},
+    {:sutra_ui, "~> 0.1"},
     {:jason, "~> 1.0"}  # Required for dropdown_menu and live_select
   ]
 end
@@ -303,8 +307,17 @@ Requires support for:
 
 MIT License - see [LICENSE](LICENSE) for details.
 
+## Documentation
+
+- **[HexDocs](https://hexdocs.pm/sutra_ui)** - Full API reference
+- **[Installation Guide](https://hexdocs.pm/sutra_ui/installation.html)** - Setup for Phoenix 1.8+ and Tailwind v4
+- **[Theming Guide](https://hexdocs.pm/sutra_ui/theming.html)** - CSS variables, OKLCH colors, shadcn themes
+- **[Accessibility Guide](https://hexdocs.pm/sutra_ui/accessibility.html)** - ARIA patterns, keyboard navigation
+- **[JavaScript Hooks](https://hexdocs.pm/sutra_ui/colocated-hooks.html)** - Colocated hooks, custom events
+- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 44 components
+- **[Forms Cheatsheet](https://hexdocs.pm/sutra_ui/forms.html)** - Form patterns and validation
+
 ## Links
 
-- [Documentation](https://hexdocs.pm/sutra_ui)
 - [GitHub](https://github.com/gurujada/sutra_ui)
 - [Changelog](CHANGELOG.md)

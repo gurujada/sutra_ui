@@ -6,6 +6,11 @@ This document provides guidelines for AI assistants when working with the Sutra 
 
 Sutra UI is a pure Phoenix LiveView UI component library with no external dependencies. Components use colocated JavaScript hooks where interactivity is needed.
 
+**Requirements:**
+- Phoenix 1.8+ (for colocated hooks)
+- Phoenix LiveView 1.1+ (ColocatedHook support)
+- Tailwind CSS v4 (CSS-first configuration)
+
 ## Core Principles
 
 ### 1. CSS-First Styling
@@ -298,3 +303,362 @@ test/
 4. Update component list in `lib/sutra_ui.ex` moduledoc
 5. Create tests in `test/sutra_ui/component_name_test.exs`
 6. Update this file if the component introduces new patterns
+
+## Common Recipes
+
+### Modal Dialog with Form
+
+```heex
+<.dialog id="edit-user-dialog">
+  <:title>Edit User</:title>
+  <:description>Update user information below.</:description>
+  
+  <.simple_form for={@form} phx-submit="save_user">
+    <.input field={@form[:name]} label="Name" />
+    <.input field={@form[:email]} label="Email" type="email" />
+    
+    <:actions>
+      <.button variant="outline" phx-click={SutraUI.Dialog.hide_dialog("edit-user-dialog")}>
+        Cancel
+      </.button>
+      <.button type="submit">Save Changes</.button>
+    </:actions>
+  </.simple_form>
+</.dialog>
+
+<.button phx-click={SutraUI.Dialog.show_dialog("edit-user-dialog")}>
+  Edit User
+</.button>
+```
+
+### Data Table with Pagination
+
+```heex
+<.data_table rows={@users}>
+  <:col :let={user} label="Name">{user.name}</:col>
+  <:col :let={user} label="Email">{user.email}</:col>
+  <:col :let={user} label="Status">
+    <.badge variant={status_variant(user.status)}>{user.status}</.badge>
+  </:col>
+  <:action :let={user}>
+    <.dropdown_menu id={"user-actions-#{user.id}"}>
+      <:trigger>
+        <.button variant="ghost" size="icon" aria-label="Actions">
+          <.icon name="hero-ellipsis-horizontal" />
+        </.button>
+      </:trigger>
+      <:content>
+        <.dropdown_menu_item navigate={~p"/users/#{user.id}"}>View</.dropdown_menu_item>
+        <.dropdown_menu_item navigate={~p"/users/#{user.id}/edit"}>Edit</.dropdown_menu_item>
+        <.dropdown_menu_separator />
+        <.dropdown_menu_item variant="destructive" phx-click="delete_user" phx-value-id={user.id}>
+          Delete
+        </.dropdown_menu_item>
+      </:content>
+    </.dropdown_menu>
+  </:action>
+</.data_table>
+
+<.pagination
+  page={@page}
+  total_pages={@total_pages}
+  path={~p"/users"}
+/>
+```
+
+### Form with Validation Errors
+
+```heex
+<.simple_form for={@form} phx-change="validate" phx-submit="save">
+  <.field field={@form[:name]} label="Name" required>
+    <.input field={@form[:name]} />
+  </.field>
+  
+  <.field field={@form[:email]} label="Email" required>
+    <.input field={@form[:email]} type="email" />
+  </.field>
+  
+  <.field field={@form[:role]} label="Role">
+    <.select id="role-select" name={@form[:role].name} value={@form[:role].value}>
+      <.select_option value="admin" label="Administrator" />
+      <.select_option value="user" label="Standard User" />
+      <.select_option value="viewer" label="Viewer" />
+    </.select>
+  </.field>
+  
+  <:actions>
+    <.button type="submit" loading={@saving}>Save</.button>
+  </:actions>
+</.simple_form>
+```
+
+### Confirmation Dialog Pattern
+
+```elixir
+# In your LiveView
+def handle_event("confirm_delete", %{"id" => id}, socket) do
+  socket = assign(socket, :delete_target_id, id)
+  {:noreply, push_event(socket, "js-exec", %{to: "#confirm-delete-dialog", attr: "phx-show-dialog"})}
+end
+
+def handle_event("delete_confirmed", _, socket) do
+  MyApp.delete_item(socket.assigns.delete_target_id)
+  {:noreply, 
+   socket
+   |> put_flash(:info, "Item deleted")
+   |> push_navigate(to: ~p"/items")}
+end
+```
+
+```heex
+<.dialog id="confirm-delete-dialog">
+  <:title>Delete Item</:title>
+  <:description>This action cannot be undone. Are you sure?</:description>
+  <:footer>
+    <.button variant="outline" phx-click={SutraUI.Dialog.hide_dialog("confirm-delete-dialog")}>
+      Cancel
+    </.button>
+    <.button variant="destructive" phx-click="delete_confirmed">
+      Delete
+    </.button>
+  </:footer>
+</.dialog>
+```
+
+### Tabs with Dynamic Content
+
+```heex
+<.tabs id="content-tabs" default_value="overview">
+  <:tab value="overview">Overview</:tab>
+  <:tab value="activity">Activity</:tab>
+  <:tab value="settings">Settings</:tab>
+  
+  <:panel value="overview">
+    <.card>
+      <:header>
+        <:title>Overview</:title>
+      </:header>
+      <:content>
+        <p>Overview content here...</p>
+      </:content>
+    </.card>
+  </:panel>
+  
+  <:panel value="activity">
+    <.card>
+      <:header>
+        <:title>Recent Activity</:title>
+      </:header>
+      <:content>
+        <ul>
+          <.item :for={activity <- @activities}>
+            {activity.description}
+          </.item>
+        </ul>
+      </:content>
+    </.card>
+  </:panel>
+  
+  <:panel value="settings">
+    <.simple_form for={@settings_form} phx-submit="save_settings">
+      <.switch field={@settings_form[:notifications]} label="Enable notifications" />
+      <.switch field={@settings_form[:dark_mode]} label="Dark mode" />
+    </.simple_form>
+  </:panel>
+</.tabs>
+```
+
+### Toast Notifications from LiveView
+
+```elixir
+# Show toast on successful action
+def handle_event("save", params, socket) do
+  case save_data(params) do
+    {:ok, _record} ->
+      {:noreply,
+       socket
+       |> put_flash(:info, "Changes saved successfully")}
+    
+    {:error, changeset} ->
+      {:noreply, assign(socket, :form, to_form(changeset))}
+  end
+end
+
+# Or use push_event for more control
+def handle_event("export_complete", _, socket) do
+  {:noreply,
+   push_event(socket, "toast", %{
+     variant: "success",
+     title: "Export Complete",
+     description: "Your data has been exported to CSV.",
+     duration: 5000
+   })}
+end
+```
+
+## Troubleshooting
+
+### Component hooks not working
+
+**Symptoms:** Hook-based components (Select, Dialog, Tabs, etc.) don't respond to interactions.
+
+**Solutions:**
+
+1. **Check Phoenix version** - Colocated hooks require Phoenix 1.8+:
+   ```elixir
+   # mix.exs
+   {:phoenix, "~> 1.8"}
+   ```
+
+2. **Verify hook import** - Ensure colocated hooks are imported in `app.js`:
+   ```javascript
+   // app.js
+   import { getHooks } from "phoenix_live_view"
+   
+   let liveSocket = new LiveSocket("/live", Socket, {
+     hooks: getHooks()
+   })
+   ```
+
+3. **Check component ID** - Hook-based components require unique IDs:
+   ```heex
+   <%# Wrong - missing ID %>
+   <.select name="country">
+   
+   <%# Correct %>
+   <.select id="country-select" name="country">
+   ```
+
+### CSS styles not applied
+
+**Symptoms:** Components render but look unstyled or broken.
+
+**Solutions:**
+
+1. **Check Tailwind v4 setup** - Verify `@source` directive in `app.css`:
+   ```css
+   @import "tailwindcss";
+   @source "../../deps/sutra_ui/lib";
+   @import "../../deps/sutra_ui/priv/static/sutra_ui.css";
+   ```
+
+2. **Check import order** - Sutra UI CSS must come after Tailwind:
+   ```css
+   @import "tailwindcss";
+   @import "../../deps/sutra_ui/priv/static/sutra_ui.css";
+   /* Your overrides come last */
+   ```
+
+3. **Clear cache** - After changing CSS config:
+   ```bash
+   mix assets.clean
+   mix phx.server
+   ```
+
+### Form values not updating
+
+**Symptoms:** Select or other form controls don't update the form value.
+
+**Solutions:**
+
+1. **Check name attribute** - Ensure `name` matches the form field:
+   ```heex
+   <.select id="role-select" name={@form[:role].name} value={@form[:role].value}>
+   ```
+
+2. **Check phx-change** - Form needs `phx-change` for live validation:
+   ```heex
+   <.simple_form for={@form} phx-change="validate" phx-submit="save">
+   ```
+
+### Dialog not opening/closing
+
+**Symptoms:** `show_dialog`/`hide_dialog` functions don't work.
+
+**Solutions:**
+
+1. **Use correct module path**:
+   ```heex
+   <%# Wrong %>
+   <.button phx-click={show_dialog("my-dialog")}>
+   
+   <%# Correct %>
+   <.button phx-click={SutraUI.Dialog.show_dialog("my-dialog")}>
+   ```
+
+2. **Check dialog ID** - Must match exactly:
+   ```heex
+   <.dialog id="confirm-dialog">
+   <.button phx-click={SutraUI.Dialog.show_dialog("confirm-dialog")}>
+   ```
+
+### LiveView disconnects on component interaction
+
+**Symptoms:** Page refreshes or socket disconnects when clicking components.
+
+**Solutions:**
+
+1. **Check event handlers** - Ensure `phx-click` handlers exist in LiveView:
+   ```elixir
+   def handle_event("my_action", params, socket) do
+     {:noreply, socket}
+   end
+   ```
+
+2. **Prevent default on links** - Use `phx-click` instead of `onclick` for LiveView events.
+
+### Theme variables not working
+
+**Symptoms:** Custom CSS variables are ignored.
+
+**Solutions:**
+
+1. **Check variable syntax** - Use OKLCH format:
+   ```css
+   /* Wrong */
+   --primary: #3b82f6;
+   
+   /* Correct */
+   --primary: oklch(0.623 0.214 259.815);
+   ```
+
+2. **Check override order** - Custom variables must come after Sutra UI CSS:
+   ```css
+   @import "../../deps/sutra_ui/priv/static/sutra_ui.css";
+   
+   :root {
+     --primary: oklch(0.65 0.20 145); /* This overrides */
+   }
+   ```
+
+### Component tests failing
+
+**Symptoms:** Tests can't find components or hooks.
+
+**Solutions:**
+
+1. **Import correctly** - Test files need explicit imports:
+   ```elixir
+   defmodule SutraUI.ButtonTest do
+     use ComponentCase, async: true
+     import SutraUI.Button
+   ```
+
+2. **Use render_component** - Not `render`:
+   ```elixir
+   html = render_component(&button/1, variant: "primary")
+   ```
+
+## Migration Notes
+
+### From Phoenix 1.7 to 1.8+
+
+1. Update dependencies in `mix.exs`
+2. Update `app.js` to use `getHooks()` instead of manual hook imports
+3. Remove any manual hook registrations from `hooks.js`
+
+### From Tailwind v3 to v4
+
+1. Replace `tailwind.config.js` with `@source` directives in CSS
+2. Update color values from HSL to OKLCH if customizing theme
+3. Update any custom CSS using Tailwind's `@apply` with new syntax

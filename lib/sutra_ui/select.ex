@@ -1,31 +1,121 @@
 defmodule SutraUI.Select do
   @moduledoc """
-  A custom select component with search/filter capabilities (combobox).
+  A custom select component with search/filter capabilities (combobox pattern).
 
-  This component provides a custom dropdown select with:
-  - Keyboard navigation (Arrow keys, Home, End, Enter, Escape)
-  - Search/filter functionality (when `searchable: true`)
-  - Focus management and ARIA attributes
-  - Custom styling via CSS
+  Provides a fully accessible dropdown select with keyboard navigation, optional
+  search filtering, option grouping, and form integration. Use this instead of
+  native `<select>` when you need custom styling or searchable options.
 
-  The component requires a unique `id` attribute for the JavaScript hook to function.
+  ## Examples
+
+      # Basic select
+      <.select id="country" name="country" value="us">
+        <.select_option value="us" label="United States" />
+        <.select_option value="ca" label="Canada" />
+        <.select_option value="mx" label="Mexico" />
+      </.select>
+
+      # Searchable select
+      <.select id="framework" name="framework" value="phoenix" searchable>
+        <.select_option value="phoenix" label="Phoenix" />
+        <.select_option value="rails" label="Rails" />
+        <.select_option value="django" label="Django" />
+        <.select_option value="laravel" label="Laravel" />
+      </.select>
+
+      # With option groups
+      <.select id="stack" name="stack" value="phoenix" searchable>
+        <.select_group label="Backend">
+          <.select_option value="phoenix" label="Phoenix" />
+          <.select_option value="rails" label="Rails" />
+        </.select_group>
+        <.select_separator />
+        <.select_group label="Frontend">
+          <.select_option value="react" label="React" />
+          <.select_option value="vue" label="Vue" />
+        </.select_group>
+      </.select>
+
+      # With custom trigger content
+      <.select id="status" name="status" value={@status}>
+        <:trigger>
+          <.badge variant={status_variant(@status)}>{@status}</.badge>
+        </:trigger>
+        <.select_option value="active" label="Active" />
+        <.select_option value="pending" label="Pending" />
+        <.select_option value="inactive" label="Inactive" />
+      </.select>
 
   ## Components
 
-  - `select/1` - The main select container
-  - `select_option/1` - Individual selectable options
-  - `select_group/1` - Groups of related options
-  - `select_separator/1` - Visual separator between options/groups
+  | Component | Description |
+  |-----------|-------------|
+  | `select/1` | Main container with trigger and popover |
+  | `select_option/1` | Individual selectable option |
+  | `select_group/1` | Labeled group of options |
+  | `select_separator/1` | Visual divider between options/groups |
+
+  ## Keyboard Navigation
+
+  | Key | Action |
+  |-----|--------|
+  | `Enter` / `Space` | Open dropdown or select focused option |
+  | `Escape` | Close dropdown |
+  | `ArrowDown` | Move to next option |
+  | `ArrowUp` | Move to previous option |
+  | `Home` | Jump to first option |
+  | `End` | Jump to last option |
+  | `A-Z` | Jump to first option starting with letter |
+
+  ## Form Integration
+
+  The select renders a hidden `<input>` with the selected value, making it
+  compatible with Phoenix forms and `phx-change` events:
+
+      <.simple_form for={@form} phx-change="validate" phx-submit="save">
+        <.select
+          id="role-select"
+          name={@form[:role].name}
+          value={@form[:role].value}
+        >
+          <.select_option value="admin" label="Administrator" />
+          <.select_option value="user" label="User" />
+        </.select>
+      </.simple_form>
 
   ## Colocated Hook
 
-  This component includes a colocated JavaScript hook (`.Select`) that handles:
-  - Opening/closing the dropdown
-  - Keyboard navigation
-  - Search filtering
-  - Value selection and form integration
+  The `.Select` hook handles all interactive behavior:
+  - Opening/closing the dropdown popover
+  - Keyboard navigation and letter jumping
+  - Search filtering (when `searchable`)
+  - Value selection and form `change` event dispatch
+  - Outside click detection
 
-  The hook is automatically available when you import colocated hooks in your app.js.
+  See [JavaScript Hooks](colocated-hooks.md) for more details.
+
+  ## Accessibility
+
+  - Implements WAI-ARIA combobox pattern
+  - `role="listbox"` for the options container
+  - `role="option"` for each selectable item
+  - `aria-selected` indicates current selection
+  - `aria-expanded` reflects dropdown state
+  - `aria-controls` links trigger to listbox
+  - `aria-disabled` for disabled options
+
+  > #### Required ID {: .warning}
+  >
+  > The `id` attribute is **required** for the JavaScript hook to function.
+  > Each select must have a unique ID on the page.
+
+  ## Related
+
+  - `SutraUI.LiveSelect` - For async/remote data loading
+  - `SutraUI.RadioGroup` - For smaller option sets without dropdown
+  - `SutraUI.DropdownMenu` - For action menus (not form selection)
+  - [Forms Cheatsheet](forms.cheatmd) - Form patterns
+  - [Accessibility Guide](accessibility.md) - ARIA patterns
   """
 
   use Phoenix.Component

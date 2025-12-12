@@ -1,27 +1,120 @@
 defmodule SutraUI.Toast do
   @moduledoc """
-  A toast notification component for displaying temporary messages.
+  Toast notification component for displaying temporary messages.
 
-  Toasts are used to show brief notifications that automatically disappear
-  after a set duration. They can be used for success messages, errors, or
-  general information.
+  Toasts provide brief, non-blocking notifications that automatically disappear.
+  Use them for success confirmations, error alerts, or informational messages
+  that don't require user action.
 
   ## Examples
 
-      # In your LiveView, use the flash mechanism
+      # Using with Phoenix flash (most common)
       <.toast_container flash={@flash} />
 
-      # Or programmatically show toasts
-      <.toast variant="success">
-        <:title>Success!</:title>
-        <:description>Your changes have been saved.</:description>
+      # In your LiveView, use put_flash
+      def handle_event("save", params, socket) do
+        case save_data(params) do
+          {:ok, _} ->
+            {:noreply, put_flash(socket, :info, "Changes saved successfully")}
+          {:error, _} ->
+            {:noreply, put_flash(socket, :error, "Failed to save changes")}
+        end
+      end
+
+      # Programmatic toast via push_event
+      def handle_event("complete", _params, socket) do
+        {:noreply,
+         socket
+         |> push_event("toast", %{
+           variant: "success",
+           title: "Task Complete",
+           description: "Your export is ready for download.",
+           duration: 5000
+         })}
+      end
+
+      # Individual toast (for custom layouts)
+      <.toast id="custom-toast" variant="success">
+        <:title>Upload Complete</:title>
+        <:description>Your file has been uploaded successfully.</:description>
+        <:action>
+          <.button size="sm" variant="outline">View File</.button>
+        </:action>
       </.toast>
+
+  ## Components
+
+  | Component | Description |
+  |-----------|-------------|
+  | `toast_container/1` | Container that displays flash messages |
+  | `toast/1` | Individual toast notification |
+
+  ## Variants
+
+  | Variant | Usage | Appearance |
+  |---------|-------|------------|
+  | `default` | General information | Neutral styling |
+  | `success` | Successful actions | Green/success color |
+  | `destructive` | Errors and failures | Red/danger color |
+
+  ## Programmatic Toasts
+
+  Send toasts from your LiveView using `push_event`:
+
+      push_event(socket, "toast", %{
+        variant: "success",     # "default", "success", or "destructive"
+        title: "Title text",    # Required
+        description: "Details", # Optional
+        duration: 5000          # Auto-dismiss in ms (0 = manual only)
+      })
+
+  The `.ToastContainer` hook listens for the `toast` event and creates
+  toast elements dynamically.
+
+  ## Toast Slots
+
+  | Slot | Description |
+  |------|-------------|
+  | `title` | Main toast message |
+  | `description` | Additional detail text |
+  | `action` | Optional action button |
+
+  ## Auto-Dismissal
+
+  - Flash-based toasts: Cleared when user navigates or clicks close
+  - Programmatic toasts: Auto-dismiss after `duration` milliseconds
+  - Set `duration: 0` for toasts that require manual dismissal
+
+  ## Colocated Hook
+
+  The `.ToastContainer` hook handles:
+  - Listening for `toast` push events
+  - Creating toast elements dynamically
+  - Animating show/hide transitions
+  - Auto-dismissal timers
+
+  See [JavaScript Hooks](colocated-hooks.md) for more details.
 
   ## Accessibility
 
-  - Uses `role="status"` and `aria-live="polite"` for screen reader announcements
-  - Provides close button for manual dismissal
-  - Supports keyboard navigation
+  - Uses `role="status"` for non-critical notifications
+  - Uses `aria-live="polite"` for screen reader announcements
+  - Close button has `aria-label="Close"`
+  - Focus is not stolen from current context
+
+  > #### Screen Reader Behavior {: .info}
+  >
+  > Toasts use `aria-live="polite"` which waits for the user to pause
+  > before announcing. This prevents interrupting ongoing screen reader
+  > speech. For critical alerts that must interrupt, use `SutraUI.Alert`
+  > with `role="alert"` instead.
+
+  ## Related
+
+  - `SutraUI.Alert` - For persistent, inline alerts
+  - `SutraUI.Dialog` - For messages requiring user action
+  - [JavaScript Hooks Guide](colocated-hooks.md) - Hook details
+  - [Accessibility Guide](accessibility.md) - ARIA patterns
   """
 
   use Phoenix.Component

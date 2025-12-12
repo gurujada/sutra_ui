@@ -1,25 +1,122 @@
 defmodule SutraUI.Tabs do
   @moduledoc """
-  A set of layered sections of content, known as tab panels.
+  A tabbed interface component for organizing content into separate views.
 
-  Tabs organize content into separate views where only one view is
-  visible at a time.
+  Tabs allow users to switch between different views where only one panel
+  is visible at a time. Useful for settings pages, dashboards, or any UI
+  that needs to organize related content without navigation.
 
   ## Examples
 
-      <.tabs id="settings-tabs" default_value="tab1">
-        <:tab value="tab1">Account</:tab>
-        <:tab value="tab2">Password</:tab>
-        <:panel value="tab1">Account settings content</:panel>
-        <:panel value="tab2">Password settings content</:panel>
+      # Basic tabs
+      <.tabs id="settings-tabs" default_value="account">
+        <:tab value="account">Account</:tab>
+        <:tab value="password">Password</:tab>
+        <:tab value="notifications">Notifications</:tab>
+        <:panel value="account">
+          <h3>Account Settings</h3>
+          <p>Manage your account details here.</p>
+        </:panel>
+        <:panel value="password">
+          <h3>Change Password</h3>
+          <.input type="password" name="current" label="Current Password" />
+        </:panel>
+        <:panel value="notifications">
+          <h3>Notification Preferences</h3>
+          <.switch name="email_notifications" label="Email notifications" />
+        </:panel>
       </.tabs>
+
+      # With disabled tab
+      <.tabs id="feature-tabs" default_value="overview">
+        <:tab value="overview">Overview</:tab>
+        <:tab value="analytics">Analytics</:tab>
+        <:tab value="reports" disabled>Reports (Coming Soon)</:tab>
+        <:panel value="overview">Overview content...</:panel>
+        <:panel value="analytics">Analytics content...</:panel>
+        <:panel value="reports">Reports content...</:panel>
+      </.tabs>
+
+      # With icons in tabs
+      <.tabs id="nav-tabs" default_value="home">
+        <:tab value="home">
+          <.icon name="hero-home" class="size-4 mr-2" /> Home
+        </:tab>
+        <:tab value="settings">
+          <.icon name="hero-cog-6-tooth" class="size-4 mr-2" /> Settings
+        </:tab>
+        <:panel value="home">Home content</:panel>
+        <:panel value="settings">Settings content</:panel>
+      </.tabs>
+
+  ## Slots
+
+  | Slot | Required | Description |
+  |------|----------|-------------|
+  | `tab` | Yes | Tab trigger buttons |
+  | `panel` | Yes | Content panels (matched by `value`) |
+
+  ### Tab Slot Attributes
+
+  | Attribute | Type | Description |
+  |-----------|------|-------------|
+  | `value` | string | **Required.** Unique identifier, matches panel |
+  | `disabled` | boolean | Prevents tab from being selected |
+
+  ### Panel Slot Attributes
+
+  | Attribute | Type | Description |
+  |-----------|------|-------------|
+  | `value` | string | **Required.** Matches corresponding tab |
+
+  ## Keyboard Navigation
+
+  | Key | Action |
+  |-----|--------|
+  | `ArrowLeft` | Move to previous tab |
+  | `ArrowRight` | Move to next tab |
+  | `Home` | Move to first tab |
+  | `End` | Move to last tab |
+
+  ## How It Works
+
+  Tab switching is handled entirely client-side using `Phoenix.LiveView.JS`:
+  - No server round-trip for tab changes
+  - Instant panel switching
+  - Keyboard navigation via colocated hook
+
+  The `default_value` determines which tab is active on initial render.
+  Subsequent tab changes update the DOM directly without re-rendering.
+
+  ## Colocated Hook
+
+  The `.Tabs` hook provides keyboard navigation. Tab click handling
+  uses `phx-click` with `JS` commands for immediate feedback.
+
+  See [JavaScript Hooks](colocated-hooks.md) for more details.
 
   ## Accessibility
 
-  - Uses proper ARIA tablist/tab/tabpanel roles
-  - Keyboard navigation with arrow keys
+  - Uses `role="tablist"` for the tab container
+  - Uses `role="tab"` for each tab trigger
+  - Uses `role="tabpanel"` for each content panel
   - `aria-selected` indicates active tab
-  - `aria-controls` links tabs to panels
+  - `aria-controls` links tab to its panel
+  - `aria-labelledby` links panel to its tab
+  - `tabindex` management for roving focus
+  - Disabled tabs use `disabled` attribute
+
+  > #### Panel Focus {: .tip}
+  >
+  > Tab panels have `tabindex="0"` allowing keyboard users to tab into
+  > panel content after selecting a tab.
+
+  ## Related
+
+  - `SutraUI.Accordion` - For collapsible sections (multiple can be open)
+  - `SutraUI.TabNav` - For page navigation that looks like tabs
+  - `SutraUI.NavPills` - For pill-style navigation
+  - [Accessibility Guide](accessibility.md) - ARIA patterns
   """
 
   use Phoenix.Component

@@ -1,0 +1,487 @@
+# Forms Cheatsheet
+
+Quick reference for form controls and patterns in Sutra UI.
+
+## Basic Form
+{: .col-2}
+
+### Simple Form with Changeset
+
+```heex
+<.simple_form for={@form} phx-change="validate" phx-submit="save">
+  <.input field={@form[:name]} label="Name" />
+  <.input field={@form[:email]} type="email" label="Email" />
+  <:actions>
+    <.button type="submit" phx-disable-with="Saving...">
+      Save
+    </.button>
+  </:actions>
+</.simple_form>
+```
+
+### Manual Form
+
+```heex
+<form phx-submit="save">
+  <.field>
+    <:label>Name</:label>
+    <.input type="text" name="name" value={@name} />
+  </.field>
+  <.button type="submit">Save</.button>
+</form>
+```
+
+## Text Inputs
+{: .col-2}
+
+### Basic Input
+
+```heex
+<.input type="text" name="name" value={@name} />
+<.input type="text" name="name" placeholder="Enter name" />
+<.input type="text" name="name" disabled />
+```
+
+### With Field Wrapper
+
+```heex
+<.field>
+  <:label>Full Name</:label>
+  <.input type="text" name="name" />
+  <:description>Enter your legal name</:description>
+</.field>
+```
+
+### Input with Errors
+
+```heex
+<.field>
+  <:label>Email</:label>
+  <.input 
+    type="email" 
+    name="email"
+    value={@email}
+    aria-invalid={@errors != []}
+  />
+  <:error :for={error <- @errors}>{error}</:error>
+</.field>
+```
+
+### Input Types Reference
+
+| Type | Example |
+|------|---------|
+| `text` | `<.input type="text" />` |
+| `email` | `<.input type="email" />` |
+| `password` | `<.input type="password" />` |
+| `number` | `<.input type="number" min="0" />` |
+| `tel` | `<.input type="tel" />` |
+| `url` | `<.input type="url" />` |
+| `search` | `<.input type="search" />` |
+| `date` | `<.input type="date" />` |
+| `time` | `<.input type="time" />` |
+| `datetime-local` | `<.input type="datetime-local" />` |
+
+## Textarea
+{: .col-2}
+
+### Basic Textarea
+
+```heex
+<.textarea name="bio" />
+<.textarea name="bio" rows="6" />
+<.textarea name="bio" placeholder="Tell us about yourself..." />
+```
+
+### With Character Count
+
+```heex
+<.field>
+  <:label>Bio</:label>
+  <.textarea name="bio" maxlength="500" />
+  <:description>{String.length(@bio)}/500 characters</:description>
+</.field>
+```
+
+## Input Groups
+{: .col-2}
+
+### With Prefix
+
+```heex
+<.input_group>
+  <:prefix>https://</:prefix>
+  <.input type="text" name="domain" placeholder="example.com" />
+</.input_group>
+```
+
+### With Suffix
+
+```heex
+<.input_group>
+  <.input type="number" name="weight" />
+  <:suffix>kg</:suffix>
+</.input_group>
+```
+
+### With Icons
+
+```heex
+<.input_group>
+  <:prefix><.icon name="hero-magnifying-glass" /></:prefix>
+  <.input type="search" name="q" placeholder="Search..." />
+</.input_group>
+
+<.input_group>
+  <:prefix><.icon name="hero-currency-dollar" /></:prefix>
+  <.input type="number" name="price" />
+  <:suffix>.00</:suffix>
+</.input_group>
+```
+
+## Selection Controls
+{: .col-2}
+
+### Checkbox
+
+```heex
+<.checkbox id="terms" name="terms" />
+
+<!-- With label -->
+<div class="flex items-center gap-2">
+  <.checkbox id="terms" name="terms" />
+  <.label for="terms">I agree to the terms</.label>
+</div>
+
+<!-- Checked by default -->
+<.checkbox id="subscribe" name="subscribe" checked />
+```
+
+### Checkbox Group Pattern
+
+```heex
+<fieldset>
+  <legend class="text-sm font-medium">Notifications</legend>
+  <div class="space-y-2 mt-2">
+    <div class="flex items-center gap-2">
+      <.checkbox id="email" name="notifications[]" value="email" />
+      <.label for="email">Email</.label>
+    </div>
+    <div class="flex items-center gap-2">
+      <.checkbox id="sms" name="notifications[]" value="sms" />
+      <.label for="sms">SMS</.label>
+    </div>
+  </div>
+</fieldset>
+```
+
+### Switch
+
+```heex
+<.switch id="dark-mode" name="dark_mode" />
+
+<!-- With label -->
+<div class="flex items-center gap-2">
+  <.switch id="notifications" name="notifications" />
+  <.label for="notifications">Enable notifications</.label>
+</div>
+```
+
+### Radio Group
+
+```heex
+<.radio_group name="plan" value={@selected_plan}>
+  <:radio value="free">Free</:radio>
+  <:radio value="pro">Pro - $10/mo</:radio>
+  <:radio value="enterprise">Enterprise - Contact us</:radio>
+</.radio_group>
+```
+
+### Radio with Descriptions
+
+```heex
+<.radio_group name="shipping">
+  <:radio value="standard">
+    <span class="font-medium">Standard</span>
+    <span class="text-muted-foreground">3-5 business days</span>
+  </:radio>
+  <:radio value="express">
+    <span class="font-medium">Express</span>
+    <span class="text-muted-foreground">1-2 business days</span>
+  </:radio>
+</.radio_group>
+```
+
+## Select Controls
+{: .col-2}
+
+### Basic Select
+
+```heex
+<.select 
+  id="country"
+  name="country"
+  placeholder="Select a country"
+  options={[
+    {"United States", "us"},
+    {"Canada", "ca"},
+    {"Mexico", "mx"}
+  ]}
+/>
+```
+
+### Select with Groups
+
+```heex
+<.select 
+  id="timezone"
+  name="timezone"
+  placeholder="Select timezone"
+  options={[
+    {"Americas": [
+      {"New York", "America/New_York"},
+      {"Los Angeles", "America/Los_Angeles"}
+    ]},
+    {"Europe": [
+      {"London", "Europe/London"},
+      {"Paris", "Europe/Paris"}
+    ]}
+  ]}
+/>
+```
+
+### Select with Default Value
+
+```heex
+<.select 
+  id="status"
+  name="status"
+  value={@status}
+  options={[
+    {"Active", "active"},
+    {"Inactive", "inactive"},
+    {"Pending", "pending"}
+  ]}
+/>
+```
+
+### Live Select (Async Search)
+
+```heex
+<.live_select
+  id="user-select"
+  name="user_id"
+  placeholder="Search users..."
+  search_event="search_users"
+  value={@selected_user}
+/>
+```
+
+In your LiveView:
+
+```elixir
+def handle_event("search_users", %{"query" => query}, socket) do
+  users = Accounts.search_users(query)
+  options = Enum.map(users, &{&1.name, &1.id})
+  {:noreply, push_event(socket, "live_select:options", %{options: options})}
+end
+```
+
+## Sliders
+{: .col-2}
+
+### Basic Slider
+
+```heex
+<.slider id="volume" name="volume" min="0" max="100" value="50" />
+```
+
+### Slider with Steps
+
+```heex
+<.slider id="rating" name="rating" min="1" max="5" step="1" value="3" />
+```
+
+### Range Slider (Dual Handle)
+
+```heex
+<.range_slider
+  id="price-range"
+  name="price"
+  min="0"
+  max="1000"
+  min_value="200"
+  max_value="800"
+/>
+```
+
+### Slider with Labels
+
+```heex
+<.field>
+  <:label>Volume: {@ volume}%</:label>
+  <.slider 
+    id="volume" 
+    name="volume" 
+    min="0" 
+    max="100" 
+    value={@volume}
+    phx-change="update_volume"
+  />
+</.field>
+```
+
+## Form Patterns
+{: .col-2}
+
+### Inline Validation
+
+```elixir
+# LiveView
+def handle_event("validate", %{"user" => params}, socket) do
+  changeset =
+    %User{}
+    |> User.changeset(params)
+    |> Map.put(:action, :validate)
+
+  {:noreply, assign(socket, form: to_form(changeset))}
+end
+```
+
+```heex
+<.simple_form for={@form} phx-change="validate" phx-submit="save">
+  <.input field={@form[:email]} type="email" label="Email" />
+  <:actions>
+    <.button type="submit">Save</.button>
+  </:actions>
+</.simple_form>
+```
+
+### Form with Loading State
+
+```heex
+<.simple_form for={@form} phx-submit="save">
+  <.input field={@form[:name]} label="Name" />
+  <:actions>
+    <.button type="submit" loading={@saving} phx-disable-with="Saving...">
+      Save
+    </.button>
+  </:actions>
+</.simple_form>
+```
+
+### Multi-Step Form
+
+```heex
+<.tabs id="form-steps" default_value={@step}>
+  <:tab value="1" disabled={@step < 1}>Step 1</:tab>
+  <:tab value="2" disabled={@step < 2}>Step 2</:tab>
+  <:tab value="3" disabled={@step < 3}>Review</:tab>
+  
+  <:panel value="1">
+    <.simple_form for={@form} phx-submit="next_step">
+      <.input field={@form[:name]} label="Name" />
+      <:actions>
+        <.button type="submit">Next</.button>
+      </:actions>
+    </.simple_form>
+  </:panel>
+  <!-- Additional panels... -->
+</.tabs>
+```
+
+## Filter Forms
+{: .col-2}
+
+### Filter Bar
+
+```heex
+<.filter_bar>
+  <.input type="search" name="q" value={@query} placeholder="Search..." />
+  <.select 
+    id="status" 
+    name="status" 
+    value={@status}
+    options={[{"All", ""}, {"Active", "active"}, {"Inactive", "inactive"}]}
+  />
+  <.select
+    id="sort"
+    name="sort"
+    value={@sort}
+    options={[{"Newest", "newest"}, {"Oldest", "oldest"}, {"Name", "name"}]}
+  />
+  <.button type="submit">Apply</.button>
+  <.button type="button" variant="outline" phx-click="reset_filters">
+    Reset
+  </.button>
+</.filter_bar>
+```
+
+### Date Range Filter
+
+```heex
+<.filter_bar>
+  <.input type="date" name="start_date" value={@start_date} />
+  <span class="text-muted-foreground">to</span>
+  <.input type="date" name="end_date" value={@end_date} />
+  <.button type="submit">Filter</.button>
+</.filter_bar>
+```
+
+## Error Handling
+{: .col-2}
+
+### Field with Error
+
+```heex
+<.field>
+  <:label>Email</:label>
+  <.input 
+    field={@form[:email]} 
+    type="email"
+    phx-debounce="blur"
+  />
+  <:error :for={error <- @form[:email].errors}>
+    {translate_error(error)}
+  </:error>
+</.field>
+```
+
+### Form-Level Errors
+
+```heex
+<.simple_form for={@form} phx-submit="save">
+  <.alert :if={@form.errors[:base]} variant="destructive">
+    {translate_error(@form.errors[:base])}
+  </.alert>
+  
+  <.input field={@form[:email]} label="Email" />
+  <:actions>
+    <.button type="submit">Save</.button>
+  </:actions>
+</.simple_form>
+```
+
+### Async Validation
+
+```elixir
+def handle_event("validate_email", %{"email" => email}, socket) do
+  case Accounts.email_available?(email) do
+    true -> {:noreply, assign(socket, email_error: nil)}
+    false -> {:noreply, assign(socket, email_error: "Email already taken")}
+  end
+end
+```
+
+```heex
+<.field>
+  <:label>Email</:label>
+  <.input 
+    type="email" 
+    name="email"
+    phx-blur="validate_email"
+    phx-debounce="500"
+  />
+  <:error :if={@email_error}>{@email_error}</:error>
+</.field>
+```

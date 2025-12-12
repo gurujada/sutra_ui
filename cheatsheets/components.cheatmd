@@ -1,0 +1,546 @@
+# Components Cheatsheet
+
+Quick reference for all 44 Sutra UI components.
+
+## Foundation
+{: .col-2}
+
+### Button
+
+```heex
+<.button>Click me</.button>
+<.button variant="secondary">Secondary</.button>
+<.button variant="destructive">Delete</.button>
+<.button variant="outline">Outline</.button>
+<.button variant="ghost">Ghost</.button>
+<.button variant="link">Link</.button>
+```
+
+### Button Sizes
+
+```heex
+<.button size="sm">Small</.button>
+<.button size="default">Default</.button>
+<.button size="lg">Large</.button>
+<.button size="icon" aria-label="Settings">
+  <.icon name="hero-cog-6-tooth" />
+</.button>
+```
+
+### Button Navigation
+
+```heex
+<.button navigate={~p"/users"}>Navigate</.button>
+<.button patch={~p"/users/1"}>Patch</.button>
+<.button href="https://example.com">Link</.button>
+```
+
+### Button States
+
+```heex
+<.button loading>Loading...</.button>
+<.button disabled>Disabled</.button>
+```
+
+### Icon
+
+```heex
+<.icon name="hero-home" />
+<.icon name="hero-home-solid" />
+<.icon name="hero-home" class="h-6 w-6" />
+```
+
+### Badge
+
+```heex
+<.badge>Default</.badge>
+<.badge variant="secondary">Secondary</.badge>
+<.badge variant="destructive">Error</.badge>
+<.badge variant="outline">Outline</.badge>
+```
+
+### Spinner
+
+```heex
+<.spinner />
+<.spinner size="sm" />
+<.spinner size="lg" />
+```
+
+### Kbd
+
+```heex
+<.kbd>⌘</.kbd>
+<.kbd>Ctrl</.kbd> + <.kbd>C</.kbd>
+```
+
+## Form Controls
+{: .col-2}
+
+### Input
+
+```heex
+<.input type="text" name="name" />
+<.input type="email" name="email" placeholder="you@example.com" />
+<.input type="password" name="password" />
+<.input type="number" name="quantity" min="0" max="100" />
+```
+
+### Input Types
+
+| Type | Usage |
+|------|-------|
+| `text` | General text |
+| `email` | Email addresses |
+| `password` | Passwords |
+| `number` | Numeric values |
+| `tel` | Phone numbers |
+| `url` | URLs |
+| `search` | Search fields |
+| `date` | Date picker |
+| `time` | Time picker |
+| `datetime-local` | Date and time |
+
+### Textarea
+
+```heex
+<.textarea name="bio" rows="4" />
+<.textarea name="notes" placeholder="Enter notes..." />
+```
+
+### Label
+
+```heex
+<.label for="email">Email</.label>
+```
+
+### Checkbox
+
+```heex
+<.checkbox id="terms" name="terms" />
+<.checkbox id="newsletter" name="newsletter" checked />
+```
+
+### Switch
+
+```heex
+<.switch id="notifications" name="notifications" />
+<.switch id="dark-mode" name="dark_mode" checked />
+```
+
+### Radio Group
+
+```heex
+<.radio_group name="plan">
+  <:radio value="free">Free</:radio>
+  <:radio value="pro">Pro</:radio>
+  <:radio value="enterprise">Enterprise</:radio>
+</.radio_group>
+```
+
+### Select
+
+```heex
+<.select 
+  id="country" 
+  name="country"
+  placeholder="Select country"
+  options={[
+    {"United States", "us"},
+    {"United Kingdom", "uk"},
+    {"Canada", "ca"}
+  ]}
+/>
+```
+
+### Slider
+
+```heex
+<.slider id="volume" name="volume" min="0" max="100" value="50" />
+```
+
+### Range Slider
+
+```heex
+<.range_slider 
+  id="price-range"
+  name="price"
+  min="0" 
+  max="1000" 
+  min_value="100" 
+  max_value="500"
+/>
+```
+
+### Live Select
+
+```heex
+<.live_select
+  id="users"
+  name="user_id"
+  placeholder="Search users..."
+  search_event="search_users"
+/>
+```
+
+### Field
+
+```heex
+<.field>
+  <:label>Email</:label>
+  <.input type="email" name="email" />
+  <:description>We'll never share your email.</:description>
+  <:error>Invalid email address</:error>
+</.field>
+```
+
+### Input Group
+
+```heex
+<.input_group>
+  <:prefix>$</:prefix>
+  <.input type="number" name="amount" />
+  <:suffix>.00</:suffix>
+</.input_group>
+
+<.input_group>
+  <:prefix><.icon name="hero-magnifying-glass" /></:prefix>
+  <.input type="search" name="q" placeholder="Search..." />
+</.input_group>
+```
+
+### Simple Form
+
+```heex
+<.simple_form for={@form} phx-submit="save">
+  <.input field={@form[:name]} label="Name" />
+  <.input field={@form[:email]} type="email" label="Email" />
+  <:actions>
+    <.button type="submit">Save</.button>
+  </:actions>
+</.simple_form>
+```
+
+### Filter Bar
+
+```heex
+<.filter_bar>
+  <.input type="search" name="q" placeholder="Search..." />
+  <.select id="status" name="status" options={@status_options} />
+  <.button type="submit">Filter</.button>
+</.filter_bar>
+```
+
+## Layout
+{: .col-2}
+
+### Card
+
+```heex
+<.card>
+  <:header>
+    <:title>Card Title</:title>
+    <:description>Card description</:description>
+  </:header>
+  Card content goes here
+  <:footer>
+    <.button>Action</.button>
+  </:footer>
+</.card>
+```
+
+### Header
+
+```heex
+<.header>
+  <:title>Page Title</:title>
+  <:subtitle>Optional subtitle</:subtitle>
+  <:actions>
+    <.button>Action</.button>
+  </:actions>
+</.header>
+```
+
+### Table
+
+```heex
+<.table id="users" rows={@users}>
+  <:col :let={user} label="Name">{user.name}</:col>
+  <:col :let={user} label="Email">{user.email}</:col>
+  <:action :let={user}>
+    <.button size="sm" variant="ghost">Edit</.button>
+  </:action>
+</.table>
+```
+
+### Item
+
+```heex
+<.item>
+  <:icon><.icon name="hero-document" /></:icon>
+  <:title>Document Title</:title>
+  <:description>Description text</:description>
+  <:action><.button size="sm">View</.button></:action>
+</.item>
+```
+
+### Sidebar
+
+```heex
+<.sidebar id="main-sidebar">
+  <:header>
+    <img src="/logo.svg" alt="Logo" />
+  </:header>
+  <:nav>
+    <.sidebar_item href="/" icon="hero-home">Home</.sidebar_item>
+    <.sidebar_item href="/users" icon="hero-users">Users</.sidebar_item>
+  </:nav>
+  <:footer>
+    <.sidebar_item href="/settings" icon="hero-cog">Settings</.sidebar_item>
+  </:footer>
+</.sidebar>
+```
+
+## Feedback
+{: .col-2}
+
+### Alert
+
+```heex
+<.alert>Default alert message</.alert>
+<.alert variant="destructive">Error message</.alert>
+<.alert>
+  <:title>Heads up!</:title>
+  You can add components to your app using the CLI.
+</.alert>
+```
+
+### Progress
+
+```heex
+<.progress value={33} />
+<.progress value={66} max={100} />
+```
+
+### Skeleton
+
+```heex
+<.skeleton class="h-4 w-[250px]" />
+<.skeleton class="h-12 w-12 rounded-full" />
+```
+
+### Empty
+
+```heex
+<.empty>
+  <:icon><.icon name="hero-inbox" class="h-12 w-12" /></:icon>
+  <:title>No messages</:title>
+  <:description>Get started by sending your first message.</:description>
+  <:action><.button>Send Message</.button></:action>
+</.empty>
+```
+
+### Loading State
+
+```heex
+<.loading_state>Loading data...</.loading_state>
+<.loading_state>
+  <.spinner />
+  Please wait...
+</.loading_state>
+```
+
+### Toast
+
+```heex
+<.toaster />
+
+<!-- Trigger toasts from LiveView -->
+<.toast variant="default">Changes saved</.toast>
+<.toast variant="destructive">Something went wrong</.toast>
+```
+
+## Overlay
+{: .col-2}
+
+### Dialog
+
+```heex
+<.dialog id="confirm-dialog">
+  <:trigger>
+    <.button>Open Dialog</.button>
+  </:trigger>
+  <:title>Confirm Action</:title>
+  <:description>Are you sure?</:description>
+  Dialog content here
+  <:footer>
+    <.button variant="outline" onclick="this.closest('dialog').close()">
+      Cancel
+    </.button>
+    <.button phx-click="confirm">Confirm</.button>
+  </:footer>
+</.dialog>
+```
+
+### Dialog JS Commands
+
+```elixir
+import SutraUI.Dialog
+
+<.button phx-click={show_dialog("my-dialog")}>Open</.button>
+<.button phx-click={hide_dialog("my-dialog")}>Close</.button>
+```
+
+### Popover
+
+```heex
+<.popover id="info-popover">
+  <:trigger>
+    <.button variant="outline">Info</.button>
+  </:trigger>
+  <:content>
+    <p>Popover content here</p>
+  </:content>
+</.popover>
+```
+
+### Tooltip
+
+```heex
+<.tooltip content="Helpful tip">
+  <.button>Hover me</.button>
+</.tooltip>
+```
+
+### Dropdown Menu
+
+```heex
+<.dropdown_menu id="actions-menu">
+  <:trigger>
+    <.button variant="outline">Actions</.button>
+  </:trigger>
+  <:item phx-click="edit">Edit</:item>
+  <:item phx-click="duplicate">Duplicate</:item>
+  <:separator />
+  <:item phx-click="delete" variant="destructive">Delete</:item>
+</.dropdown_menu>
+```
+
+### Command
+
+```heex
+<.command id="command-palette">
+  <:input placeholder="Type a command..." />
+  <:group heading="Suggestions">
+    <:item value="calendar">Calendar</:item>
+    <:item value="search">Search</:item>
+    <:item value="settings">Settings</:item>
+  </:group>
+</.command>
+```
+
+## Navigation
+{: .col-2}
+
+### Tabs
+
+```heex
+<.tabs id="settings-tabs" default_value="account">
+  <:tab value="account">Account</:tab>
+  <:tab value="password">Password</:tab>
+  <:tab value="notifications">Notifications</:tab>
+  <:panel value="account">Account settings...</:panel>
+  <:panel value="password">Password settings...</:panel>
+  <:panel value="notifications">Notification preferences...</:panel>
+</.tabs>
+```
+
+### Accordion
+
+```heex
+<.accordion id="faq">
+  <:item value="q1" title="What is Sutra UI?">
+    A Phoenix LiveView component library.
+  </:item>
+  <:item value="q2" title="Is it accessible?">
+    Yes, all components follow WAI-ARIA patterns.
+  </:item>
+</.accordion>
+```
+
+### Breadcrumb
+
+```heex
+<.breadcrumb>
+  <:item href="/">Home</:item>
+  <:item href="/products">Products</:item>
+  <:item>Current Page</:item>
+</.breadcrumb>
+```
+
+### Pagination
+
+```heex
+<.pagination 
+  page={@page} 
+  total_pages={@total_pages}
+  path={~p"/users"}
+/>
+```
+
+### Nav Pills
+
+```heex
+<.nav_pills>
+  <:item href="/dashboard" active>Dashboard</:item>
+  <:item href="/analytics">Analytics</:item>
+  <:item href="/reports">Reports</:item>
+</.nav_pills>
+```
+
+### Tab Nav
+
+```heex
+<.tab_nav>
+  <:item href={~p"/settings/profile"} active={@tab == :profile}>
+    Profile
+  </:item>
+  <:item href={~p"/settings/account"} active={@tab == :account}>
+    Account
+  </:item>
+</.tab_nav>
+```
+
+## Display
+{: .col-2}
+
+### Avatar
+
+```heex
+<.avatar src="/avatar.jpg" alt="User" />
+<.avatar src={nil} fallback="JD" />
+<.avatar size="sm" src="/avatar.jpg" />
+<.avatar size="lg" src="/avatar.jpg" />
+```
+
+### Carousel
+
+```heex
+<.carousel id="images">
+  <:item>
+    <img src="/image1.jpg" alt="Image 1" />
+  </:item>
+  <:item>
+    <img src="/image2.jpg" alt="Image 2" />
+  </:item>
+  <:item>
+    <img src="/image3.jpg" alt="Image 3" />
+  </:item>
+</.carousel>
+```
+
+### Theme Switcher
+
+```heex
+<.theme_switcher />
+```
