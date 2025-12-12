@@ -632,7 +632,7 @@ defmodule SutraUI.RangeSlider do
           const formattedMax = this.formatValue(this.valueMax);
 
           // Dispatch custom event for vanilla JS listeners
-          this.el.dispatchEvent(new CustomEvent('phx-ui:range-slide', {
+          this.el.dispatchEvent(new CustomEvent('sutra-ui:range-slide', {
             detail: { min: formattedMin, max: formattedMax },
             bubbles: true
           }));
@@ -653,7 +653,7 @@ defmodule SutraUI.RangeSlider do
           const formattedMax = this.formatValue(this.valueMax);
 
           // Dispatch custom event for vanilla JS listeners
-          this.el.dispatchEvent(new CustomEvent('phx-ui:range-change', {
+          this.el.dispatchEvent(new CustomEvent('sutra-ui:range-change', {
             detail: { min: formattedMin, max: formattedMax },
             bubbles: true
           }));

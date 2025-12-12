@@ -45,11 +45,11 @@ attr(:id, :string, default: fn -> "component-#{System.unique_integer()}" end)
 
 ### 3. Event Naming Convention
 
-Custom JavaScript events use the `phx-ui:` namespace:
+Custom JavaScript events use the `sutra-ui:` namespace:
 
 ```javascript
 // Good
-this.el.dispatchEvent(new CustomEvent('phx-ui:component-action', { detail: {...} }))
+this.el.dispatchEvent(new CustomEvent('sutra-ui:component-action', { detail: {...} }))
 
 // Avoid
 this.el.dispatchEvent(new CustomEvent('component-action', { detail: {...} }))

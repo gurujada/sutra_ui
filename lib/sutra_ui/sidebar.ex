@@ -79,17 +79,17 @@ defmodule SutraUI.Sidebar do
   You can control the sidebar state from JavaScript using custom events:
 
       // Toggle sidebar
-      document.dispatchEvent(new CustomEvent('phx-ui:sidebar', {
+      document.dispatchEvent(new CustomEvent('sutra-ui:sidebar', {
         detail: { id: 'main-sidebar' }
       }));
 
       // Open sidebar
-      document.dispatchEvent(new CustomEvent('phx-ui:sidebar', {
+      document.dispatchEvent(new CustomEvent('sutra-ui:sidebar', {
         detail: { id: 'main-sidebar', action: 'open' }
       }));
 
       // Close sidebar
-      document.dispatchEvent(new CustomEvent('phx-ui:sidebar', {
+      document.dispatchEvent(new CustomEvent('sutra-ui:sidebar', {
         detail: { id: 'main-sidebar', action: 'close' }
       }));
 
@@ -207,8 +207,8 @@ defmodule SutraUI.Sidebar do
         destroyed() {
           // Clean up event listeners
           window.removeEventListener('popstate', this.updateCurrentPageLinksHandler);
-          window.removeEventListener('phx-ui:locationchange', this.updateCurrentPageLinksHandler);
-          document.removeEventListener('phx-ui:sidebar', this.sidebarEventHandler);
+          window.removeEventListener('sutra-ui:locationchange', this.updateCurrentPageLinksHandler);
+          document.removeEventListener('sutra-ui:sidebar', this.sidebarEventHandler);
         },
 
         initializeSidebar() {
@@ -232,10 +232,10 @@ defmodule SutraUI.Sidebar do
 
           // Listen for navigation events to update current page links
           window.addEventListener('popstate', this.updateCurrentPageLinksHandler);
-          window.addEventListener('phx-ui:locationchange', this.updateCurrentPageLinksHandler);
+          window.addEventListener('sutra-ui:locationchange', this.updateCurrentPageLinksHandler);
 
           // Listen for programmatic control events
-          document.addEventListener('phx-ui:sidebar', this.sidebarEventHandler);
+          document.addEventListener('sutra-ui:sidebar', this.sidebarEventHandler);
 
           // Handle clicks on backdrop to close
           if (this.backdrop) {
@@ -251,7 +251,7 @@ defmodule SutraUI.Sidebar do
 
           // Mark as initialized
           this.el.dataset.sidebarInitialized = true;
-          this.el.dispatchEvent(new CustomEvent('phx-ui:initialized'));
+          this.el.dispatchEvent(new CustomEvent('sutra-ui:initialized'));
         },
 
         handleSidebarEvent(event) {

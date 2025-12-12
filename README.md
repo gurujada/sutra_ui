@@ -4,7 +4,7 @@
 
 A pure Phoenix LiveView UI component library inspired by shadcn/ui.
 
-Built for **Tailwind CSS v4** and **Phoenix LiveView 1.0+**.
+Built for **Tailwind CSS v4** and **Phoenix LiveView 1.1+**.
 
 ## Why Sutra UI?
 
@@ -12,7 +12,7 @@ Built for **Tailwind CSS v4** and **Phoenix LiveView 1.0+**.
 - **CSS-first theming** - Customize colors with CSS variables. No build step, no config files.
 - **Copy-paste friendly** - Like shadcn/ui, components are meant to be understood and modified.
 - **Server-driven** - All state lives on the server. No client-side state sync headaches.
-- **Production-ready** - 677 tests, full accessibility support, dark mode included.
+- **Production-ready** - 776 tests, full accessibility support, dark mode included.
 - **LLM-friendly** - Includes `usage_rules.md` with guidelines for AI assistants working with this codebase.
 
 ## Features
@@ -61,24 +61,7 @@ In your `assets/css/app.css`:
 /* Your app's custom styles... */
 ```
 
-### 3. Setup JavaScript Hooks
-
-Sutra UI components use Phoenix LiveView's colocated hooks. In your `assets/js/app.js`:
-
-```javascript
-import {Socket} from "phoenix"
-import {LiveSocket} from "phoenix_live_view"
-import {hooks as sutraUiHooks} from "phoenix-colocated/sutra_ui"
-
-const liveSocket = new LiveSocket("/live", Socket, {
-  hooks: {...sutraUiHooks},
-  // ... other options
-})
-```
-
-> **Note:** `phoenix-colocated` is built into Phoenix LiveView 1.0+. No additional package needed.
-
-### 4. Import Components
+### 3. Import Components
 
 In your `my_app_web.ex`:
 
@@ -287,7 +270,7 @@ This library includes `usage_rules.md` with detailed guidelines for AI assistant
 
 - CSS-first styling patterns
 - Required ID attributes for hook-based components
-- Event naming conventions (`phx-ui:*` namespace)
+- Event naming conventions (`sutra-ui:*` namespace)
 - Component structure patterns
 - Testing conventions
 

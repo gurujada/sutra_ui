@@ -9,13 +9,11 @@ defmodule Mix.Tasks.SutraUi.Install do
   This task will:
 
   1. Add the CSS import to your `assets/css/app.css`
-  2. Add the JS hooks import to your `assets/js/app.js`
-  3. Add `use SutraUI` to your web module
+  2. Add `use SutraUI` to your web module
 
   ## Options
 
   * `--no-css` - Skip CSS setup
-  * `--no-js` - Skip JS hooks setup
   * `--no-web` - Skip web module setup
   * `--dry-run` - Show what would be changed without making changes
 
@@ -31,7 +29,6 @@ defmodule Mix.Tasks.SutraUi.Install do
       OptionParser.parse(args,
         strict: [
           no_css: :boolean,
-          no_js: :boolean,
           no_web: :boolean,
           dry_run: :boolean
         ]
@@ -46,10 +43,6 @@ defmodule Mix.Tasks.SutraUi.Install do
 
     unless Keyword.get(opts, :no_css) do
       setup_css(dry_run?)
-    end
-
-    unless Keyword.get(opts, :no_js) do
-      setup_js(dry_run?)
     end
 
     unless Keyword.get(opts, :no_web) do
@@ -126,74 +119,6 @@ defmodule Mix.Tasks.SutraUi.Install do
     else
       Mix.shell().info(
         "#{IO.ANSI.yellow()}[skip]#{IO.ANSI.reset()} #{css_path} not found - please add manually"
-      )
-    end
-  end
-
-  defp setup_js(dry_run?) do
-    js_path = "assets/js/app.js"
-
-    if File.exists?(js_path) do
-      content = File.read!(js_path)
-
-      if String.contains?(content, "phoenix-colocated/sutra_ui") do
-        Mix.shell().info(
-          "#{IO.ANSI.yellow()}[skip]#{IO.ANSI.reset()} JS hooks already configured"
-        )
-      else
-        # Add import statement
-        import_line = ~s|import {hooks as sutraUiHooks} from "phoenix-colocated/sutra_ui"\n|
-
-        new_content =
-          if String.contains?(content, "phoenix_live_view") do
-            # Add import after phoenix_live_view import
-            String.replace(
-              content,
-              ~r/(import.*phoenix_live_view.*\n)/,
-              "\\1#{import_line}",
-              global: false
-            )
-          else
-            # Prepend to file
-            import_line <> content
-          end
-
-        # Add hooks to LiveSocket if not already spread
-        new_content =
-          if String.contains?(new_content, "sutraUiHooks") and
-               not String.contains?(new_content, "...sutraUiHooks") do
-            # Try to add to existing hooks object
-            cond do
-              String.contains?(new_content, "hooks: {") ->
-                String.replace(
-                  new_content,
-                  ~r/hooks:\s*\{/,
-                  "hooks: {...sutraUiHooks, ",
-                  global: false
-                )
-
-              String.contains?(new_content, "hooks:") ->
-                # hooks: someVar -> hooks: {...sutraUiHooks, ...someVar}
-                new_content
-
-              true ->
-                new_content
-            end
-          else
-            new_content
-          end
-
-        if dry_run? do
-          Mix.shell().info("#{IO.ANSI.blue()}[dry-run]#{IO.ANSI.reset()} Would update #{js_path}")
-          Mix.shell().info("  Adding import for sutra_ui hooks")
-        else
-          File.write!(js_path, new_content)
-          Mix.shell().info("#{IO.ANSI.green()}[updated]#{IO.ANSI.reset()} #{js_path}")
-        end
-      end
-    else
-      Mix.shell().info(
-        "#{IO.ANSI.yellow()}[skip]#{IO.ANSI.reset()} #{js_path} not found - please add manually"
       )
     end
   end

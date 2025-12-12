@@ -1802,13 +1802,37 @@
 /* Filter Bar */
 @layer components {
     .filter-bar {
-        @apply flex flex-wrap items-end gap-4;
+        @apply mb-6 space-y-4;
+    }
+    .filter-bar-grid {
+        @apply grid gap-4;
+    }
+    .filter-bar-cols-1 {
+        @apply grid-cols-1;
+    }
+    .filter-bar-cols-2 {
+        @apply grid-cols-1 sm:grid-cols-2;
+    }
+    .filter-bar-cols-3 {
+        @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+    }
+    .filter-bar-cols-4 {
+        @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+    }
+    .filter-bar-cols-5 {
+        @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-5;
+    }
+    .filter-bar-cols-6 {
+        @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-6;
     }
     .filter-bar-item {
-        @apply min-w-48 flex-1;
+        @apply w-full;
+    }
+    .filter-bar-actions {
+        @apply flex justify-end;
     }
     .filter-bar-clear {
-        @apply btn-sm-ghost text-muted-foreground;
+        @apply text-muted-foreground inline-flex items-center gap-2 text-sm transition-colors hover:text-foreground cursor-pointer;
     }
 }
 

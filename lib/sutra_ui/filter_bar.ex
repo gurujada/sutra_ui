@@ -5,9 +5,11 @@ defmodule SutraUI.FilterBar do
   The filter bar provides a standardized way to add filter controls to list pages,
   with support for multiple filter inputs and an optional clear filters button.
 
+  Uses a responsive grid layout that adapts to screen sizes.
+
   ## Examples
 
-      # Basic filter bar
+      # Basic filter bar (3 columns by default)
       <.filter_bar on_change="filter">
         <:filter>
           <.input type="text" name="search" value={@filters.search} placeholder="Search..." />
@@ -19,6 +21,16 @@ defmodule SutraUI.FilterBar do
             value={@filters.status}
             options={[{"All Statuses", ""}, {"Active", "active"}, {"Inactive", "inactive"}]}
           />
+        </:filter>
+      </.filter_bar>
+
+      # With custom column count
+      <.filter_bar on_change="filter" cols={2}>
+        <:filter>
+          <.input type="text" name="search" value={@search} />
+        </:filter>
+        <:filter>
+          <.input type="select" name="status" value={@status} options={@status_options} />
         </:filter>
       </.filter_bar>
 
@@ -42,6 +54,7 @@ defmodule SutraUI.FilterBar do
   * `on_change` - Required. The phx-change event name.
   * `on_clear` - Optional. The phx-click event name for the clear button.
   * `show_clear` - Whether to show the clear filters button. Defaults to `false`.
+  * `cols` - Number of columns in the grid (1-6). Defaults to `3`.
   * `class` - Additional CSS classes.
 
   ## Slots
@@ -63,6 +76,11 @@ defmodule SutraUI.FilterBar do
     doc: "Whether to show clear filters button"
   )
 
+  attr(:cols, :integer,
+    default: 3,
+    doc: "Number of columns in the grid (1-6)"
+  )
+
   attr(:class, :any,
     default: nil,
     doc: "Additional CSS classes"
@@ -74,20 +92,39 @@ defmodule SutraUI.FilterBar do
   )
 
   def filter_bar(assigns) do
+    grid_class = grid_cols_class(assigns.cols)
+    assigns = assign(assigns, :grid_class, grid_class)
+
     ~H"""
-    <.form for={%{}} phx-change={@on_change} class={["filter-bar", @class]}>
-      <div :for={filter <- @filter} class="filter-bar-item">
-        {render_slot(filter)}
+    <div class={["filter-bar", @class]}>
+      <.form for={%{}} phx-change={@on_change} class={["filter-bar-grid", @grid_class]}>
+        <div :for={filter <- @filter} class="filter-bar-item">
+          {render_slot(filter)}
+        </div>
+      </.form>
+
+      <div :if={@show_clear && @on_clear} class="filter-bar-actions">
+        <button
+          type="button"
+          phx-click={@on_clear}
+          class="filter-bar-clear"
+        >
+          <.icon name="hero-x-mark" class="size-4" /> Clear
+        </button>
       </div>
-      <button
-        :if={@show_clear && @on_clear}
-        type="button"
-        phx-click={@on_clear}
-        class="filter-bar-clear"
-      >
-        <.icon name="hero-x-mark" class="size-4" /> Clear
-      </button>
-    </.form>
+    </div>
     """
+  end
+
+  defp grid_cols_class(cols) do
+    case cols do
+      1 -> "filter-bar-cols-1"
+      2 -> "filter-bar-cols-2"
+      3 -> "filter-bar-cols-3"
+      4 -> "filter-bar-cols-4"
+      5 -> "filter-bar-cols-5"
+      6 -> "filter-bar-cols-6"
+      _ -> "filter-bar-cols-3"
+    end
   end
 end

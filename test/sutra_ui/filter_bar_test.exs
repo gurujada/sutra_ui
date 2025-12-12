@@ -109,4 +109,97 @@ defmodule SutraUI.FilterBarTest do
       assert html =~ "my-custom-class"
     end
   end
+
+  describe "filter_bar/1 grid columns" do
+    test "defaults to 3 columns" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <FilterBar.filter_bar on_change="filter">
+          <:filter><input name="a" /></:filter>
+        </FilterBar.filter_bar>
+        """)
+
+      assert html =~ "filter-bar-cols-3"
+    end
+
+    test "accepts cols attribute for 2 columns" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <FilterBar.filter_bar on_change="filter" cols={2}>
+          <:filter><input name="a" /></:filter>
+        </FilterBar.filter_bar>
+        """)
+
+      assert html =~ "filter-bar-cols-2"
+    end
+
+    test "accepts cols attribute for 4 columns" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <FilterBar.filter_bar on_change="filter" cols={4}>
+          <:filter><input name="a" /></:filter>
+        </FilterBar.filter_bar>
+        """)
+
+      assert html =~ "filter-bar-cols-4"
+    end
+
+    test "accepts cols attribute for 1 column" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <FilterBar.filter_bar on_change="filter" cols={1}>
+          <:filter><input name="a" /></:filter>
+        </FilterBar.filter_bar>
+        """)
+
+      assert html =~ "filter-bar-cols-1"
+    end
+
+    test "accepts cols attribute for 5 columns" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <FilterBar.filter_bar on_change="filter" cols={5}>
+          <:filter><input name="a" /></:filter>
+        </FilterBar.filter_bar>
+        """)
+
+      assert html =~ "filter-bar-cols-5"
+    end
+
+    test "accepts cols attribute for 6 columns" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <FilterBar.filter_bar on_change="filter" cols={6}>
+          <:filter><input name="a" /></:filter>
+        </FilterBar.filter_bar>
+        """)
+
+      assert html =~ "filter-bar-cols-6"
+    end
+
+    test "defaults to 3 columns for invalid value" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <FilterBar.filter_bar on_change="filter" cols={99}>
+          <:filter><input name="a" /></:filter>
+        </FilterBar.filter_bar>
+        """)
+
+      assert html =~ "filter-bar-cols-3"
+    end
+  end
 end
