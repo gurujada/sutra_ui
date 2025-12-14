@@ -347,10 +347,10 @@
     .btn-icon-outline,
     .btn-sm-icon-outline,
     .btn-lg-icon-outline {
-        @apply border bg-background text-foreground shadow-xs dark:bg-input/30 dark:border-input;
+        @apply border border-input bg-transparent text-foreground shadow-xs dark:bg-input/30;
         &:hover,
         &[aria-pressed="true"] {
-            @apply bg-accent text-accent-foreground dark:bg-accent/50;
+            @apply bg-accent/50 text-accent-foreground dark:bg-accent/30;
         }
     }
     .btn-ghost,
@@ -1033,7 +1033,7 @@
         @apply relative inline-flex w-full;
 
         .select-trigger {
-            @apply flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+            @apply flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent dark:bg-input/30 px-3 py-1 text-sm shadow-xs ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
         }
 
         .select-value {
@@ -1163,7 +1163,7 @@
     }
 
     .live-select-input {
-        @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background;
+        @apply flex h-9 w-full rounded-md border border-input bg-transparent dark:bg-input/30 px-3 py-1 text-sm shadow-xs ring-offset-background;
         @apply placeholder:text-muted-foreground;
         @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
         @apply disabled:cursor-not-allowed disabled:opacity-50;
@@ -1840,7 +1840,7 @@
         @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-6;
     }
     .filter-bar-item {
-        @apply w-full;
+        @apply w-full p-3;
     }
     .filter-bar-actions {
         @apply flex justify-end;
@@ -2425,7 +2425,7 @@
     }
 
     .live-select-input {
-        @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background;
+        @apply flex h-9 w-full rounded-md border border-input bg-transparent dark:bg-input/30 px-3 py-1 text-sm shadow-xs ring-offset-background;
         @apply placeholder:text-muted-foreground;
         @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
         @apply disabled:cursor-not-allowed disabled:opacity-50;
