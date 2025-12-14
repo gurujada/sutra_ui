@@ -193,8 +193,8 @@ defmodule SutraUI.Sidebar do
       </aside>
     </div>
 
-    <script :type={ColocatedHook} name=".Sidebar">
-      export default {
+    <script :type={ColocatedHook} name=".Sidebar" runtime>
+      {
         mounted() {
           this.initializeSidebar();
         },

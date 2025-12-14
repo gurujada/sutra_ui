@@ -183,8 +183,8 @@ defmodule SutraUI.Tabs do
       <% end %>
     </div>
 
-    <script :type={ColocatedHook} name=".Tabs">
-      export default {
+    <script :type={ColocatedHook} name=".Tabs" runtime>
+      {
         mounted() {
           this.el.addEventListener('keydown', (e) => this.handleKeydown(e));
         },

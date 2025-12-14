@@ -129,8 +129,8 @@ defmodule SutraUI.NavPills do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".NavPills">
-      export default {
+    <script :type={ColocatedHook} name=".NavPills" runtime>
+      {
         mounted() {
           this.trigger = this.el.querySelector('.nav-pills-mobile-trigger');
           this.menu = this.el.querySelector('.nav-pills-mobile-menu');

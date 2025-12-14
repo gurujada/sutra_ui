@@ -154,8 +154,8 @@ defmodule SutraUI.Slider do
       {@rest}
     />
 
-    <script :type={ColocatedHook} name=".Slider">
-      export default {
+    <script :type={ColocatedHook} name=".Slider" runtime>
+      {
         mounted() {
           this.precision = parseInt(this.el.dataset.precision) || 0;
           this.updateSlider();

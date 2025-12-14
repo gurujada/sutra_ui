@@ -111,8 +111,8 @@ defmodule SutraUI.Popover do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".Popover">
-      export default {
+    <script :type={ColocatedHook} name=".Popover" runtime>
+      {
         mounted() {
           this.trigger = this.el.querySelector('.popover-trigger');
           this.content = this.el.querySelector('[data-popover]');

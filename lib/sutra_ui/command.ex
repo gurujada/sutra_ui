@@ -92,8 +92,8 @@ defmodule SutraUI.Command do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".Command">
-      export default {
+    <script :type={ColocatedHook} name=".Command" runtime>
+      {
         mounted() {
           this.input = this.el.querySelector('input');
           this.menu = this.el.querySelector('[role="menu"]');

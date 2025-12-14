@@ -162,8 +162,8 @@ defmodule SutraUI.Dialog do
       </div>
     </dialog>
 
-    <script :type={ColocatedHook} name=".Dialog">
-      export default {
+    <script :type={ColocatedHook} name=".Dialog" runtime>
+      {
         mounted() {
           this.showHandler = (e) => this.el.showModal();
           this.hideHandler = (e) => this.el.close();

@@ -66,8 +66,8 @@ defmodule SutraUI.Tooltip do
       {render_slot(@inner_block)}
     </span>
 
-    <script :type={ColocatedHook} name=".Tooltip">
-      export default {
+    <script :type={ColocatedHook} name=".Tooltip" runtime>
+      {
         mounted() {
           // Only enable dynamic positioning for side="auto"
           if (this.el.dataset.side !== 'auto') return;

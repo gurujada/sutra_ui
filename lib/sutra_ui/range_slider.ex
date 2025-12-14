@@ -301,8 +301,8 @@ defmodule SutraUI.RangeSlider do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".RangeSlider">
-      export default {
+    <script :type={ColocatedHook} name=".RangeSlider" runtime>
+      {
         mounted() {
           this.initializeState();
           this.cacheElements();

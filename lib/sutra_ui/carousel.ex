@@ -160,8 +160,8 @@ defmodule SutraUI.Carousel do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".Carousel">
-      export default {
+    <script :type={ColocatedHook} name=".Carousel" runtime>
+      {
         mounted() {
           this.viewport = this.el.querySelector('.carousel-viewport');
           this.items = Array.from(this.el.querySelectorAll('[data-carousel-item]'));

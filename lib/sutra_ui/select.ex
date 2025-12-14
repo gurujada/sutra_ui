@@ -247,8 +247,8 @@ defmodule SutraUI.Select do
         data-select-input
       />
 
-      <script :type={ColocatedHook} name=".Select">
-        export default {
+      <script :type={ColocatedHook} name=".Select" runtime>
+        {
           mounted() {
             this.initSelect();
           },

@@ -148,8 +148,8 @@ defmodule SutraUI.Toast do
       </.toast>
     </div>
 
-    <script :type={ColocatedHook} name=".ToastContainer">
-      export default {
+    <script :type={ColocatedHook} name=".ToastContainer" runtime>
+      {
         mounted() {
           this.handleEvent("toast", ({variant, title, description, duration}) => {
             this.showToast(variant, title, description, duration);
