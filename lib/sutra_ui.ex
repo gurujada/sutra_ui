@@ -211,6 +211,7 @@ defmodule SutraUI do
       import SutraUI.Skeleton
       import SutraUI.Empty
       import SutraUI.Alert
+      import SutraUI.Flash
       import SutraUI.Progress
 
       # Phase 4: Navigation & Interactive

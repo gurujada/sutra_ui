@@ -353,4 +353,46 @@ defmodule SutraUI.InputTest do
       assert html =~ "multiple"
     end
   end
+
+  describe "input/1 with label" do
+    test "renders label before input when label is provided" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input type="email" name="email" id="email" label="Email Address" />
+        """)
+
+      assert html =~ ~s(<label class="label" for="email">Email Address</label>)
+      assert html =~ ~s(<input)
+      assert html =~ ~s(type="email")
+    end
+
+    test "renders no label when label not provided" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input type="text" name="search" placeholder="Search..." />
+        """)
+
+      refute html =~ ~s(<label)
+      assert html =~ ~s(<input)
+    end
+
+    test "works with form field and label" do
+      assigns = %{
+        form: Phoenix.Component.to_form(%{"email" => "test@example.com"}, as: :user)
+      }
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input field={@form[:email]} type="email" label="Email" />
+        """)
+
+      assert html =~ ~s(<label class="label" for="user_email">Email</label>)
+      assert html =~ ~s(name="user[email]")
+      assert html =~ ~s(id="user_email")
+    end
+  end
 end

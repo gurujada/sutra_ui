@@ -53,15 +53,11 @@ defmodule SutraUI.Alert do
       role="alert"
       {@rest}
     >
-      <%= if @icon != [] do %>
-        {render_slot(@icon)}
-      <% end %>
+      <span :if={@icon != []}>{render_slot(@icon)}</span>
       <h2>{render_slot(@title)}</h2>
-      <%= if @description != [] do %>
-        <section>
-          {render_slot(@description)}
-        </section>
-      <% end %>
+      <section :if={@description != []}>
+        {render_slot(@description)}
+      </section>
     </div>
     """
   end
