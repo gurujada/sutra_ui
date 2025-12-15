@@ -45,8 +45,6 @@ defmodule SutraUI.Spinner do
 
   use Phoenix.Component
 
-  import SutraUI.Icon
-
   @doc """
   Renders a spinner component.
 
@@ -91,7 +89,21 @@ defmodule SutraUI.Spinner do
       aria-label={@label}
       {@rest}
     >
-      <.icon name="lucide-loader-circle" class={["animate-spin", size_class(@size)]} />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class={["animate-spin", size_class(@size)]}
+        aria-hidden="true"
+      >
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
       <span :if={@text != []} class="spinner-text">
         {render_slot(@text)}
       </span>
@@ -133,7 +145,21 @@ defmodule SutraUI.Spinner do
   def spinner_icon(assigns) do
     ~H"""
     <span role="status" aria-label={@label} {@rest}>
-      <.icon name="lucide-loader-circle" class={["animate-spin", size_class(@size), @class]} />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class={["animate-spin", size_class(@size), @class]}
+        aria-hidden="true"
+      >
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
     </span>
     """
   end

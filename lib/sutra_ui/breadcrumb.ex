@@ -22,8 +22,6 @@ defmodule SutraUI.Breadcrumb do
 
   use Phoenix.Component
 
-  import SutraUI.Icon, only: [icon: 1]
-
   @doc """
   Renders a breadcrumb navigation component.
   """
@@ -54,7 +52,7 @@ defmodule SutraUI.Breadcrumb do
           <li class={["breadcrumb-item", item[:class]]}>
             <%= if index > 0 do %>
               <span class="breadcrumb-separator" aria-hidden="true">
-                <.icon name={separator_icon_name(@separator)} class="size-4" />
+                {separator_svg(@separator)}
               </span>
             <% end %>
             <%= if item[:navigate] do %>
@@ -79,6 +77,47 @@ defmodule SutraUI.Breadcrumb do
     """
   end
 
-  defp separator_icon_name("chevron"), do: "lucide-chevron-right"
-  defp separator_icon_name("slash"), do: "lucide-slash"
+  defp separator_svg("chevron") do
+    assigns = %{}
+
+    ~H"""
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="size-4"
+      aria-hidden="true"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+    """
+  end
+
+  defp separator_svg("slash") do
+    assigns = %{}
+
+    ~H"""
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="size-4"
+      aria-hidden="true"
+    >
+      <path d="M22 2 2 22" />
+    </svg>
+    """
+  end
 end

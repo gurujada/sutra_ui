@@ -113,7 +113,8 @@ defmodule SutraUI.BreadcrumbTest do
         """)
 
       assert html =~ "breadcrumb-separator"
-      assert html =~ "lucide-chevron-right"
+      assert html =~ "<svg"
+      assert html =~ "m9 18 6-6-6-6"
     end
 
     test "renders slash separator" do

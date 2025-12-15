@@ -18,7 +18,7 @@ defmodule SutraUI.Button do
 
       # Icon button (requires aria-label)
       <.button size="icon" aria-label="Settings">
-        <.icon name="lucide-settings" />
+        <!-- Your icon here -->
       </.button>
 
       # Loading state
@@ -66,12 +66,11 @@ defmodule SutraUI.Button do
   > When using `size="icon"`, always provide an `aria-label` for screen readers:
   >
   >     <.button size="icon" aria-label="Close dialog">
-  >       <.icon name="lucide-x" />
+  >       <!-- Your icon here -->
   >     </.button>
 
   ## Related
 
-  - `SutraUI.Icon` - For button icons
   - `SutraUI.Spinner` - For loading states
   - [Theming Guide](theming.md) - Customize button colors
   """

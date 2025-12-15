@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release with 44 components
-- **Foundation**: icon, button, badge, spinner, kbd
+- Initial release with 43 components
+- **Foundation**: button, badge, spinner, kbd
 - **Form Controls**: input, textarea, checkbox, switch, radio_group, select, slider, range_slider, live_select, field, simple_form, input_group, filter_bar, label
 - **Layout**: card, header, table, item, sidebar
-- **Feedback**: alert, progress, skeleton, empty, loading_state, toast
+- **Feedback**: alert, progress, skeleton, empty, loading_state, toast, flash
 - **Overlay**: dialog, popover, tooltip, dropdown_menu, command
 - **Navigation**: tabs, accordion, breadcrumb, pagination, nav_pills, tab_nav
 - **Display**: avatar, carousel, theme_switcher
@@ -22,5 +22,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Colocated JavaScript hooks
 - Full accessibility (ARIA) support
 - Tailwind CSS v4 compatibility
-- Lucide icons as standard icon system (matching shadcn ecosystem)
+- Zero external icon dependencies - components use inline SVGs
 - `usage_rules.md` for AI assistant guidance

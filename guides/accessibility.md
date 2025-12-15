@@ -82,7 +82,7 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 <!-- Renders with proper button semantics -->
 
 <.button size="icon" aria-label="Close">
-  <.icon name="lucide-x" />
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
 </.button>
 <!-- Icon buttons MUST have aria-label -->
 
@@ -226,12 +226,12 @@ Always provide an `aria-label`:
 ```heex
 <!-- Good -->
 <.button size="icon" aria-label="Delete item">
-  <.icon name="lucide-trash-2" />
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
 </.button>
 
 <!-- Bad - no accessible name -->
 <.button size="icon">
-  <.icon name="lucide-trash-2" />
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
 </.button>
 ```
 

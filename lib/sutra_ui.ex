@@ -48,7 +48,6 @@ defmodule SutraUI do
   | Component | Description |
   |-----------|-------------|
   | `SutraUI.Button` | Buttons with 6 variants and 4 sizes |
-  | `SutraUI.Icon` | Heroicons integration |
   | `SutraUI.Badge` | Status indicators |
   | `SutraUI.Spinner` | Loading indicators |
   | `SutraUI.Kbd` | Keyboard shortcut display |
@@ -187,7 +186,6 @@ defmodule SutraUI do
   defmacro __using__(_opts) do
     quote do
       # Phase 1: Foundation
-      import SutraUI.Icon
       import SutraUI.Button
       import SutraUI.Badge
       import SutraUI.Spinner

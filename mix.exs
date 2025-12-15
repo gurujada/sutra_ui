@@ -39,13 +39,6 @@ defmodule SutraUI.MixProject do
     [
       {:phoenix_live_view, "~> 1.1"},
       {:phoenix_html, "~> 4.0"},
-      {:lucide_icons,
-       github: "lucide-icons/lucide",
-       tag: "0.552.0",
-       sparse: "icons",
-       app: false,
-       compile: false,
-       depth: 1},
       # Dev/Test
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:lazy_html, "~> 0.1", only: :test},
@@ -88,7 +81,6 @@ defmodule SutraUI.MixProject do
       ],
       groups_for_modules: [
         Foundation: [
-          SutraUI.Icon,
           SutraUI.Button,
           SutraUI.Badge,
           SutraUI.Spinner,

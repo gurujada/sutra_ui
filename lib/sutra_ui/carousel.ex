@@ -50,8 +50,6 @@ defmodule SutraUI.Carousel do
   use Phoenix.Component
   alias Phoenix.LiveView.ColocatedHook
 
-  import SutraUI.Icon, only: [icon: 1]
-
   @doc """
   Renders a carousel component.
   """
@@ -133,7 +131,21 @@ defmodule SutraUI.Carousel do
         data-carousel-prev
         disabled={!@loop}
       >
-        <.icon name="lucide-chevron-left" class="size-6" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-6"
+          aria-hidden="true"
+        >
+          <path d="m15 18-6-6 6-6" />
+        </svg>
       </button>
 
       <button
@@ -143,7 +155,21 @@ defmodule SutraUI.Carousel do
         aria-label="Next slide"
         data-carousel-next
       >
-        <.icon name="lucide-chevron-right" class="size-6" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-6"
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
       </button>
 
       <div :if={@show_indicators && @item_count > 1} class="carousel-indicators" role="tablist">

@@ -33,8 +33,6 @@ defmodule SutraUI.Accordion do
   use Phoenix.Component
   alias Phoenix.LiveView.JS
 
-  import SutraUI.Icon, only: [icon: 1]
-
   @doc """
   Renders an accordion component.
   """
@@ -92,7 +90,21 @@ defmodule SutraUI.Accordion do
               phx-click={toggle_item(item.value, @type)}
             >
               <span>{item.title}</span>
-              <.icon name="lucide-chevron-down" class="accordion-chevron size-4" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="accordion-chevron size-4"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
             </button>
           </h3>
           <div

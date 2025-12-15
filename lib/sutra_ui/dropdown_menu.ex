@@ -35,10 +35,10 @@ defmodule SutraUI.DropdownMenu do
       <.dropdown_menu id="file-menu">
         <:trigger>File</:trigger>
         <.dropdown_item shortcut="Ctrl+N">
-          <a href="/new"><.icon name="lucide-plus" /> New</a>
+          <a href="/new">New</a>
         </.dropdown_item>
         <.dropdown_item shortcut="Ctrl+O">
-          <a href="/open"><.icon name="lucide-folder" /> Open</a>
+          <a href="/open">Open</a>
         </.dropdown_item>
       </.dropdown_menu>
 
@@ -83,8 +83,6 @@ defmodule SutraUI.DropdownMenu do
   use Phoenix.Component
 
   alias Phoenix.LiveView.ColocatedHook
-
-  import SutraUI.Icon, only: [icon: 1]
 
   @doc """
   Renders a dropdown menu component.
@@ -147,7 +145,21 @@ defmodule SutraUI.DropdownMenu do
         aria-expanded="false"
       >
         {render_slot(@trigger)}
-        <.icon name="lucide-chevron-down" class="dropdown-menu-chevron size-4" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="dropdown-menu-chevron size-4"
+          aria-hidden="true"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
       </button>
       <div
         id={"#{@id}-popover"}

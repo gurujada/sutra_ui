@@ -8,12 +8,12 @@ defmodule SutraUI.Alert do
   ## Examples
 
       <.alert>
-        <:icon><.icon name="lucide-circle-check" /></:icon>
+        <:icon><!-- Your icon here --></:icon>
         <:title>Success! Your changes have been saved</:title>
       </.alert>
 
       <.alert variant="destructive">
-        <:icon><.icon name="lucide-circle-alert" /></:icon>
+        <:icon><!-- Your icon here --></:icon>
         <:title>Something went wrong!</:title>
         <:description>Your session has expired. Please log in again.</:description>
       </.alert>

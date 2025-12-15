@@ -117,7 +117,9 @@ defmodule SutraUI.FlashTest do
         """)
 
       assert html =~ "flash-icon"
-      assert html =~ "lucide-info"
+      assert html =~ "<svg"
+      # Info icon has a circle
+      assert html =~ ~s(cx="12" cy="12" r="10")
     end
 
     test "renders error icon for error kind" do
@@ -129,7 +131,9 @@ defmodule SutraUI.FlashTest do
         """)
 
       assert html =~ "flash-icon"
-      assert html =~ "lucide-circle-alert"
+      assert html =~ "<svg"
+      # Circle-alert icon has a circle with r="10"
+      assert html =~ ~s(r="10")
     end
   end
 
@@ -167,7 +171,9 @@ defmodule SutraUI.FlashTest do
         """)
 
       assert html =~ "flash-close"
-      assert html =~ "lucide-x"
+      assert html =~ "<svg"
+      # X icon paths
+      assert html =~ "M18 6 6 18"
     end
 
     test "close button triggers clear flash" do

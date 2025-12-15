@@ -47,7 +47,8 @@ defmodule SutraUI.CommandTest do
         </Command.command>
         """)
 
-      assert html =~ "lucide-search"
+      assert html =~ "<svg"
+      assert html =~ ~s(cx="11" cy="11" r="8")
     end
   end
 

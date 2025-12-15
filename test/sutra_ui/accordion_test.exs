@@ -232,7 +232,8 @@ defmodule SutraUI.AccordionTest do
         """)
 
       assert html =~ "accordion-chevron"
-      assert html =~ "lucide-chevron-down"
+      assert html =~ "<svg"
+      assert html =~ "m6 9 6 6 6-6"
     end
   end
 end

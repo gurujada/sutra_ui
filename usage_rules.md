@@ -167,7 +167,6 @@ end
 ## Available Components
 
 ### Foundation
-- `icon/1` - Icon rendering (requires icon CSS setup)
 - `button/1` - Buttons with variants: primary, secondary, outline, ghost, link, destructive
 - `badge/1` - Status badges
 - `spinner/1` - Loading indicators
@@ -344,7 +343,7 @@ test/
     <.dropdown_menu id={"user-actions-#{user.id}"}>
       <:trigger>
         <.button variant="ghost" size="icon" aria-label="Actions">
-          <.icon name="lucide-more-horizontal" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
         </.button>
       </:trigger>
       <:content>

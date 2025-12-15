@@ -16,7 +16,7 @@ defmodule SutraUI.Avatar do
       # Avatar with icon fallback
       <.avatar src="/avatar.jpg" alt="User">
         <:fallback>
-          <.icon name="lucide-user" />
+          <!-- Your icon here -->
         </:fallback>
       </.avatar>
 
@@ -36,8 +36,6 @@ defmodule SutraUI.Avatar do
   """
 
   use Phoenix.Component
-
-  import SutraUI.Icon, only: [icon: 1]
 
   @doc """
   Renders an avatar component.
@@ -92,7 +90,20 @@ defmodule SutraUI.Avatar do
           <%= if @initials do %>
             {@initials}
           <% else %>
-            <.icon name="lucide-user" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+            </svg>
           <% end %>
         <% end %>
       </span>

@@ -23,19 +23,6 @@ defmodule SutraUI.NavPills do
         <:item label="Settings" patch={~p"/content/settings"} />
       </.nav_pills>
 
-      # With icons
-      <.nav_pills id="batch-nav" active_label="Content">
-        <:item label="Content" patch={~p"/batches/123"}>
-          <.icon name="lucide-book-open" class="size-4" />
-        </:item>
-        <:item label="Students" patch={~p"/batches/123/students"}>
-          <.icon name="lucide-users" class="size-4" />
-        </:item>
-        <:item label="Settings" patch={~p"/batches/123/settings"}>
-          <.icon name="lucide-settings" class="size-4" />
-        </:item>
-      </.nav_pills>
-
       # Custom styling
       <.nav_pills id="org-nav" active_label="About" class="mb-6">
         <:item label="About" patch={~p"/orgs/456"} />
@@ -50,8 +37,6 @@ defmodule SutraUI.NavPills do
   """
 
   use Phoenix.Component
-
-  import SutraUI.Icon, only: [icon: 1]
 
   alias Phoenix.LiveView.ColocatedHook
 
@@ -109,7 +94,21 @@ defmodule SutraUI.NavPills do
           aria-expanded="false"
         >
           {@active_label}
-          <.icon name="lucide-chevron-down" class="nav-pills-mobile-chevron" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="nav-pills-mobile-chevron"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
         </button>
         <div class="nav-pills-mobile-menu" role="menu" aria-hidden="true">
           <%= for item <- @item do %>

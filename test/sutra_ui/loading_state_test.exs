@@ -38,8 +38,9 @@ defmodule SutraUI.LoadingStateTest do
         <LoadingState.loading_state />
         """)
 
-      # Uses lucide-loader-circle with animate-spin
-      assert html =~ "lucide-loader-circle"
+      # Uses inline SVG loader-circle with animate-spin
+      assert html =~ "<svg"
+      assert html =~ "M21 12a9 9 0 1 1-6.219-8.56"
       assert html =~ "animate-spin"
     end
   end

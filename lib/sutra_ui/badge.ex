@@ -28,7 +28,7 @@ defmodule SutraUI.Badge do
 
       # With icon
       <.badge>
-        <.icon name="lucide-check" class="size-3" />
+        <!-- Your icon here -->
         Verified
       </.badge>
   """

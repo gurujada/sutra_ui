@@ -39,7 +39,9 @@ defmodule SutraUI.ThemeSwitcherTest do
         """)
 
       assert html =~ "theme-switcher-dark"
-      assert html =~ "lucide-sun"
+      assert html =~ "<svg"
+      # Sun icon has a circle with r="4" at center
+      assert html =~ ~s(r="4")
     end
 
     test "renders moon icon for light mode" do
@@ -51,7 +53,9 @@ defmodule SutraUI.ThemeSwitcherTest do
         """)
 
       assert html =~ "theme-switcher-light"
-      assert html =~ "lucide-moon"
+      assert html =~ "<svg"
+      # Moon icon path
+      assert html =~ "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"
     end
   end
 

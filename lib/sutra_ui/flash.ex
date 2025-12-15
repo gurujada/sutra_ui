@@ -20,8 +20,8 @@ defmodule SutraUI.Flash do
 
   | Kind | Usage | Icon |
   |------|-------|------|
-  | `:info` | Success messages, confirmations, general information | `lucide-info` |
-  | `:error` | Error messages, validation failures, warnings | `lucide-circle-alert` |
+  | `:info` | Success messages, confirmations, general information | info icon |
+  | `:error` | Error messages, validation failures, warnings | circle-alert icon |
 
   ## Setting Flash Messages
 
@@ -83,8 +83,6 @@ defmodule SutraUI.Flash do
 
   use Phoenix.Component
   alias Phoenix.LiveView.JS
-
-  import SutraUI.Icon, only: [icon: 1]
 
   @doc """
   Renders a flash message.
@@ -156,8 +154,41 @@ defmodule SutraUI.Flash do
       {@rest}
     >
       <div class="flash-icon" aria-hidden="true">
-        <.icon :if={@kind == :info} name="lucide-info" class="size-5" />
-        <.icon :if={@kind == :error} name="lucide-circle-alert" class="size-5" />
+        <svg
+          :if={@kind == :info}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-5"
+        >
+          <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+        </svg>
+        <svg
+          :if={@kind == :error}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-5"
+        >
+          <circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line
+            x1="12"
+            x2="12.01"
+            y1="16"
+            y2="16"
+          />
+        </svg>
       </div>
       <div class="flash-content">
         <p :if={@title} class="flash-title">{@title}</p>
@@ -170,7 +201,20 @@ defmodule SutraUI.Flash do
         </p>
       </div>
       <button type="button" class="flash-close" aria-label="close">
-        <.icon name="lucide-x" class="size-5" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-5"
+        >
+          <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+        </svg>
       </button>
     </div>
     """

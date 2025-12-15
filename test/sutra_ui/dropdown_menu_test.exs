@@ -53,7 +53,8 @@ defmodule SutraUI.DropdownMenuTest do
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ "lucide-chevron-down"
+      assert html =~ "<svg"
+      assert html =~ "m6 9 6 6 6-6"
       assert html =~ "dropdown-menu-chevron"
     end
   end
@@ -151,7 +152,9 @@ defmodule SutraUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_item><a data-phx-link="navigate" href="/settings">Settings</a></DropdownMenu.dropdown_item>
+        <DropdownMenu.dropdown_item>
+          <a data-phx-link="navigate" href="/settings">Settings</a>
+        </DropdownMenu.dropdown_item>
         """)
 
       assert html =~ ~s(data-phx-link="navigate")
@@ -163,7 +166,9 @@ defmodule SutraUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_item><button phx-click="do_action">Action</button></DropdownMenu.dropdown_item>
+        <DropdownMenu.dropdown_item>
+          <button phx-click="do_action">Action</button>
+        </DropdownMenu.dropdown_item>
         """)
 
       assert html =~ ~s(phx-click="do_action")
@@ -221,7 +226,9 @@ defmodule SutraUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_item shortcut="Ctrl+S"><button phx-click="save">Save</button></DropdownMenu.dropdown_item>
+        <DropdownMenu.dropdown_item shortcut="Ctrl+S">
+          <button phx-click="save">Save</button>
+        </DropdownMenu.dropdown_item>
         """)
 
       assert html =~ "dropdown-menu-shortcut"
@@ -234,7 +241,9 @@ defmodule SutraUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_item class="my-custom-item"><a href="#">Item</a></DropdownMenu.dropdown_item>
+        <DropdownMenu.dropdown_item class="my-custom-item">
+          <a href="#">Item</a>
+        </DropdownMenu.dropdown_item>
         """)
 
       assert html =~ "my-custom-item"
@@ -339,8 +348,12 @@ defmodule SutraUI.DropdownMenuTest do
         <DropdownMenu.dropdown_menu id="test-dropdown">
           <:trigger>Edit</:trigger>
           <DropdownMenu.dropdown_item shortcut="⌘S"><button>Save</button></DropdownMenu.dropdown_item>
-          <DropdownMenu.dropdown_item shortcut="⌘⇧S"><button>Save As</button></DropdownMenu.dropdown_item>
-          <DropdownMenu.dropdown_item shortcut="Ctrl+K"><button>Search</button></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item shortcut="⌘⇧S">
+            <button>Save As</button>
+          </DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item shortcut="Ctrl+K">
+            <button>Search</button>
+          </DropdownMenu.dropdown_item>
           <DropdownMenu.dropdown_item shortcut="⌥⌘N"><button>New</button></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
@@ -504,7 +517,9 @@ defmodule SutraUI.DropdownMenuTest do
           <:trigger>Settings</:trigger>
           <DropdownMenu.dropdown_label>Account</DropdownMenu.dropdown_label>
           <DropdownMenu.dropdown_item><a href="/profile">Profile</a></DropdownMenu.dropdown_item>
-          <DropdownMenu.dropdown_item shortcut="Ctrl+B"><a href="/billing">Billing</a></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item shortcut="Ctrl+B">
+            <a href="/billing">Billing</a>
+          </DropdownMenu.dropdown_item>
           <DropdownMenu.dropdown_separator />
           <DropdownMenu.dropdown_label>Danger Zone</DropdownMenu.dropdown_label>
           <DropdownMenu.dropdown_item variant="destructive">

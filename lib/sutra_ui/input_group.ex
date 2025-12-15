@@ -30,7 +30,7 @@ defmodule SutraUI.InputGroup do
       # Icon prefix
       <.input_group>
         <:prefix type="icon">
-          <.icon name="lucide-search" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         </:prefix>
         <input type="text" class="input pl-9" placeholder="Search..." />
       </.input_group>
@@ -46,7 +46,7 @@ defmodule SutraUI.InputGroup do
       <.input_group>
         <:suffix type="interactive">
           <button type="button" class="btn-icon-ghost size-6">
-            <.icon name="lucide-clipboard" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
           </button>
         </:suffix>
         <input type="text" class="input pr-9" value="https://example.com" readonly />
@@ -57,7 +57,7 @@ defmodule SutraUI.InputGroup do
         <textarea class="textarea min-h-27 pb-12" placeholder="Enter message..."></textarea>
         <:footer>
           <button type="button" class="btn-icon-outline rounded-full size-6">
-            <.icon name="lucide-plus" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
           </button>
           <div class="text-muted-foreground text-sm ml-auto">52% used</div>
         </:footer>

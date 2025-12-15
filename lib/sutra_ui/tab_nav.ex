@@ -11,17 +11,19 @@ defmodule SutraUI.TabNav do
 
   - Visual-only tab navigation (no content panel management)
   - Server-side routing via LiveView patches
-  - Icon support for tabs
+  - Icon support via inner block
   - Consistent styling across pages
   - Permission-aware rendering (slots can be conditionally rendered)
 
   ## Examples
 
       <.tab_nav>
-        <:tab patch={~p"/orgs/\#{@org.id}"} active={@active_tab == :show} icon="lucide-info">
+        <:tab patch={~p"/orgs/\#{@org.id}"} active={@active_tab == :show}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-nav-icon"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
           About
         </:tab>
-        <:tab patch={~p"/orgs/\#{@org.id}/members"} active={@active_tab == :members} icon="lucide-users">
+        <:tab patch={~p"/orgs/\#{@org.id}/members"} active={@active_tab == :members}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-nav-icon"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Members
         </:tab>
       </.tab_nav>
@@ -48,8 +50,6 @@ defmodule SutraUI.TabNav do
   """
   use Phoenix.Component
 
-  import SutraUI.Icon, only: [icon: 1]
-
   @doc """
   Renders a visual tab navigation bar.
 
@@ -62,14 +62,13 @@ defmodule SutraUI.TabNav do
   - `tab` (required) - Tab definitions with patch URL and active state
     - `patch` (required) - LiveView route to navigate to
     - `active` (required) - Boolean indicating if this tab is currently active
-    - `icon` - Optional icon name to display before the label
+    - Inner block can contain icons and text
   """
   attr(:class, :string, default: nil, doc: "Additional CSS classes for the container")
 
   slot :tab, required: true, doc: "Tab definitions" do
     attr(:patch, :string, required: true, doc: "LiveView patch URL")
     attr(:active, :boolean, required: true, doc: "Whether this tab is active")
-    attr(:icon, :string, doc: "Optional icon name")
   end
 
   def tab_nav(assigns) do
@@ -80,7 +79,6 @@ defmodule SutraUI.TabNav do
           patch={tab.patch}
           class={["tab-nav-item", tab.active && "tab-nav-item-active"]}
         >
-          <.icon :if={tab[:icon]} name={tab.icon} class="tab-nav-icon" />
           {render_slot(tab)}
         </.link>
       <% end %>

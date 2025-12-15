@@ -8,7 +8,9 @@ defmodule SutraUI.Empty do
   ## Examples
 
       <.empty>
-        <:icon><.icon name="lucide-folder-code" /></:icon>
+        <:icon>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M10 10.5 8 8l4-4 4 4-2 2.5"/><path d="M14 10.5 16 8l-4-4-4 4 2 2.5"/><path d="M4 22V4c0-.5.2-1 .6-1.4C5 2.2 5.5 2 6 2h12c.5 0 1 .2 1.4.6.4.4.6.9.6 1.4v18l-4-3-4 3-4-3Z"/></svg>
+        </:icon>
         <:title>No Projects Yet</:title>
         <:description>
           You haven't created any projects yet. Get started by creating your first project.
@@ -19,7 +21,9 @@ defmodule SutraUI.Empty do
       </.empty>
 
       <.empty variant="outline">
-        <:icon><.icon name="lucide-cloud" /></:icon>
+        <:icon>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+        </:icon>
         <:title>Cloud Storage Empty</:title>
         <:description>Upload files to access them anywhere.</:description>
       </.empty>

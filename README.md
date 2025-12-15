@@ -69,20 +69,9 @@ In your `assets/css/app.css`:
 /* Sutra UI */
 @source "../../deps/sutra_ui/lib";
 @import "../../deps/sutra_ui/priv/static/sutra_ui.css";
-
-/* Lucide Icons */
-@import "lucide-static/font/lucide.css";
 ```
 
-### 4. Install Lucide Icons
-
-Sutra UI uses [Lucide icons](https://lucide.dev/) (matching shadcn/ui):
-
-```bash
-cd assets && npm install lucide-static
-```
-
-### 5. Setup JavaScript Hooks
+### 4. Setup JavaScript Hooks
 
 In your `assets/js/app.js`:
 
@@ -95,7 +84,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
 });
 ```
 
-### 6. Import Components
+### 5. Import Components
 
 In your `my_app_web.ex`:
 
@@ -108,7 +97,7 @@ defp html_helpers do
 end
 ```
 
-### 7. Deployment Setup
+### 6. Deployment Setup
 
 Update your deployment aliases in `mix.exs`:
 
@@ -298,7 +287,6 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 
 ### Display
 - `avatar` - User avatars with fallback
-- `icon` - Icon component (Lucide icons)
 - `carousel` - Image/content carousel
 - `kbd` - Keyboard shortcut display
 - `label` - Form labels

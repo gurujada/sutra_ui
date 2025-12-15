@@ -52,7 +52,9 @@ defmodule SutraUI.AvatarTest do
         <Avatar.avatar />
         """)
 
-      assert html =~ "lucide-user"
+      assert html =~ "<svg"
+      # User icon has a circle for the head
+      assert html =~ ~s(cx="12" cy="7" r="4")
     end
 
     test "renders custom fallback content" do

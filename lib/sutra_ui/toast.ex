@@ -121,8 +121,6 @@ defmodule SutraUI.Toast do
   alias Phoenix.LiveView.JS
   alias Phoenix.LiveView.ColocatedHook
 
-  import SutraUI.Icon, only: [icon: 1]
-
   @doc """
   Renders a toast container that displays flash messages.
 
@@ -255,7 +253,21 @@ defmodule SutraUI.Toast do
         aria-label="Close"
         phx-click={hide_toast(@id)}
       >
-        <.icon name="lucide-x" class="size-4" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="size-4"
+          aria-hidden="true"
+        >
+          <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+        </svg>
       </button>
     </div>
     """
