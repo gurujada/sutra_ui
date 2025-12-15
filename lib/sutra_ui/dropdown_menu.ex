@@ -1,267 +1,366 @@
 defmodule SutraUI.DropdownMenu do
   @moduledoc """
-  Displays a menu to the user with a list of actions or options.
+  A dropdown menu component that displays a list of actions or options.
 
-  Dropdown menus are triggered by a button and display a list of
-  options or actions that the user can select.
+  The dropdown menu provides a trigger button that opens a popover menu
+  with full keyboard navigation support:
+
+  - Click to open/close the menu
+  - Arrow keys (Up/Down) for navigation
+  - Home/End keys to jump to first/last item
+  - Enter/Space to activate items
+  - Escape to close the menu
+  - Mouse hover to highlight items
+  - Automatic closure when clicking outside
+
+  ## Requirements
+
+  - A unique `id` attribute is **required** for the JavaScript hook
+  - The component uses CSS anchor positioning for popover placement
 
   ## Examples
 
-      <.dropdown_menu>
-        <:trigger>
-          <span>Options</span>
-        </:trigger>
-        <:item icon="lucide-user">Profile</:item>
-        <:item icon="lucide-settings" shortcut="Ctrl+S">Settings</:item>
-        <:separator />
-        <:item variant="destructive" icon="lucide-log-out">Logout</:item>
+      # Basic dropdown menu
+      <.dropdown_menu id="user-menu">
+        <:trigger>Options</:trigger>
+        <.dropdown_item><a href="/profile">Profile</a></.dropdown_item>
+        <.dropdown_item><.link navigate={~p"/settings"}>Settings</.link></.dropdown_item>
+        <.dropdown_separator />
+        <.dropdown_item variant="destructive">
+          <.link href={~p"/logout"} method="delete">Logout</.link>
+        </.dropdown_item>
       </.dropdown_menu>
 
-  ## With keyboard shortcuts
+      # With icons and shortcuts
+      <.dropdown_menu id="file-menu">
+        <:trigger>File</:trigger>
+        <.dropdown_item shortcut="Ctrl+N">
+          <a href="/new"><.icon name="lucide-plus" /> New</a>
+        </.dropdown_item>
+        <.dropdown_item shortcut="Ctrl+O">
+          <a href="/open"><.icon name="lucide-folder" /> Open</a>
+        </.dropdown_item>
+      </.dropdown_menu>
 
-      <.dropdown_menu>
-        <:trigger>
-          <span>Edit</span>
-        </:trigger>
-        <:item icon="lucide-scissors" shortcut="Ctrl+X">Cut</:item>
-        <:item icon="lucide-copy" shortcut="Ctrl+C">Copy</:item>
-        <:item icon="lucide-clipboard" shortcut="Ctrl+V">Paste</:item>
+      # With groups and labels
+      <.dropdown_menu id="settings-menu">
+        <:trigger>Settings</:trigger>
+        <.dropdown_label>Account</.dropdown_label>
+        <.dropdown_item><a href="/profile">Profile</a></.dropdown_item>
+        <.dropdown_item><a href="/billing">Billing</a></.dropdown_item>
+        <.dropdown_separator />
+        <.dropdown_label>Danger Zone</.dropdown_label>
+        <.dropdown_item variant="destructive">
+          <button phx-click="delete_account">Delete Account</button>
+        </.dropdown_item>
+      </.dropdown_menu>
+
+      # With disabled items
+      <.dropdown_menu id="edit-menu">
+        <:trigger>Edit</:trigger>
+        <.dropdown_item><button phx-click="cut">Cut</button></.dropdown_item>
+        <.dropdown_item><button phx-click="copy">Copy</button></.dropdown_item>
+        <.dropdown_item disabled><button>Paste</button></.dropdown_item>
+      </.dropdown_menu>
+
+      # Custom positioning
+      <.dropdown_menu id="actions-menu" side="top" align="end">
+        <:trigger>Actions</:trigger>
+        <.dropdown_item><button phx-click="action1">Action 1</button></.dropdown_item>
+        <.dropdown_item><button phx-click="action2">Action 2</button></.dropdown_item>
       </.dropdown_menu>
 
   ## Accessibility
 
-  - Uses proper ARIA menu roles
-  - Keyboard navigation with arrow keys
-  - Escape to close
-  - Focus management
-  - Shortcuts trigger actions when pressed
+  - The trigger button has `aria-haspopup="menu"` and `aria-expanded` attributes
+  - The menu has `role="menu"` and is referenced by `aria-controls`
+  - Menu items have `role="menuitem"`
+  - The active item is tracked via `aria-activedescendant`
+  - Disabled items have `aria-disabled="true"`
+  - Keyboard navigation follows WAI-ARIA menu pattern
   """
 
   use Phoenix.Component
-  alias Phoenix.LiveView.JS
+
   alias Phoenix.LiveView.ColocatedHook
 
   import SutraUI.Icon, only: [icon: 1]
 
   @doc """
   Renders a dropdown menu component.
-  """
-  attr(:id, :string, required: true, doc: "Unique identifier for the dropdown")
-  attr(:class, :string, default: nil, doc: "Additional CSS classes")
 
-  attr(:align, :string,
-    default: "start",
-    values: ~w(start center end),
-    doc: "Alignment of the dropdown relative to the trigger"
-  )
+  ## Attributes
+
+  - `id` - Required. Unique identifier for the dropdown (needed for JS hook)
+  - `side` - Which side the dropdown opens on. Values: `top`, `bottom`, `left`, `right`. Default: `bottom`
+  - `align` - Alignment relative to trigger. Values: `start`, `center`, `end`. Default: `start`
+  - `class` - Additional CSS classes for the container
+  - `trigger_class` - Additional CSS classes for the trigger button
+  - `menu_class` - Additional CSS classes for the menu
+
+  ## Slots
+
+  - `trigger` - Required. Content for the trigger button
+  - `inner_block` - Required. Menu content (use `item/1`, `separator/1`, `label/1`)
+  """
+  attr(:id, :string, required: true, doc: "Unique identifier (required for hook)")
+  attr(:class, :string, default: nil, doc: "Additional CSS classes for the container")
 
   attr(:side, :string,
     default: "bottom",
     values: ~w(top bottom left right),
-    doc: "Which side the dropdown opens on"
+    doc: "Popover position relative to trigger"
   )
 
-  attr(:rest, :global, doc: "Additional HTML attributes")
+  attr(:align, :string,
+    default: "start",
+    values: ~w(start end center),
+    doc: "Popover alignment"
+  )
 
-  slot(:trigger, required: true, doc: "The element that triggers the dropdown")
+  attr(:trigger_class, :string,
+    default: nil,
+    doc: "Additional CSS classes for the trigger button"
+  )
 
-  slot :item, doc: "Menu items" do
-    attr(:variant, :string, doc: "Visual variant (default or destructive)")
-    attr(:disabled, :boolean, doc: "Whether the item is disabled")
-    attr(:on_click, :string, doc: "Event to send when clicked")
-    attr(:icon, :string, doc: "Icon name to display on the left (e.g., 'lucide-user')")
-    attr(:shortcut, :string, doc: "Keyboard shortcut to display on the right (e.g., 'Ctrl+K')")
-  end
+  attr(:menu_class, :string, default: nil, doc: "Additional CSS classes for the menu")
 
-  slot(:separator, doc: "Visual separator between items")
-  slot(:label, doc: "Non-interactive label/header for a group")
+  attr(:rest, :global, doc: "Additional HTML attributes for the container")
+
+  slot(:trigger, required: true, doc: "Content for the trigger button")
+  slot(:inner_block, required: true, doc: "Menu items and content")
 
   def dropdown_menu(assigns) do
-    # Collect shortcuts for keyboard handling
-    shortcuts =
-      assigns.item
-      |> Enum.filter(&(&1[:shortcut] && &1[:on_click]))
-      |> Enum.map(&%{shortcut: &1[:shortcut], event: &1[:on_click]})
-
-    assigns = assign(assigns, :shortcuts, Jason.encode!(shortcuts))
-
     ~H"""
     <div
       id={@id}
-      class={["dropdown", @class]}
+      class={["dropdown-menu", @class]}
       phx-hook=".DropdownMenu"
-      data-align={@align}
-      data-side={@side}
-      data-shortcuts={@shortcuts}
       {@rest}
     >
-      <button type="button" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">
+      <button
+        type="button"
+        id={"#{@id}-trigger"}
+        class={["dropdown-menu-trigger", @trigger_class]}
+        aria-haspopup="menu"
+        aria-controls={"#{@id}-menu"}
+        aria-expanded="false"
+      >
         {render_slot(@trigger)}
-        <.icon name="lucide-chevron-down" class="dropdown-chevron size-4" />
+        <.icon name="lucide-chevron-down" class="dropdown-menu-chevron size-4" />
       </button>
       <div
-        id={"#{@id}-content"}
-        class={["dropdown-content", "dropdown-#{@side}", "dropdown-align-#{@align}"]}
-        role="menu"
-        aria-orientation="vertical"
+        id={"#{@id}-popover"}
+        data-popover
+        data-side={@side}
+        data-align={@align}
+        class="dropdown-menu-popover"
         aria-hidden="true"
       >
-        <%= for slot <- build_menu_items(assigns) do %>
-          <%= case slot.type do %>
-            <% :label -> %>
-              <div class="dropdown-label" role="presentation">
-                {render_slot([slot.item])}
-              </div>
-            <% :separator -> %>
-              <div class="dropdown-separator" role="separator"></div>
-            <% :item -> %>
-              <button
-                type="button"
-                role="menuitem"
-                class={[
-                  "dropdown-item",
-                  slot.item[:variant] == "destructive" && "dropdown-item-destructive",
-                  slot.item[:disabled] && "dropdown-item-disabled"
-                ]}
-                disabled={slot.item[:disabled]}
-                phx-click={slot.item[:on_click] && JS.push(slot.item[:on_click])}
-                data-shortcut={slot.item[:shortcut]}
-              >
-                <span :if={slot.item[:icon]} class="dropdown-item-icon">
-                  <.icon name={slot.item[:icon]} />
-                </span>
-                <span :if={!slot.item[:icon]} class="dropdown-item-icon-placeholder"></span>
-                <span class="dropdown-item-label">{render_slot([slot.item])}</span>
-                <kbd :if={slot.item[:shortcut]} class="dropdown-item-shortcut">
-                  {slot.item[:shortcut]}
-                </kbd>
-              </button>
-          <% end %>
-        <% end %>
+        <div
+          role="menu"
+          id={"#{@id}-menu"}
+          class={["dropdown-menu-content", @menu_class]}
+          aria-labelledby={"#{@id}-trigger"}
+        >
+          {render_slot(@inner_block)}
+        </div>
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".DropdownMenu">
-      export default {
+    <script :type={ColocatedHook} name=".DropdownMenu" runtime>
+      {
         mounted() {
-          this.trigger = this.el.querySelector('.dropdown-trigger');
-          this.content = this.el.querySelector('[role="menu"]');
-          this.items = [];
-          this.currentIndex = -1;
-          
-          // Parse shortcuts
-          try {
-            this.shortcuts = JSON.parse(this.el.dataset.shortcuts || '[]');
-          } catch(e) {
-            this.shortcuts = [];
+          this.initDropdownMenu();
+        },
+
+        updated() {
+          this.updateMenuItems();
+        },
+
+        destroyed() {
+          if (this.documentClickHandler) {
+            document.removeEventListener('click', this.documentClickHandler);
           }
-          
-          // Toggle on trigger click
-          this.trigger.addEventListener('click', () => this.toggle());
-          
-          // Close on click outside
-          this.outsideClickHandler = (e) => {
-            if (!this.el.contains(e.target) && this.isOpen()) {
-              this.close();
+          if (this.popoverEventHandler) {
+            document.removeEventListener('sutra:popover', this.popoverEventHandler);
+          }
+        },
+
+        initDropdownMenu() {
+          this.trigger = this.el.querySelector(':scope > button');
+          this.popover = this.el.querySelector(':scope > [data-popover]');
+          this.menu = this.popover?.querySelector('[role="menu"]');
+
+          if (!this.trigger || !this.menu || !this.popover) {
+            console.error('Dropdown menu initialization failed', this.el);
+            return;
+          }
+
+          this.menuItems = [];
+          this.activeIndex = -1;
+
+          this.trigger.addEventListener('click', () => this.handleTriggerClick());
+          this.el.addEventListener('keydown', (e) => this.handleKeydown(e));
+          this.menu.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+          this.menu.addEventListener('mouseleave', () => this.handleMouseLeave());
+          this.menu.addEventListener('click', (e) => this.handleMenuClick(e));
+
+          this.documentClickHandler = (event) => {
+            if (!this.el.contains(event.target)) {
+              this.closePopover();
             }
           };
-          document.addEventListener('click', this.outsideClickHandler);
-          
-          // Keyboard navigation and shortcuts
-          this.keydownHandler = (e) => this.handleKeydown(e);
-          document.addEventListener('keydown', this.keydownHandler);
-          
-          // Close dropdown when item is clicked
-          this.content.addEventListener('click', (e) => {
-            if (e.target.closest('[role="menuitem"]')) {
-              this.close();
+          document.addEventListener('click', this.documentClickHandler);
+
+          this.popoverEventHandler = (event) => {
+            if (event.detail.source !== this.el) {
+              this.closePopover(false);
             }
-          });
+          };
+          document.addEventListener('sutra:popover', this.popoverEventHandler);
         },
-        
-        destroyed() {
-          document.removeEventListener('click', this.outsideClickHandler);
-          document.removeEventListener('keydown', this.keydownHandler);
+
+        updateMenuItems() {
+          if (!this.menu) return;
+          this.menuItems = Array.from(
+            this.menu.querySelectorAll('[role^="menuitem"]')
+          ).filter(item => item.getAttribute('aria-disabled') !== 'true');
         },
-        
-        isOpen() {
-          return this.trigger.getAttribute('aria-expanded') === 'true';
-        },
-        
-        toggle() {
-          if (this.isOpen()) {
-            this.close();
-          } else {
-            this.open();
-          }
-        },
-        
-        open() {
-          this.trigger.setAttribute('aria-expanded', 'true');
-          this.content.setAttribute('aria-hidden', 'false');
-          this.el.classList.add('dropdown-open');
-          this.items = Array.from(this.content.querySelectorAll('[role="menuitem"]:not([disabled])'));
-          this.currentIndex = -1;
-        },
-        
-        close() {
+
+        closePopover(focusOnTrigger = true) {
+          if (this.trigger.getAttribute('aria-expanded') === 'false') return;
           this.trigger.setAttribute('aria-expanded', 'false');
-          this.content.setAttribute('aria-hidden', 'true');
-          this.el.classList.remove('dropdown-open');
-          this.currentIndex = -1;
+          this.trigger.removeAttribute('aria-activedescendant');
+          this.popover.setAttribute('aria-hidden', 'true');
+
+          if (focusOnTrigger) {
+            this.trigger.focus();
+          }
+
+          this.setActiveItem(-1);
         },
-        
-        handleKeydown(e) {
-          // Check for shortcuts (Ctrl+Key combinations)
-          if (e.ctrlKey || e.metaKey) {
-            const key = e.key.toUpperCase();
-            const shortcutStr = `Ctrl+${key}`;
-            
-            const item = this.content.querySelector(`[data-shortcut="${shortcutStr}"]`);
-            if (item && !item.disabled) {
-              e.preventDefault();
-              item.click();
-              return;
+
+        openPopover(initialSelection = false) {
+          document.dispatchEvent(new CustomEvent('sutra:popover', {
+            detail: { source: this.el }
+          }));
+
+          this.trigger.setAttribute('aria-expanded', 'true');
+          this.popover.setAttribute('aria-hidden', 'false');
+          this.updateMenuItems();
+
+          if (this.menuItems.length > 0 && initialSelection) {
+            if (initialSelection === 'first') {
+              this.setActiveItem(0);
+            } else if (initialSelection === 'last') {
+              this.setActiveItem(this.menuItems.length - 1);
             }
           }
-          
-          if (!this.isOpen()) return;
-          
-          this.items = Array.from(this.content.querySelectorAll('[role="menuitem"]:not([disabled])'));
-          
-          switch(e.key) {
-            case 'Escape':
-              e.preventDefault();
-              this.close();
-              this.trigger.focus();
-              break;
+        },
+
+        setActiveItem(index) {
+          if (this.activeIndex > -1 && this.menuItems[this.activeIndex]) {
+            this.menuItems[this.activeIndex].classList.remove('active');
+          }
+          this.activeIndex = index;
+          if (this.activeIndex > -1 && this.menuItems[this.activeIndex]) {
+            const activeItem = this.menuItems[this.activeIndex];
+            activeItem.classList.add('active');
+            if (activeItem.id) {
+              this.trigger.setAttribute('aria-activedescendant', activeItem.id);
+            }
+          } else {
+            this.trigger.removeAttribute('aria-activedescendant');
+          }
+        },
+
+        handleTriggerClick() {
+          const isExpanded = this.trigger.getAttribute('aria-expanded') === 'true';
+          if (isExpanded) {
+            this.closePopover();
+          } else {
+            this.openPopover(false);
+          }
+        },
+
+        handleKeydown(event) {
+          const isExpanded = this.trigger.getAttribute('aria-expanded') === 'true';
+
+          if (event.key === 'Escape') {
+            if (isExpanded) this.closePopover();
+            return;
+          }
+
+          if (!isExpanded) {
+            if (['Enter', ' '].includes(event.key)) {
+              event.preventDefault();
+              this.openPopover(false);
+            } else if (event.key === 'ArrowDown') {
+              event.preventDefault();
+              this.openPopover('first');
+            } else if (event.key === 'ArrowUp') {
+              event.preventDefault();
+              this.openPopover('last');
+            }
+            return;
+          }
+
+          if (this.menuItems.length === 0) return;
+
+          let nextIndex = this.activeIndex;
+
+          switch (event.key) {
             case 'ArrowDown':
-              e.preventDefault();
-              this.currentIndex = Math.min(this.currentIndex + 1, this.items.length - 1);
-              this.items[this.currentIndex]?.focus();
+              event.preventDefault();
+              nextIndex = this.activeIndex === -1 ? 0 : Math.min(this.activeIndex + 1, this.menuItems.length - 1);
               break;
             case 'ArrowUp':
-              e.preventDefault();
-              this.currentIndex = Math.max(this.currentIndex - 1, 0);
-              this.items[this.currentIndex]?.focus();
+              event.preventDefault();
+              nextIndex = this.activeIndex === -1 ? this.menuItems.length - 1 : Math.max(this.activeIndex - 1, 0);
               break;
             case 'Home':
-              e.preventDefault();
-              this.currentIndex = 0;
-              this.items[0]?.focus();
+              event.preventDefault();
+              nextIndex = 0;
               break;
             case 'End':
-              e.preventDefault();
-              this.currentIndex = this.items.length - 1;
-              this.items[this.currentIndex]?.focus();
+              event.preventDefault();
+              nextIndex = this.menuItems.length - 1;
               break;
             case 'Enter':
             case ' ':
-              if (document.activeElement?.getAttribute('role') === 'menuitem') {
-                e.preventDefault();
-                document.activeElement.click();
+              event.preventDefault();
+              if (this.activeIndex > -1) {
+                const item = this.menuItems[this.activeIndex];
+                const clickable = item.querySelector('a, button') || item;
+                clickable.click();
               }
-              break;
+              this.closePopover();
+              return;
+          }
+
+          if (nextIndex !== this.activeIndex) {
+            this.setActiveItem(nextIndex);
+          }
+        },
+
+        handleMouseMove(event) {
+          const menuItem = event.target.closest('[role^="menuitem"]');
+          if (menuItem && this.menuItems.includes(menuItem)) {
+            const index = this.menuItems.indexOf(menuItem);
+            if (index !== this.activeIndex) {
+              this.setActiveItem(index);
+            }
+          }
+        },
+
+        handleMouseLeave() {
+          this.setActiveItem(-1);
+        },
+
+        handleMenuClick(event) {
+          if (event.target.closest('[role^="menuitem"]')) {
+            this.closePopover();
           }
         }
       }
@@ -269,13 +368,90 @@ defmodule SutraUI.DropdownMenu do
     """
   end
 
-  defp build_menu_items(assigns) do
-    items = Enum.map(assigns.item, &%{type: :item, item: &1})
-    separators = Enum.map(assigns.separator, &%{type: :separator, item: &1})
-    labels = Enum.map(assigns.label, &%{type: :label, item: &1})
+  @doc """
+  Renders a menu item wrapper.
 
-    # Simple concatenation - in real usage you might want to interleave based on position
-    (labels ++ items ++ separators)
-    |> Enum.sort_by(&(&1.item[:__slot__] || 0))
+  The inner content can be any element - `<a>`, `<button>`, `<.link>`, etc.
+
+  ## Attributes
+
+  - `variant` - Visual variant. Values: `default`, `destructive`. Default: `default`
+  - `disabled` - Whether the item is disabled. Default: `false`
+  - `shortcut` - Keyboard shortcut to display (e.g., "Ctrl+N")
+  - `class` - Additional CSS classes
+
+  ## Examples
+
+      <.dropdown_item><a href="/profile">Profile</a></.dropdown_item>
+      <.dropdown_item shortcut="Ctrl+S"><button phx-click="save">Save</button></.dropdown_item>
+      <.dropdown_item variant="destructive"><button phx-click="delete">Delete</button></.dropdown_item>
+      <.dropdown_item disabled><button>Unavailable</button></.dropdown_item>
+  """
+  attr(:variant, :string, default: "default", values: ~w(default destructive))
+  attr(:disabled, :boolean, default: false)
+  attr(:shortcut, :string, default: nil, doc: "Keyboard shortcut to display")
+  attr(:class, :string, default: nil)
+
+  attr(:rest, :global)
+
+  slot(:inner_block, required: true)
+
+  def dropdown_item(assigns) do
+    ~H"""
+    <div
+      role="menuitem"
+      class={[
+        "dropdown-menu-item",
+        @variant == "destructive" && "dropdown-menu-item-destructive",
+        @disabled && "dropdown-menu-item-disabled",
+        @class
+      ]}
+      aria-disabled={@disabled && "true"}
+      {@rest}
+    >
+      <span class="dropdown-menu-item-content">
+        {render_slot(@inner_block)}
+      </span>
+      <kbd :if={@shortcut} class="dropdown-menu-shortcut">{@shortcut}</kbd>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a separator between menu items.
+
+  ## Examples
+
+      <.dropdown_item><a href="/profile">Profile</a></.dropdown_item>
+      <.dropdown_separator />
+      <.dropdown_item><a href="/logout">Logout</a></.dropdown_item>
+  """
+  attr(:class, :string, default: nil)
+
+  def dropdown_separator(assigns) do
+    ~H"""
+    <div role="separator" class={["dropdown-menu-separator", @class]}></div>
+    """
+  end
+
+  @doc """
+  Renders a non-interactive label for a group of items.
+
+  ## Examples
+
+      <.dropdown_label>Account</.dropdown_label>
+      <.dropdown_item><a href="/profile">Profile</a></.dropdown_item>
+      <.dropdown_item><a href="/settings">Settings</a></.dropdown_item>
+  """
+  attr(:class, :string, default: nil)
+
+  slot(:inner_block, required: true)
+
+  def dropdown_label(assigns) do
+    ~H"""
+    <div class={["dropdown-menu-label", @class]}>
+      {render_slot(@inner_block)}
+    </div>
+    """
   end
 end

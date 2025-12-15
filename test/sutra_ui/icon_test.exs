@@ -7,7 +7,7 @@ defmodule SutraUI.IconTest do
   alias SutraUI.Icon
 
   describe "icon/1" do
-    test "renders SVG with lucide class" do
+    test "renders span with icon name as class" do
       assigns = %{}
 
       html =
@@ -15,8 +15,8 @@ defmodule SutraUI.IconTest do
         <Icon.icon name="lucide-check" />
         """)
 
+      assert html =~ "<span"
       assert html =~ "lucide-check"
-      assert html =~ "<svg"
     end
 
     test "renders with default size-4 class" do
@@ -86,44 +86,6 @@ defmodule SutraUI.IconTest do
         """)
 
       assert html =~ ~s(role="img")
-    end
-
-    test "renders as SVG element with proper structure" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Icon.icon name="lucide-check" />
-        """)
-
-      # Should be an svg with lucide class
-      assert html =~ ~r/<svg[^>]*class="[^"]*lucide[^"]*lucide-check/
-      assert html =~ "viewBox"
-      assert html =~ "stroke=\"currentColor\""
-    end
-
-    test "works without lucide- prefix" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Icon.icon name="check" />
-        """)
-
-      assert html =~ "<svg"
-      assert html =~ "lucide-check"
-    end
-
-    test "renders fallback for unknown icon" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Icon.icon name="totally-unknown-icon-12345" />
-        """)
-
-      assert html =~ "<span"
-      assert html =~ "?"
     end
   end
 end

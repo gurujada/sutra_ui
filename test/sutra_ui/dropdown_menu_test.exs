@@ -13,16 +13,14 @@ defmodule SutraUI.DropdownMenuTest do
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger>
-            <button>Open</button>
-          </:trigger>
-          <:item>Profile</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="/profile">Profile</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ "dropdown"
-      assert html =~ "dropdown-trigger"
-      assert html =~ "dropdown-content"
+      assert html =~ "dropdown-menu"
+      assert html =~ "dropdown-menu-trigger"
+      assert html =~ "dropdown-menu-content"
       assert html =~ "Open"
       assert html =~ "Profile"
     end
@@ -33,31 +31,62 @@ defmodule SutraUI.DropdownMenuTest do
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="my-dropdown">
-          <:trigger>
-            <button>Open</button>
-          </:trigger>
-          <:item>Item</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
       assert html =~ ~s(id="my-dropdown")
-      assert html =~ ~s(id="my-dropdown-content")
+      assert html =~ ~s(id="my-dropdown-trigger")
+      assert html =~ ~s(id="my-dropdown-menu")
+      assert html =~ ~s(id="my-dropdown-popover")
     end
-  end
 
-  describe "dropdown_menu/1 alignment and side" do
-    test "renders with default alignment (start)" do
+    test "renders chevron icon in trigger" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ "dropdown-align-start"
+      assert html =~ "lucide-chevron-down"
+      assert html =~ "dropdown-menu-chevron"
+    end
+  end
+
+  describe "dropdown_menu/1 positioning" do
+    test "renders with default side (bottom) and align (start)" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_menu id="test-dropdown">
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
+        </DropdownMenu.dropdown_menu>
+        """)
+
+      assert html =~ ~s(data-side="bottom")
+      assert html =~ ~s(data-align="start")
+    end
+
+    test "renders with custom side and align" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_menu id="test-dropdown" side="top" align="end">
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
+        </DropdownMenu.dropdown_menu>
+        """)
+
+      assert html =~ ~s(data-side="top")
+      assert html =~ ~s(data-align="end")
     end
 
     test "renders with center alignment" do
@@ -66,54 +95,12 @@ defmodule SutraUI.DropdownMenuTest do
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown" align="center">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ "dropdown-align-center"
-    end
-
-    test "renders with end alignment" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown" align="end">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ "dropdown-align-end"
-    end
-
-    test "renders with default side (bottom)" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ "dropdown-bottom"
-    end
-
-    test "renders with top side" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown" side="top">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ "dropdown-top"
+      assert html =~ ~s(data-align="center")
     end
 
     test "renders with left side" do
@@ -122,12 +109,12 @@ defmodule SutraUI.DropdownMenuTest do
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown" side="left">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ "dropdown-left"
+      assert html =~ ~s(data-side="left")
     end
 
     test "renders with right side" do
@@ -136,33 +123,69 @@ defmodule SutraUI.DropdownMenuTest do
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown" side="right">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ "dropdown-right"
+      assert html =~ ~s(data-side="right")
     end
   end
 
-  describe "dropdown_menu/1 items" do
+  describe "dropdown_item/1" do
+    test "renders item with inner content" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_item><a href="/profile">Profile</a></DropdownMenu.dropdown_item>
+        """)
+
+      assert html =~ ~s(role="menuitem")
+      assert html =~ "dropdown-menu-item"
+      assert html =~ ~s(<a href="/profile">Profile</a>)
+    end
+
+    test "renders item with link navigate" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_item><a data-phx-link="navigate" href="/settings">Settings</a></DropdownMenu.dropdown_item>
+        """)
+
+      assert html =~ ~s(data-phx-link="navigate")
+      assert html =~ "Settings"
+    end
+
+    test "renders item with button and phx-click" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_item><button phx-click="do_action">Action</button></DropdownMenu.dropdown_item>
+        """)
+
+      assert html =~ ~s(phx-click="do_action")
+      assert html =~ "Action"
+    end
+
     test "renders multiple items" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Profile</:item>
-          <:item>Settings</:item>
-          <:item>Logout</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="/profile">Profile</a></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item><a href="/settings">Settings</a></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item><a href="/logout">Logout</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
       assert html =~ "Profile"
       assert html =~ "Settings"
       assert html =~ "Logout"
-      # Should have 3 menuitem buttons
       assert length(Regex.scan(~r/role="menuitem"/, html)) == 3
     end
 
@@ -171,13 +194,12 @@ defmodule SutraUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item variant="destructive">Delete</:item>
-        </DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_item variant="destructive">
+          <button phx-click="delete">Delete</button>
+        </DropdownMenu.dropdown_item>
         """)
 
-      assert html =~ "dropdown-item-destructive"
+      assert html =~ "dropdown-menu-item-destructive"
       assert html =~ "Delete"
     end
 
@@ -186,128 +208,140 @@ defmodule SutraUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item disabled>Disabled Item</:item>
-        </DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_item disabled><button>Disabled</button></DropdownMenu.dropdown_item>
         """)
 
-      assert html =~ "dropdown-item-disabled"
-      assert html =~ "disabled"
-      assert html =~ "Disabled Item"
+      assert html =~ "dropdown-menu-item-disabled"
+      assert html =~ ~s(aria-disabled="true")
+      assert html =~ "Disabled"
     end
 
-    test "renders item with on_click event" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item on_click="handle_profile">Profile</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ "handle_profile"
-    end
-  end
-
-  describe "dropdown_menu/1 icons" do
-    test "renders item with icon" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item icon="lucide-user">Profile</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ "dropdown-item-icon"
-      assert html =~ "lucide-user"
-      assert html =~ "Profile"
-    end
-
-    test "renders item without icon" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>No Icon</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      # Items without icons get a placeholder for alignment
-      assert html =~ "dropdown-item-icon-placeholder"
-      refute html =~ ~r/dropdown-item-icon[^-]/
-      assert html =~ "No Icon"
-    end
-
-    test "renders multiple items with different icons" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item icon="lucide-user">Profile</:item>
-          <:item icon="lucide-settings">Settings</:item>
-          <:item icon="lucide-log-out">Logout</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ "lucide-user"
-      assert html =~ "lucide-settings"
-      assert html =~ "lucide-log-out"
-    end
-  end
-
-  describe "dropdown_menu/1 keyboard shortcuts" do
     test "renders item with shortcut" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item shortcut="⌘K">Search</:item>
-        </DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_item shortcut="Ctrl+S"><button phx-click="save">Save</button></DropdownMenu.dropdown_item>
         """)
 
-      assert html =~ "dropdown-item-shortcut"
-      assert html =~ "⌘K"
-      assert html =~ "Search"
+      assert html =~ "dropdown-menu-shortcut"
+      assert html =~ "Ctrl+S"
+      assert html =~ "Save"
     end
 
-    test "renders item without shortcut" do
+    test "renders item with custom class" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_item class="my-custom-item"><a href="#">Item</a></DropdownMenu.dropdown_item>
+        """)
+
+      assert html =~ "my-custom-item"
+    end
+  end
+
+  describe "dropdown_separator/1" do
+    test "renders separator" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_separator />
+        """)
+
+      assert html =~ "dropdown-menu-separator"
+      assert html =~ ~s(role="separator")
+    end
+
+    test "renders separator with custom class" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_separator class="my-separator" />
+        """)
+
+      assert html =~ "my-separator"
+    end
+
+    test "renders multiple separators in menu" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>No Shortcut</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item 1</a></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_separator />
+          <DropdownMenu.dropdown_item><a href="#">Item 2</a></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_separator />
+          <DropdownMenu.dropdown_item><a href="#">Item 3</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      refute html =~ "dropdown-item-shortcut"
-      assert html =~ "No Shortcut"
+      assert length(Regex.scan(~r/dropdown-menu-separator/, html)) == 2
+    end
+  end
+
+  describe "dropdown_label/1" do
+    test "renders dropdown_label" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_label>My Account</DropdownMenu.dropdown_label>
+        """)
+
+      assert html =~ "dropdown-menu-label"
+      assert html =~ "My Account"
     end
 
-    test "renders various shortcut formats" do
+    test "renders dropdown_label with custom class" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_label class="my-title">Group</DropdownMenu.dropdown_label>
+        """)
+
+      assert html =~ "my-title"
+    end
+
+    test "renders multiple dropdown_labels for groups" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item shortcut="⌘S">Save</:item>
-          <:item shortcut="⌘⇧S">Save As</:item>
-          <:item shortcut="Ctrl+K">Search</:item>
-          <:item shortcut="⌥⌘N">New</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_label>Account</DropdownMenu.dropdown_label>
+          <DropdownMenu.dropdown_item><a href="/profile">Profile</a></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item><a href="/settings">Settings</a></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_separator />
+          <DropdownMenu.dropdown_label>Actions</DropdownMenu.dropdown_label>
+          <DropdownMenu.dropdown_item><a href="/logout">Logout</a></DropdownMenu.dropdown_item>
+        </DropdownMenu.dropdown_menu>
+        """)
+
+      assert html =~ "Account"
+      assert html =~ "Actions"
+      assert length(Regex.scan(~r/dropdown-menu-label/, html)) == 2
+    end
+  end
+
+  describe "keyboard shortcuts" do
+    test "renders item with various shortcut formats" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_menu id="test-dropdown">
+          <:trigger>Edit</:trigger>
+          <DropdownMenu.dropdown_item shortcut="⌘S"><button>Save</button></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item shortcut="⌘⇧S"><button>Save As</button></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item shortcut="Ctrl+K"><button>Search</button></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item shortcut="⌥⌘N"><button>New</button></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
@@ -316,172 +350,75 @@ defmodule SutraUI.DropdownMenuTest do
       assert html =~ "Ctrl+K"
       assert html =~ "⌥⌘N"
     end
-  end
 
-  describe "dropdown_menu/1 icon and shortcut combined" do
-    test "renders item with both icon and shortcut" do
+    test "renders item without shortcut" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item icon="lucide-scissors" shortcut="⌘X">Cut</:item>
-        </DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_item><a href="#">No Shortcut</a></DropdownMenu.dropdown_item>
         """)
 
-      assert html =~ "dropdown-item-icon"
-      assert html =~ "lucide-scissors"
-      assert html =~ "dropdown-item-shortcut"
-      assert html =~ "⌘X"
-      assert html =~ "Cut"
-    end
-
-    test "renders complete edit menu with icons and shortcuts" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Edit</button></:trigger>
-          <:item icon="lucide-undo-2" shortcut="⌘Z">Undo</:item>
-          <:item icon="lucide-redo-2" shortcut="⌘⇧Z">Redo</:item>
-          <:separator />
-          <:item icon="lucide-scissors" shortcut="⌘X">Cut</:item>
-          <:item icon="lucide-copy" shortcut="⌘C">Copy</:item>
-          <:item icon="lucide-clipboard" shortcut="⌘V">Paste</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      # Check icons
-      assert html =~ "lucide-undo-2"
-      assert html =~ "lucide-redo-2"
-      assert html =~ "lucide-scissors"
-      assert html =~ "lucide-copy"
-      assert html =~ "lucide-clipboard"
-
-      # Check shortcuts
-      assert html =~ "⌘Z"
-      assert html =~ "⌘⇧Z"
-      assert html =~ "⌘X"
-      assert html =~ "⌘C"
-      assert html =~ "⌘V"
-
-      # Check labels
-      assert html =~ "Undo"
-      assert html =~ "Redo"
-      assert html =~ "Cut"
-      assert html =~ "Copy"
-      assert html =~ "Paste"
+      refute html =~ "dropdown-menu-shortcut"
+      assert html =~ "No Shortcut"
     end
   end
 
-  describe "dropdown_menu/1 separators" do
-    test "renders separator between items" do
+  describe "accessibility" do
+    test "has correct ARIA attributes on trigger" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Profile</:item>
-          <:separator />
-          <:item>Logout</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ "dropdown-separator"
-      assert html =~ ~s(role="separator")
+      assert html =~ ~s(aria-haspopup="menu")
+      assert html =~ ~s(aria-controls="test-dropdown-menu")
+      assert html =~ ~s(aria-expanded="false")
     end
 
-    test "renders multiple separators" do
+    test "has correct ARIA attributes on menu" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item 1</:item>
-          <:separator />
-          <:item>Item 2</:item>
-          <:separator />
-          <:item>Item 3</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert length(Regex.scan(~r/dropdown-separator/, html)) == 2
-    end
-  end
-
-  describe "dropdown_menu/1 labels" do
-    test "renders label" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:label>My Account</:label>
-          <:item>Profile</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ "dropdown-label"
-      assert html =~ "My Account"
-      assert html =~ ~s(role="presentation")
-    end
-
-    test "renders multiple labels for groups" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:label>Account</:label>
-          <:item>Profile</:item>
-          <:item>Settings</:item>
-          <:separator />
-          <:label>Actions</:label>
-          <:item>Logout</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ "Account"
-      assert html =~ "Actions"
-      assert length(Regex.scan(~r/dropdown-label/, html)) == 2
-    end
-  end
-
-  describe "dropdown_menu/1 accessibility" do
-    test "has correct ARIA roles" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Profile</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
       assert html =~ ~s(role="menu")
-      assert html =~ ~s(role="menuitem")
-      assert html =~ ~s(aria-orientation="vertical")
+      assert html =~ ~s(aria-labelledby="test-dropdown-trigger")
     end
 
-    test "items are buttons with type button" do
+    test "popover starts hidden" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Profile</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ ~s(type="button")
+      assert html =~ ~s(aria-hidden="true")
+    end
+
+    test "items have menuitem role" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
+        """)
+
+      assert html =~ ~s(role="menuitem")
     end
 
     test "separator has separator role" do
@@ -489,106 +426,110 @@ defmodule SutraUI.DropdownMenuTest do
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
-          <:separator />
-          <:item>Item 2</:item>
-        </DropdownMenu.dropdown_menu>
+        <DropdownMenu.dropdown_separator />
         """)
 
       assert html =~ ~s(role="separator")
     end
+  end
 
-    test "label has presentation role" do
+  describe "custom classes" do
+    test "accepts custom class on container" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_menu id="test-dropdown" class="my-dropdown">
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
+        </DropdownMenu.dropdown_menu>
+        """)
+
+      assert html =~ "my-dropdown"
+    end
+
+    test "accepts custom trigger_class" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_menu id="test-dropdown" trigger_class="my-trigger">
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
+        </DropdownMenu.dropdown_menu>
+        """)
+
+      assert html =~ "my-trigger"
+    end
+
+    test "accepts custom menu_class" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_menu id="test-dropdown" menu_class="my-menu">
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
+        </DropdownMenu.dropdown_menu>
+        """)
+
+      assert html =~ "my-menu"
+    end
+  end
+
+  describe "JavaScript hook" do
+    test "has phx-hook attribute" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
         <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:label>Group</:label>
-          <:item>Item</:item>
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ ~s(role="presentation")
+      assert html =~ ~s(phx-hook=)
+      assert html =~ "DropdownMenu"
     end
   end
 
-  describe "dropdown_menu/1 custom class" do
-    test "includes custom class on container" do
+  describe "complete examples" do
+    test "renders full menu with dropdown_labels, items, and separators" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown" class="my-custom-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
+        <DropdownMenu.dropdown_menu id="settings-menu">
+          <:trigger>Settings</:trigger>
+          <DropdownMenu.dropdown_label>Account</DropdownMenu.dropdown_label>
+          <DropdownMenu.dropdown_item><a href="/profile">Profile</a></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_item shortcut="Ctrl+B"><a href="/billing">Billing</a></DropdownMenu.dropdown_item>
+          <DropdownMenu.dropdown_separator />
+          <DropdownMenu.dropdown_label>Danger Zone</DropdownMenu.dropdown_label>
+          <DropdownMenu.dropdown_item variant="destructive">
+            <button phx-click="delete_account">Delete Account</button>
+          </DropdownMenu.dropdown_item>
         </DropdownMenu.dropdown_menu>
         """)
 
-      assert html =~ "my-custom-dropdown"
-    end
-  end
+      # Group titles
+      assert html =~ "Account"
+      assert html =~ "Danger Zone"
 
-  describe "dropdown_menu/1 JavaScript hook" do
-    test "has phx-hook for keyboard navigation" do
-      assigns = %{}
+      # Items
+      assert html =~ "Profile"
+      assert html =~ "Billing"
+      assert html =~ "Delete Account"
 
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
+      # Shortcut
+      assert html =~ "Ctrl+B"
 
-      assert html =~ ~s(phx-hook="SutraUI.DropdownMenu.DropdownMenu")
-    end
+      # Destructive variant
+      assert html =~ "dropdown-menu-item-destructive"
 
-    test "content starts hidden" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ ~s(aria-hidden="true")
-    end
-  end
-
-  describe "dropdown_menu/1 data attributes" do
-    test "includes data-align attribute" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown" align="center">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ ~s(data-align="center")
-    end
-
-    test "includes data-side attribute" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <DropdownMenu.dropdown_menu id="test-dropdown" side="top">
-          <:trigger><button>Open</button></:trigger>
-          <:item>Item</:item>
-        </DropdownMenu.dropdown_menu>
-        """)
-
-      assert html =~ ~s(data-side="top")
+      # Separator
+      assert html =~ "dropdown-menu-separator"
     end
   end
 end

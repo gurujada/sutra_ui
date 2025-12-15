@@ -1105,11 +1105,11 @@ defmodule SutraUI.LiveSelect do
       <% end %>
 
       <script :type={ColocatedHook} name=".LiveSelect" runtime>
-        // LiveSelect Hook - Client-side state management
-        // Navigation (activeIndex, dropdownOpen) is entirely client-side
-        // Only select/remove/clear/recover events go to server
-
         {
+          // LiveSelect Hook - Client-side state management
+          // Navigation (activeIndex, dropdownOpen) is entirely client-side
+          // Only select/remove/clear/recover events go to server
+
           mounted() {
             this.activeIndex = -1;
             this.dropdownOpen = false;

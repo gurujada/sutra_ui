@@ -38,8 +38,8 @@ defmodule SutraUI.LoadingStateTest do
         <LoadingState.loading_state />
         """)
 
-      # Uses lucide-loader-2 with animate-spin
-      assert html =~ "lucide-loader-2"
+      # Uses lucide-loader-circle with animate-spin
+      assert html =~ "lucide-loader-circle"
       assert html =~ "animate-spin"
     end
   end

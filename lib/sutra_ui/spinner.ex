@@ -91,7 +91,7 @@ defmodule SutraUI.Spinner do
       aria-label={@label}
       {@rest}
     >
-      <.icon name="lucide-loader-2" class={["animate-spin", size_class(@size)]} />
+      <.icon name="lucide-loader-circle" class={["animate-spin", size_class(@size)]} />
       <span :if={@text != []} class="spinner-text">
         {render_slot(@text)}
       </span>
@@ -133,7 +133,7 @@ defmodule SutraUI.Spinner do
   def spinner_icon(assigns) do
     ~H"""
     <span role="status" aria-label={@label} {@rest}>
-      <.icon name="lucide-loader-2" class={["animate-spin", size_class(@size), @class]} />
+      <.icon name="lucide-loader-circle" class={["animate-spin", size_class(@size), @class]} />
     </span>
     """
   end

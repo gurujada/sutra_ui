@@ -72,16 +72,16 @@ defmodule SutraUI.ComponentCase do
 
   @doc """
   Asserts that the HTML contains an element matching the selector.
-  Uses Floki for parsing.
+  Uses LazyHtml for parsing.
 
   ## Example
 
       assert_selector(html, "button[type='submit']")
   """
   def assert_selector(html, selector) do
-    parsed = Floki.parse_document!(html)
+    parsed = LazyHTML.from_fragment(html)
 
-    case Floki.find(parsed, selector) do
+    case LazyHTML.query(parsed, selector) |> Enum.to_list() do
       [] -> flunk("Expected to find selector #{inspect(selector)} in:\n#{html}")
       _ -> true
     end
@@ -89,16 +89,16 @@ defmodule SutraUI.ComponentCase do
 
   @doc """
   Refutes that the HTML contains an element matching the selector.
-  Uses Floki for parsing.
+  Uses LazyHtml for parsing.
 
   ## Example
 
       refute_selector(html, "button[disabled]")
   """
   def refute_selector(html, selector) do
-    parsed = Floki.parse_document!(html)
+    parsed = LazyHTML.from_fragment(html)
 
-    case Floki.find(parsed, selector) do
+    case LazyHTML.query(parsed, selector) |> Enum.to_list() do
       [] ->
         true
 
@@ -115,14 +115,12 @@ defmodule SutraUI.ComponentCase do
       assert get_attribute(html, "button", "type") == "submit"
   """
   def get_attribute(html, selector, attribute) do
-    parsed = Floki.parse_document!(html)
+    parsed = LazyHTML.from_fragment(html)
+    results = LazyHTML.query(parsed, selector)
 
-    case Floki.find(parsed, selector) do
-      [] ->
-        nil
-
-      [element | _] ->
-        Floki.attribute(element, attribute) |> List.first()
+    case LazyHTML.attribute(results, attribute) do
+      [] -> nil
+      [value | _] -> value
     end
   end
 
@@ -134,11 +132,11 @@ defmodule SutraUI.ComponentCase do
       classes = get_attributes(html, "button", "class")
   """
   def get_attributes(html, selector, attribute) do
-    parsed = Floki.parse_document!(html)
+    parsed = LazyHTML.from_fragment(html)
 
     parsed
-    |> Floki.find(selector)
-    |> Enum.flat_map(&Floki.attribute(&1, attribute))
+    |> LazyHTML.query(selector)
+    |> LazyHTML.attribute(attribute)
   end
 
   @doc """

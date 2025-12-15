@@ -39,11 +39,16 @@ defmodule SutraUI.MixProject do
     [
       {:phoenix_live_view, "~> 1.1"},
       {:phoenix_html, "~> 4.0"},
-      {:lucide_icons, "~> 2.0"},
-
+      {:lucide_icons,
+       github: "lucide-icons/lucide",
+       tag: "0.552.0",
+       sparse: "icons",
+       app: false,
+       compile: false,
+       depth: 1},
       # Dev/Test
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
-      {:floki, ">= 0.30.0", only: :test},
+      {:lazy_html, "~> 0.1", only: :test},
       {:jason, "~> 1.0", optional: true}
     ]
   end
