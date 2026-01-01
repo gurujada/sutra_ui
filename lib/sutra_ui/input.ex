@@ -41,11 +41,11 @@ defmodule SutraUI.Input do
 
   This component accepts all HTML input types, with special handling for:
 
-    * `type="checkbox"` - Renders a checkbox with hidden false value
-    * `type="switch"` - Renders a toggle switch (styled checkbox with role="switch")
+    * `type="checkbox"` - Delegates to `SutraUI.Checkbox` with hidden false value
+    * `type="switch"` - Delegates to `SutraUI.Switch` (toggle with role="switch")
     * `type="select"` - Renders a native `<select>` element
-    * `type="textarea"` - Renders a `<textarea>` element
-    * `type="range"` - Renders a styled range slider with visual fill
+    * `type="textarea"` - Delegates to `SutraUI.Textarea`
+    * `type="range"` - Delegates to `SutraUI.Slider` with colocated hook
     * `type="hidden"` - Renders just the input, no wrapper or label
 
   For live file uploads, see `Phoenix.Component.live_file_input/1`.
@@ -155,7 +155,7 @@ defmodule SutraUI.Input do
     """
   end
 
-  # Checkbox input
+  # Checkbox input - delegates to SutraUI.Checkbox
   def input(%{type: "checkbox"} = assigns) do
     assigns =
       assign_new(assigns, :checked, fn ->
@@ -172,13 +172,12 @@ defmodule SutraUI.Input do
           disabled={@rest[:disabled]}
           form={@rest[:form]}
         />
-        <input
-          type="checkbox"
-          id={@id}
+        <SutraUI.Checkbox.checkbox
           name={@name}
           value="true"
           checked={@checked}
-          class={["input", @class]}
+          class={@class}
+          id={@id}
           aria-invalid={@errors != [] && "true"}
           {@rest}
         />
@@ -212,26 +211,34 @@ defmodule SutraUI.Input do
     """
   end
 
-  # Textarea input
+  # Textarea input - delegates to SutraUI.Textarea
   def input(%{type: "textarea"} = assigns) do
+    assigns =
+      assign(
+        assigns,
+        :textarea_value,
+        Phoenix.HTML.Form.normalize_value("textarea", assigns.value)
+      )
+
     ~H"""
     <div class="fieldset mb-2">
       <label>
         <span :if={@label} class="label mb-1">{@label}</span>
-        <textarea
+        <SutraUI.Textarea.textarea
           id={@id}
           name={@name}
-          class={["textarea w-full", @class]}
+          value={@textarea_value}
+          class={@class}
           aria-invalid={@errors != [] && "true"}
           {@rest}
-        >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+        />
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
 
-  # Switch input - uses SutraUI.Switch component
+  # Switch input - delegates to SutraUI.Switch
   def input(%{type: "switch"} = assigns) do
     assigns =
       assign_new(assigns, :checked, fn ->
@@ -248,15 +255,12 @@ defmodule SutraUI.Input do
           disabled={@rest[:disabled]}
           form={@rest[:form]}
         />
-        <input
-          type="checkbox"
-          role="switch"
-          id={@id}
+        <SutraUI.Switch.switch
           name={@name}
           value="true"
           checked={@checked}
-          aria-checked={to_string(@checked)}
-          class={["switch", @class]}
+          class={@class}
+          id={@id}
           aria-invalid={@errors != [] && "true"}
           {@rest}
         />
@@ -267,75 +271,30 @@ defmodule SutraUI.Input do
     """
   end
 
-  # Range input - uses SutraUI.Slider styling
+  # Range input - delegates to SutraUI.Slider
   def input(%{type: "range"} = assigns) do
-    # Generate a unique ID if not provided
-    assigns =
-      assign_new(assigns, :id, fn ->
-        "range-#{System.unique_integer([:positive])}"
-      end)
-
-    # Get min/max/step from rest or use defaults
-    min = assigns.rest[:min] || 0
-    max = assigns.rest[:max] || 100
-    step = assigns.rest[:step] || 1
-    value = assigns.value || 50
-
-    # Convert to floats for calculation
-    min_f = to_float(min)
-    max_f = to_float(max)
-    value_f = to_float(value)
-
-    # Calculate percentage for CSS custom property
-    percent = if max_f == min_f, do: 0.0, else: (value_f - min_f) / (max_f - min_f) * 100
-
+    # Generate a unique ID if not provided (required by Slider)
     assigns =
       assigns
-      |> assign(:percent, "#{percent}%")
-      |> assign(:min, min)
-      |> assign(:max, max)
-      |> assign(:step, step)
-      |> assign(:slider_value, value)
+      |> assign_new(:id, fn -> "range-#{System.unique_integer([:positive])}" end)
+      |> assign(:slider_value, assigns.value || 50)
 
     ~H"""
     <div class="fieldset mb-2">
-      <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
-        <input
-          type="range"
-          id={@id}
-          name={@name}
-          value={@slider_value}
-          min={@min}
-          max={@max}
-          step={@step}
-          class={["slider w-full", @class]}
-          aria-invalid={@errors != [] && "true"}
-          aria-valuemin={@min}
-          aria-valuemax={@max}
-          aria-valuenow={@slider_value}
-          style={"--slider-value: #{@percent}"}
-          oninput="this.style.setProperty('--slider-value', ((this.value - this.min) / (this.max - this.min) * 100) + '%')"
-          {@rest}
-        />
+      <label :if={@label}>
+        <span class="label mb-1">{@label}</span>
       </label>
+      <SutraUI.Slider.slider
+        id={@id}
+        name={@name}
+        value={@slider_value}
+        class={@class}
+        {@rest}
+      />
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
-
-  # Convert any numeric type to float (for range percentage calculation)
-  defp to_float(value) when is_integer(value), do: value * 1.0
-  defp to_float(value) when is_float(value), do: value
-
-  defp to_float(value) when is_binary(value) do
-    case Float.parse(value) do
-      {float, _} -> float
-      :error -> 0.0
-    end
-  end
-
-  defp to_float(_), do: 0.0
 
   # All other inputs: text, email, password, number, date, etc.
   def input(assigns) do

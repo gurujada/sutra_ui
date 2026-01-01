@@ -57,7 +57,7 @@ defmodule SutraUI.Switch do
 
   attr(:rest, :global,
     include:
-      ~w(form required aria-label aria-labelledby aria-describedby aria-required phx-click phx-change),
+      ~w(form required aria-label aria-labelledby aria-describedby aria-required aria-invalid phx-click phx-change),
     doc: "Additional HTML attributes including ARIA"
   )
 

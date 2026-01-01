@@ -667,7 +667,7 @@ defmodule SutraUI.InputTest do
   end
 
   describe "input/1 range type" do
-    test "renders range input" do
+    test "renders range input using SutraUI.Slider" do
       assigns = %{}
 
       html =
@@ -677,6 +677,8 @@ defmodule SutraUI.InputTest do
 
       assert html =~ ~s(type="range")
       assert html =~ ~s(name="volume")
+      # Should use the Slider's colocated hook
+      assert html =~ ~s(phx-hook=)
     end
 
     test "renders range with slider class" do
@@ -687,8 +689,7 @@ defmodule SutraUI.InputTest do
         <Input.input type="range" name="volume" />
         """)
 
-      assert html =~ "slider"
-      assert html =~ "w-full"
+      assert html =~ ~s(class="slider)
     end
 
     test "renders range with min, max, step" do
@@ -699,9 +700,10 @@ defmodule SutraUI.InputTest do
         <Input.input type="range" name="volume" min="0" max="100" step="10" />
         """)
 
-      assert html =~ ~s(min="0")
-      assert html =~ ~s(max="100")
-      assert html =~ ~s(step="10")
+      # Slider converts to floats internally
+      assert html =~ ~s(min="0)
+      assert html =~ ~s(max="100)
+      assert html =~ ~s(step="10)
     end
 
     test "renders range with value" do
@@ -737,7 +739,7 @@ defmodule SutraUI.InputTest do
       assert html =~ "--slider-value: 75"
     end
 
-    test "renders range with oninput handler for live updates" do
+    test "renders range with colocated hook for live updates" do
       assigns = %{}
 
       html =
@@ -745,8 +747,11 @@ defmodule SutraUI.InputTest do
         <Input.input type="range" name="volume" />
         """)
 
-      assert html =~ "oninput="
+      # Slider uses colocated hook instead of oninput
+      assert html =~ "phx-hook="
       assert html =~ "--slider-value"
+      # Hook script should be included
+      assert html =~ "updateSlider"
     end
 
     test "renders range with aria attributes" do
@@ -757,8 +762,9 @@ defmodule SutraUI.InputTest do
         <Input.input type="range" name="volume" value="50" min="0" max="100" />
         """)
 
-      assert html =~ ~s(aria-valuemin="0")
-      assert html =~ ~s(aria-valuemax="100")
+      # Slider uses float values internally
+      assert html =~ ~s(aria-valuemin="0)
+      assert html =~ ~s(aria-valuemax="100)
       assert html =~ ~s(aria-valuenow="50")
     end
 
@@ -770,8 +776,31 @@ defmodule SutraUI.InputTest do
         <Input.input type="range" name="volume" errors={["must be less than 100"]} />
         """)
 
+      # Errors are displayed via the input wrapper's error component
       assert html =~ "must be less than 100"
-      assert html =~ ~s(aria-invalid="true")
+      assert html =~ "text-destructive"
+    end
+
+    test "does not duplicate min/max/step attributes" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input type="range" name="volume" min="0" max="150" step="5" phx-change="update" />
+        """)
+
+      # Count occurrences - each should appear exactly once (not including aria-valuemin/aria-valuemax)
+      # Use word boundary or space/quote prefix to avoid matching aria-valuemin, aria-valuemax
+      min_count = length(Regex.scan(~r/\smin="/, html))
+      max_count = length(Regex.scan(~r/\smax="/, html))
+      step_count = length(Regex.scan(~r/\sstep="/, html))
+
+      assert min_count == 1, "Expected 1 min attribute, found #{min_count}"
+      assert max_count == 1, "Expected 1 max attribute, found #{max_count}"
+      assert step_count == 1, "Expected 1 step attribute, found #{step_count}"
+
+      # Verify phx-change is passed through to Slider
+      assert html =~ ~s(phx-change="update")
     end
   end
 

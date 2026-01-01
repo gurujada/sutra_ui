@@ -102,7 +102,7 @@ defmodule SutraUI.Slider do
 
   attr(:rest, :global,
     include:
-      ~w(form phx-change phx-blur phx-focus aria-label aria-labelledby aria-describedby aria-valuetext),
+      ~w(form phx-change phx-blur phx-focus aria-label aria-labelledby aria-describedby aria-valuetext aria-invalid min max step),
     doc: "Additional HTML attributes including ARIA"
   )
 
