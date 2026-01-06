@@ -1,34 +1,40 @@
 defmodule SutraUI.Dialog do
   @moduledoc """
-  A modal dialog component that displays content in a layer above the page.
+  A modal dialog component using div-based overlay (screen share compatible).
 
-  Uses the native HTML `<dialog>` element for proper accessibility and behavior.
-  Dialogs are used to display important content that requires user attention
-  or interaction before continuing - confirmations, forms, alerts, or any
-  focused interaction.
+  Uses a div-based implementation instead of native `<dialog>` element to ensure
+  compatibility with screen sharing tools like Zoom, Google Meet, etc. The native
+  dialog's "top layer" rendering can be invisible during screen shares.
 
   ## Examples
 
-      # Basic confirmation dialog
-      <.dialog id="confirm-dialog">
+      # Basic confirmation dialog (server-controlled)
+      <.dialog id="confirm-dialog" show={@show_confirm} on_cancel="close_confirm">
         <:title>Confirm Action</:title>
         <:description>Are you sure you want to proceed?</:description>
         This action cannot be undone.
         <:footer>
-          <.button variant="outline" phx-click={SutraUI.Dialog.hide_dialog("confirm-dialog")}>
-            Cancel
-          </.button>
+          <.button variant="outline" phx-click="close_confirm">Cancel</.button>
           <.button phx-click="confirm">Confirm</.button>
         </:footer>
       </.dialog>
 
-      # Open with JS commands (recommended)
+      # Open by setting assign
+      def handle_event("open_confirm", _, socket) do
+        {:noreply, assign(socket, show_confirm: true)}
+      end
+
+      def handle_event("close_confirm", _, socket) do
+        {:noreply, assign(socket, show_confirm: false)}
+      end
+
+      # Or open with JS commands
       <.button phx-click={SutraUI.Dialog.show_dialog("confirm-dialog")}>
         Open Dialog
       </.button>
 
       # Form inside dialog
-      <.dialog id="edit-user-dialog">
+      <.dialog id="edit-user-dialog" show={@show_edit} on_cancel="cancel_edit">
         <:title>Edit Profile</:title>
         <.simple_form for={@form} phx-submit="save_user">
           <.input field={@form[:name]} label="Name" />
@@ -41,13 +47,25 @@ defmodule SutraUI.Dialog do
 
   ## Opening and Closing
 
-  Use the provided helper functions for LiveView integration:
+  **Server-controlled (recommended):**
+
+  Control visibility via the `show` assign and handle `on_cancel` event:
+
+      <.dialog id="my-dialog" show={@show_dialog} on_cancel="close_dialog">
+        ...
+      </.dialog>
+
+      def handle_event("close_dialog", _, socket) do
+        {:noreply, assign(socket, show_dialog: false)}
+      end
+
+  **JS commands:**
 
   | Function | Description |
   |----------|-------------|
-  | `show_dialog/1` | Opens dialog with `showModal()` |
+  | `show_dialog/1` | Opens dialog with animation |
   | `show_dialog/2` | Chain with existing JS commands |
-  | `hide_dialog/1` | Closes dialog with `close()` |
+  | `hide_dialog/1` | Closes dialog with animation |
   | `hide_dialog/2` | Chain with existing JS commands |
 
       # Open on button click
@@ -55,14 +73,6 @@ defmodule SutraUI.Dialog do
 
       # Close from inside dialog
       <.button phx-click={SutraUI.Dialog.hide_dialog("my-dialog")}>Cancel</.button>
-
-      # Chain with other JS commands
-      <.button phx-click={
-        JS.push("prepare_data")
-        |> SutraUI.Dialog.show_dialog("my-dialog")
-      }>
-        Load and Open
-      </.button>
 
   ## Slots
 
@@ -73,87 +83,103 @@ defmodule SutraUI.Dialog do
   | `inner_block` | Main content area |
   | `footer` | Action buttons, typically Cancel/Confirm |
 
-  ## Colocated Hook
-
-  The `.Dialog` hook handles:
-  - `phx:show-dialog` event → calls `showModal()`
-  - `phx:hide-dialog` event → calls `close()`
-  - Backdrop click to close
-
-  See [JavaScript Hooks](colocated-hooks.md) for more details.
-
   ## Accessibility
 
-  - Uses native `<dialog>` element for proper modal behavior
+  - Uses `role="dialog"` and `aria-modal="true"`
   - `Escape` key closes the dialog
-  - Click on backdrop closes the dialog
-  - Focus is trapped within the dialog when open
-  - Focus returns to trigger element on close
+  - Click on backdrop closes the dialog (configurable)
+  - Focus is trapped within the dialog when open (via `focus_wrap`)
   - `aria-labelledby` links to title
   - `aria-describedby` links to description
 
-  > #### Focus Management {: .tip}
-  >
-  > The native `<dialog>` element handles focus trapping automatically.
-  > When opened with `showModal()`, focus moves into the dialog and
-  > is trapped until closed. No JavaScript focus trap needed.
+  ## Screen Sharing Compatibility
+
+  Unlike the native `<dialog>` element which renders in the browser's "top layer",
+  this div-based implementation renders in the normal document flow with fixed
+  positioning and z-index. This ensures the dialog is visible when screen sharing.
 
   ## Related
 
   - `SutraUI.Popover` - For non-modal floating content
   - `SutraUI.DropdownMenu` - For menu interactions
   - `SutraUI.Command` - For command palette dialogs
-  - [JavaScript Hooks Guide](colocated-hooks.md) - Hook details
-  - [Accessibility Guide](accessibility.md) - ARIA patterns
   """
 
   use Phoenix.Component
   alias Phoenix.LiveView.JS
-  alias Phoenix.LiveView.ColocatedHook
 
   @doc """
   Renders a modal dialog component.
   """
-  attr(:id, :string, required: true, doc: "Unique identifier for the dialog")
-  attr(:class, :string, default: nil, doc: "Additional CSS classes for the dialog panel")
+  attr :id, :string, required: true, doc: "Unique identifier for the dialog"
+  attr :show, :boolean, default: false, doc: "Whether the dialog is visible"
+  attr :class, :string, default: nil, doc: "Additional CSS classes for the dialog panel"
 
-  attr(:rest, :global, doc: "Additional HTML attributes")
+  attr :on_cancel, :any,
+    default: nil,
+    doc: "Event name (string) or JS commands to execute when dialog is closed"
 
-  slot(:inner_block, required: true, doc: "The main dialog content")
-  slot(:title, doc: "The dialog title")
-  slot(:description, doc: "The dialog description")
-  slot(:footer, doc: "Footer content, typically action buttons")
+  attr :close_on_escape, :boolean, default: true, doc: "Whether ESC key closes the dialog"
+
+  attr :close_on_backdrop, :boolean,
+    default: true,
+    doc: "Whether clicking the backdrop closes the dialog"
+
+  attr :rest, :global, doc: "Additional HTML attributes"
+
+  slot :inner_block, required: true, doc: "The main dialog content"
+  slot :title, doc: "The dialog title"
+  slot :description, doc: "The dialog description"
+  slot :footer, doc: "Footer content, typically action buttons"
 
   def dialog(assigns) do
     ~H"""
-    <dialog
+    <div
       id={@id}
       phx-hook=".Dialog"
-      class="dialog"
-      aria-labelledby={"#{@id}-title"}
-      aria-describedby={"#{@id}-description"}
+      phx-mounted={@show && show_dialog(@id)}
+      class={["dialog", @show && "is-open"]}
+      data-close-on-backdrop={to_string(@close_on_backdrop)}
       {@rest}
     >
-      <div class={@class}>
-        <header :if={@title != [] || @description != []}>
-          <h2 :if={@title != []} id={"#{@id}-title"}>
-            {render_slot(@title)}
-          </h2>
-          <p :if={@description != []} id={"#{@id}-description"}>
-            {render_slot(@description)}
-          </p>
-        </header>
+      <.focus_wrap
+        id={"#{@id}-focus-wrap"}
+        phx-window-keydown={@close_on_escape && close_action(@on_cancel, @id)}
+        phx-key="escape"
+      >
+        <div class="dialog-backdrop" aria-hidden="true" phx-click={@close_on_backdrop && close_action(@on_cancel, @id)}></div>
 
-        <section>
-          {render_slot(@inner_block)}
-        </section>
+        <div
+          id={"#{@id}-panel"}
+          class={["dialog-panel", @class]}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={@title != [] && "#{@id}-title"}
+          aria-describedby={@description != [] && "#{@id}-description"}
+        >
+          <header :if={@title != [] || @description != []}>
+            <h2 :if={@title != []} id={"#{@id}-title"}>
+              {render_slot(@title)}
+            </h2>
+            <p :if={@description != []} id={"#{@id}-description"}>
+              {render_slot(@description)}
+            </p>
+          </header>
 
-        <footer :if={@footer != []}>
-          {render_slot(@footer)}
-        </footer>
+          <section>
+            {render_slot(@inner_block)}
+          </section>
 
-        <form method="dialog">
-          <button type="submit" aria-label="Close" class="cursor-pointer">
+          <footer :if={@footer != []}>
+            {render_slot(@footer)}
+          </footer>
+
+          <button
+            :if={@on_cancel}
+            type="button"
+            phx-click={close_action(@on_cancel, @id)}
+            aria-label="Close"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -169,25 +195,31 @@ defmodule SutraUI.Dialog do
               <path d="M18 6 6 18" /><path d="m6 6 12 12" />
             </svg>
           </button>
-        </form>
-      </div>
-    </dialog>
+        </div>
+      </.focus_wrap>
+    </div>
 
-    <script :type={ColocatedHook} name=".Dialog" runtime>
+    <script :type={Phoenix.LiveView.ColocatedHook} name=".Dialog">
       {
         mounted() {
-          this.showHandler = (e) => this.el.showModal();
-          this.hideHandler = (e) => this.el.close();
+          this.showHandler = () => {
+            this.el.classList.add("is-open");
+            // Focus first focusable element
+            requestAnimationFrame(() => {
+              const panel = this.el.querySelector("[role='dialog']");
+              if (panel) {
+                const focusable = panel.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+                if (focusable) focusable.focus();
+              }
+            });
+          };
+
+          this.hideHandler = () => {
+            this.el.classList.remove("is-open");
+          };
 
           this.el.addEventListener("phx:show-dialog", this.showHandler);
           this.el.addEventListener("phx:hide-dialog", this.hideHandler);
-          
-          // Close on backdrop click
-          this.el.addEventListener("click", (e) => {
-            if (e.target === this.el) {
-              this.el.close();
-            }
-          });
         },
 
         destroyed() {
@@ -199,12 +231,25 @@ defmodule SutraUI.Dialog do
     """
   end
 
+  # Helper to create appropriate close action
+  defp close_action(nil, id), do: hide_dialog(id)
+  defp close_action(js_commands, _id) when is_struct(js_commands, JS), do: js_commands
+
+  defp close_action(event_name, id) when is_binary(event_name) do
+    hide_dialog(id) |> JS.push(event_name)
+  end
+
   @doc """
-  Shows a dialog by ID using the native showModal() method.
+  Shows a dialog by ID.
 
   ## Examples
 
-      <button phx-click={PhxUI.Dialog.show_dialog("my-dialog")}>Open</button>
+      <button phx-click={SutraUI.Dialog.show_dialog("my-dialog")}>Open</button>
+
+      # Chain with other JS commands
+      <button phx-click={JS.push("load_data") |> SutraUI.Dialog.show_dialog("my-dialog")}>
+        Load and Open
+      </button>
   """
   def show_dialog(js \\ %JS{}, id) when is_binary(id) do
     js
@@ -212,11 +257,16 @@ defmodule SutraUI.Dialog do
   end
 
   @doc """
-  Hides a dialog by ID using the native close() method.
+  Hides a dialog by ID.
 
   ## Examples
 
-      <button phx-click={PhxUI.Dialog.hide_dialog("my-dialog")}>Close</button>
+      <button phx-click={SutraUI.Dialog.hide_dialog("my-dialog")}>Close</button>
+
+      # Chain with other JS commands
+      <button phx-click={JS.push("save") |> SutraUI.Dialog.hide_dialog("my-dialog")}>
+        Save and Close
+      </button>
   """
   def hide_dialog(js \\ %JS{}, id) when is_binary(id) do
     js

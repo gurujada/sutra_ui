@@ -12,7 +12,7 @@ defmodule SutraUI.TabNavTest do
 
       html =
         rendered_to_string(~H"""
-        <TabNav.tab_nav>
+        <TabNav.tab_nav id="test-nav">
           <:tab patch="/overview" active={true}>Overview</:tab>
           <:tab patch="/members" active={false}>Members</:tab>
         </TabNav.tab_nav>
@@ -26,7 +26,7 @@ defmodule SutraUI.TabNavTest do
 
       html =
         rendered_to_string(~H"""
-        <TabNav.tab_nav>
+        <TabNav.tab_nav id="test-nav">
           <:tab patch="/overview" active={true}>Overview</:tab>
           <:tab patch="/members" active={false}>Members</:tab>
           <:tab patch="/settings" active={false}>Settings</:tab>
@@ -46,7 +46,7 @@ defmodule SutraUI.TabNavTest do
 
       html =
         rendered_to_string(~H"""
-        <TabNav.tab_nav>
+        <TabNav.tab_nav id="test-nav">
           <:tab patch="/test" active={false}>Test</:tab>
         </TabNav.tab_nav>
         """)
@@ -62,7 +62,7 @@ defmodule SutraUI.TabNavTest do
 
       html =
         rendered_to_string(~H"""
-        <TabNav.tab_nav>
+        <TabNav.tab_nav id="test-nav">
           <:tab patch="/overview" active={true}>Overview</:tab>
           <:tab patch="/members" active={false}>Members</:tab>
         </TabNav.tab_nav>
@@ -76,7 +76,7 @@ defmodule SutraUI.TabNavTest do
 
       html =
         rendered_to_string(~H"""
-        <TabNav.tab_nav>
+        <TabNav.tab_nav id="test-nav">
           <:tab patch="/overview" active={false}>Overview</:tab>
         </TabNav.tab_nav>
         """)
@@ -87,13 +87,70 @@ defmodule SutraUI.TabNavTest do
     end
   end
 
+  describe "tab_nav/1 accessibility" do
+    test "has role=tablist on container" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav">
+          <:tab patch="/overview" active={true}>Overview</:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ ~s(role="tablist")
+    end
+
+    test "has role=tab on each tab" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav">
+          <:tab patch="/overview" active={true}>Overview</:tab>
+          <:tab patch="/members" active={false}>Members</:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ ~s(role="tab")
+    end
+
+    test "has aria-selected on tabs" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav">
+          <:tab patch="/overview" active={true}>Overview</:tab>
+          <:tab patch="/members" active={false}>Members</:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ ~s(aria-selected="true")
+      assert html =~ ~s(aria-selected="false")
+    end
+
+    test "has aria-label on tablist" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav" label="My tabs">
+          <:tab patch="/overview" active={true}>Overview</:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ ~s(aria-label="My tabs")
+    end
+  end
+
   describe "tab_nav/1 with icons" do
     test "renders icon when provided in inner_block" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <TabNav.tab_nav>
+        <TabNav.tab_nav id="test-nav">
           <:tab patch="/overview" active={true}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -123,7 +180,7 @@ defmodule SutraUI.TabNavTest do
 
       html =
         rendered_to_string(~H"""
-        <TabNav.tab_nav>
+        <TabNav.tab_nav id="test-nav">
           <:tab patch="/overview" active={true}>Overview</:tab>
         </TabNav.tab_nav>
         """)
@@ -138,7 +195,7 @@ defmodule SutraUI.TabNavTest do
 
       html =
         rendered_to_string(~H"""
-        <TabNav.tab_nav class="mb-6">
+        <TabNav.tab_nav id="test-nav" class="mb-6">
           <:tab patch="/overview" active={true}>Overview</:tab>
         </TabNav.tab_nav>
         """)
@@ -154,7 +211,7 @@ defmodule SutraUI.TabNavTest do
 
       html =
         rendered_to_string(~H"""
-        <TabNav.tab_nav>
+        <TabNav.tab_nav id="test-nav">
           <:tab patch="/overview" active={true}>
             <span class="custom">Custom Content</span>
           </:tab>
@@ -163,6 +220,21 @@ defmodule SutraUI.TabNavTest do
 
       assert html =~ ~s(class="custom")
       assert html =~ "Custom Content"
+    end
+  end
+
+  describe "tab_nav/1 phx-hook" do
+    test "has phx-hook for keyboard navigation" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav">
+          <:tab patch="/overview" active={true}>Overview</:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ "phx-hook"
     end
   end
 end

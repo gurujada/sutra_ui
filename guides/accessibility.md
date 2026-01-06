@@ -104,12 +104,13 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 ### Dialog
 
 ```heex
-<.dialog id="confirm">
+<.dialog id="confirm" show={@show_confirm} on_cancel="close_confirm">
   <:title>Confirm Action</:title>
   <:description>Are you sure?</:description>
   Content here
 </.dialog>
-<!-- Sets aria-labelledby and aria-describedby automatically -->
+<!-- Sets role="dialog", aria-modal, aria-labelledby, aria-describedby automatically -->
+<!-- Uses div-based overlay for screen share compatibility -->
 ```
 
 ### Tabs
@@ -180,7 +181,7 @@ Toast notifications use `aria-live` to announce messages:
 Sutra UI uses semantic HTML elements:
 
 - `<button>` for buttons (not `<div>`)
-- `<dialog>` for modals
+- `<div role="dialog">` for modals (div-based for screen share compatibility)
 - `<table>` for data tables
 - `<nav>` for navigation
 - `<form>` for forms

@@ -34,7 +34,7 @@ Several Sutra UI components use colocated hooks for interactivity:
 
 | Component | Hook | Purpose |
 |-----------|------|---------|
-| `dialog` | `.Dialog` | Show/hide modal, backdrop click |
+| `dialog` | `.Dialog` | Show/hide modal (div-based for screen share compatibility) |
 | `tabs` | `.Tabs` | Keyboard navigation |
 | `select` | `.Select` | Dropdown behavior, search |
 | `dropdown_menu` | `.DropdownMenu` | Menu positioning, keyboard nav |
@@ -53,7 +53,7 @@ Hook names in Sutra UI **start with a dot** (e.g., `.Dialog`, `.Tabs`). This is 
 
 ```heex
 <!-- The phx-hook value matches the script name -->
-<dialog id="my-dialog" phx-hook=".Dialog">
+<div id="my-dialog" phx-hook=".Dialog" class="dialog">
 ```
 
 The full hook name becomes `ModuleName.HookName` (e.g., `SutraUI.Dialog.Dialog`), but you only reference the short name with the dot prefix.
@@ -134,11 +134,22 @@ defmodule MyAppWeb.Components.TrackedDialog do
 
   import SutraUI.Dialog, only: [dialog: 1]
 
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false
+  attr :on_cancel, :any, default: nil
+  slot :inner_block, required: true
+  slot :title
+  slot :description
+  slot :footer
+
   def tracked_dialog(assigns) do
     ~H"""
     <div phx-hook=".TrackedDialog" data-dialog-id={@id}>
-      <.dialog id={@id}>
-        <%= render_slot(@inner_block) %>
+      <.dialog id={@id} show={@show} on_cancel={@on_cancel}>
+        <:title :if={@title != []}>{render_slot(@title)}</:title>
+        <:description :if={@description != []}>{render_slot(@description)}</:description>
+        {render_slot(@inner_block)}
+        <:footer :if={@footer != []}>{render_slot(@footer)}</:footer>
       </.dialog>
     </div>
 
@@ -147,7 +158,7 @@ defmodule MyAppWeb.Components.TrackedDialog do
         mounted() {
           const dialogId = this.el.dataset.dialogId
           const dialog = document.getElementById(dialogId)
-          
+
           dialog.addEventListener('phx:show-dialog', () => {
             // Track dialog open
             analytics.track('dialog_opened', { id: dialogId })

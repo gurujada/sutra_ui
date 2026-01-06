@@ -41,10 +41,12 @@ defmodule SutraUI.Carousel do
 
   ## Accessibility
 
-  - Uses semantic HTML structure
+  - Uses semantic HTML structure with proper ARIA roles
+  - `aria-live="polite"` announces slide changes to screen readers
   - Carousel items can be navigated via scroll
   - Indicators provide visual feedback for current position
   - Works with keyboard navigation (arrow keys when focused)
+  - Each slide has `aria-roledescription="slide"` for clarity
   """
 
   use Phoenix.Component
@@ -184,6 +186,16 @@ defmodule SutraUI.Carousel do
           />
         <% end %>
       </div>
+
+      <div
+        id={"#{@id}-live-region"}
+        class="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+        data-carousel-live-region
+      >
+        Slide 1 of {@item_count}
+      </div>
     </div>
 
     <script :type={ColocatedHook} name=".Carousel" runtime>
@@ -194,6 +206,7 @@ defmodule SutraUI.Carousel do
           this.indicators = Array.from(this.el.querySelectorAll('[data-carousel-indicator]'));
           this.prevBtn = this.el.querySelector('[data-carousel-prev]');
           this.nextBtn = this.el.querySelector('[data-carousel-next]');
+          this.liveRegion = this.el.querySelector('[data-carousel-live-region]');
           this.currentIndex = 0;
           this.loop = this.el.dataset.loop === 'true';
           
@@ -247,13 +260,18 @@ defmodule SutraUI.Carousel do
         
         setActiveIndicator(index) {
           this.currentIndex = index;
-          
+
           this.indicators.forEach((indicator, i) => {
             const isActive = i === index;
             indicator.classList.toggle('carousel-indicator-active', isActive);
             indicator.setAttribute('aria-selected', String(isActive));
           });
-          
+
+          // Update live region to announce slide change
+          if (this.liveRegion) {
+            this.liveRegion.textContent = `Slide ${index + 1} of ${this.items.length}`;
+          }
+
           this.updateButtonStates();
         },
         

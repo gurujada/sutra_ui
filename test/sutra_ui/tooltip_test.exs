@@ -7,7 +7,7 @@ defmodule SutraUI.TooltipTest do
   alias SutraUI.Tooltip
 
   describe "tooltip/1 rendering" do
-    test "renders as span element with data-tooltip attribute" do
+    test "renders with role=tooltip element" do
       assigns = %{}
 
       html =
@@ -18,7 +18,8 @@ defmodule SutraUI.TooltipTest do
         """)
 
       assert html =~ "<span"
-      assert html =~ ~s(data-tooltip="Hello")
+      assert html =~ ~s(role="tooltip")
+      assert html =~ "Hello"
       assert html =~ "<button>Hover me</button>"
     end
 
@@ -124,6 +125,46 @@ defmodule SutraUI.TooltipTest do
         """)
 
       assert html =~ ~s(id="my-tooltip")
+    end
+
+    test "has aria-describedby linking trigger to tooltip" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Tooltip.tooltip id="my-tooltip" tooltip="Help text">
+          <button>Hover</button>
+        </Tooltip.tooltip>
+        """)
+
+      assert html =~ ~s(aria-describedby="my-tooltip-content")
+      assert html =~ ~s(id="my-tooltip-content")
+    end
+
+    test "has role=tooltip on tooltip content" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Tooltip.tooltip id="test-tooltip" tooltip="Help">
+          <button>Hover</button>
+        </Tooltip.tooltip>
+        """)
+
+      assert html =~ ~s(role="tooltip")
+    end
+
+    test "tooltip content has aria-hidden attribute" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Tooltip.tooltip id="test-tooltip" tooltip="Help">
+          <button>Hover</button>
+        </Tooltip.tooltip>
+        """)
+
+      assert html =~ ~s(aria-hidden="true")
     end
   end
 

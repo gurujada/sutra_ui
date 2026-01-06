@@ -612,38 +612,30 @@
     }
 }
 
-/* Dialog */
+/* Dialog (div-based for screen share compatibility) */
 @layer components {
     .dialog {
-        @apply inset-y-0 opacity-0 transition-all transition-discrete;
+        @apply fixed inset-0 z-50 hidden;
 
-        &:is([open], :popover-open) {
-            @apply opacity-100;
+        &.is-open {
+            @apply flex items-center justify-center;
 
-            &::backdrop {
+            .dialog-backdrop {
                 @apply opacity-100;
             }
-            > * {
-                @apply scale-100;
-            }
 
-            @starting-style {
-                @apply opacity-0;
-
-                &::backdrop {
-                    @apply opacity-0;
-                }
-                > * {
-                    @apply scale-95;
-                }
+            .dialog-panel {
+                @apply opacity-100 scale-100;
             }
         }
-        &::backdrop {
-            @apply bg-black/50 opacity-0 transition-all transition-discrete;
+
+        .dialog-backdrop {
+            @apply fixed inset-0 bg-black/50 opacity-0 transition-opacity duration-200;
         }
-        > * {
-            @apply bg-background fixed top-[50%] left-[50%] z-50 flex flex-col w-full max-w-[calc(100%_-_2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border p-6 shadow-lg sm:max-w-lg max-h-[calc(100%_-_2rem)];
-            @apply transition-all scale-95;
+
+        .dialog-panel {
+            @apply bg-background relative z-10 flex flex-col w-full max-w-[calc(100%_-_2rem)] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-lg max-h-[calc(100%_-_2rem)] overflow-y-auto;
+            @apply opacity-0 scale-95 transition-all duration-200;
 
             > header {
                 @apply flex flex-col gap-2 text-center sm:text-left;
@@ -661,13 +653,8 @@
             > footer {
                 @apply flex flex-col-reverse gap-2 sm:flex-row sm:justify-end;
             }
-            > button,
-            > form[method="dialog"] {
-                @apply absolute top-4 right-4;
-            }
-            > button,
-            > form[method="dialog"] > button {
-                @apply ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground  rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+            > button {
+                @apply absolute top-4 right-4 ring-offset-background focus:ring-ring rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
             }
         }
     }
@@ -1422,35 +1409,40 @@
 
 /* Tooltip */
 @layer components {
-    [data-tooltip] {
+    .tooltip-trigger {
         @apply relative inline-flex;
 
-        &:before {
-            @apply absolute content-[attr(data-tooltip)] bg-primary text-primary-foreground z-[60] truncate max-w-xs w-fit rounded-md px-3 py-1.5 text-xs invisible opacity-0 scale-95 transition-all pointer-events-none whitespace-nowrap;
+        .tooltip-content {
+            @apply absolute bg-primary text-primary-foreground z-[60] truncate max-w-xs w-fit rounded-md px-3 py-1.5 text-xs invisible opacity-0 scale-95 transition-all pointer-events-none whitespace-nowrap;
         }
-        &:hover:before {
-            @apply visible opacity-100 scale-100;
+
+        &:hover .tooltip-content,
+        &:focus-within .tooltip-content {
+            &:not([aria-hidden="true"]) {
+                @apply visible opacity-100 scale-100;
+            }
         }
+
         /* Top positioning (default) */
-        &:not([data-side]):before,
-        &[data-side="top"]:before,
-        &[data-side="auto"]:not([data-computed-side]):before,
-        &[data-side="auto"][data-computed-side="top"]:before {
+        &:not([data-side]) .tooltip-content,
+        &[data-side="top"] .tooltip-content,
+        &[data-side="auto"]:not([data-computed-side]) .tooltip-content,
+        &[data-side="auto"][data-computed-side="top"] .tooltip-content {
             @apply bottom-full left-1/2 -translate-x-1/2 mb-2;
         }
         /* Bottom positioning */
-        &[data-side="bottom"]:before,
-        &[data-side="auto"][data-computed-side="bottom"]:before {
+        &[data-side="bottom"] .tooltip-content,
+        &[data-side="auto"][data-computed-side="bottom"] .tooltip-content {
             @apply top-full left-1/2 -translate-x-1/2 mt-2;
         }
         /* Left positioning */
-        &[data-side="left"]:before,
-        &[data-side="auto"][data-computed-side="left"]:before {
+        &[data-side="left"] .tooltip-content,
+        &[data-side="auto"][data-computed-side="left"] .tooltip-content {
             @apply right-full top-1/2 -translate-y-1/2 mr-2;
         }
         /* Right positioning */
-        &[data-side="right"]:before,
-        &[data-side="auto"][data-computed-side="right"]:before {
+        &[data-side="right"] .tooltip-content,
+        &[data-side="auto"][data-computed-side="right"] .tooltip-content {
             @apply left-full top-1/2 -translate-y-1/2 ml-2;
         }
         /* Alignment overrides for top/bottom */
@@ -1460,10 +1452,10 @@
         &[data-side="auto"]:not([data-computed-side]),
         &[data-side="auto"][data-computed-side="top"],
         &[data-side="auto"][data-computed-side="bottom"] {
-            &[data-align="start"]:before {
+            &[data-align="start"] .tooltip-content {
                 @apply left-0 translate-x-0;
             }
-            &[data-align="end"]:before {
+            &[data-align="end"] .tooltip-content {
                 @apply left-auto right-0 translate-x-0;
             }
         }
@@ -1472,10 +1464,10 @@
         &[data-side="right"],
         &[data-side="auto"][data-computed-side="left"],
         &[data-side="auto"][data-computed-side="right"] {
-            &[data-align="start"]:before {
+            &[data-align="start"] .tooltip-content {
                 @apply top-0 translate-y-0;
             }
-            &[data-align="end"]:before {
+            &[data-align="end"] .tooltip-content {
                 @apply top-auto bottom-0 translate-y-0;
             }
         }
@@ -1540,7 +1532,7 @@
         @apply text-muted-foreground [&>svg]:size-3.5;
     }
     .breadcrumb-link {
-        @apply transition-colors hover:text-foreground;
+        @apply transition-colors hover:text-foreground rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
     }
     .breadcrumb-page {
         @apply font-normal text-foreground;

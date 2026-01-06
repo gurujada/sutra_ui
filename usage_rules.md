@@ -308,16 +308,17 @@ test/
 ### Modal Dialog with Form
 
 ```heex
-<.dialog id="edit-user-dialog">
+<%!-- Server-controlled dialog (recommended) --%>
+<.dialog id="edit-user-dialog" show={@show_edit_dialog} on_cancel="close_edit_dialog">
   <:title>Edit User</:title>
   <:description>Update user information below.</:description>
-  
+
   <.simple_form for={@form} phx-submit="save_user">
     <.input field={@form[:name]} label="Name" />
     <.input field={@form[:email]} label="Email" type="email" />
-    
+
     <:actions>
-      <.button variant="outline" phx-click={SutraUI.Dialog.hide_dialog("edit-user-dialog")}>
+      <.button variant="outline" phx-click="close_edit_dialog">
         Cancel
       </.button>
       <.button type="submit">Save Changes</.button>
@@ -325,9 +326,29 @@ test/
   </.simple_form>
 </.dialog>
 
-<.button phx-click={SutraUI.Dialog.show_dialog("edit-user-dialog")}>
+<.button phx-click="open_edit_dialog">
   Edit User
 </.button>
+```
+
+```elixir
+# In your LiveView
+def handle_event("open_edit_dialog", _, socket) do
+  {:noreply, assign(socket, show_edit_dialog: true)}
+end
+
+def handle_event("close_edit_dialog", _, socket) do
+  {:noreply, assign(socket, show_edit_dialog: false)}
+end
+
+def handle_event("save_user", params, socket) do
+  case save_user(params) do
+    {:ok, _user} ->
+      {:noreply, assign(socket, show_edit_dialog: false)}
+    {:error, changeset} ->
+      {:noreply, assign(socket, form: to_form(changeset))}
+  end
+end
 ```
 
 ### Data Table with Pagination
@@ -393,28 +414,16 @@ test/
 
 ### Confirmation Dialog Pattern
 
-```elixir
-# In your LiveView
-def handle_event("confirm_delete", %{"id" => id}, socket) do
-  socket = assign(socket, :delete_target_id, id)
-  {:noreply, push_event(socket, "js-exec", %{to: "#confirm-delete-dialog", attr: "phx-show-dialog"})}
-end
-
-def handle_event("delete_confirmed", _, socket) do
-  MyApp.delete_item(socket.assigns.delete_target_id)
-  {:noreply, 
-   socket
-   |> put_flash(:info, "Item deleted")
-   |> push_navigate(to: ~p"/items")}
-end
-```
-
 ```heex
-<.dialog id="confirm-delete-dialog">
+<.dialog
+  id="confirm-delete-dialog"
+  show={@show_delete_dialog}
+  on_cancel="cancel_delete"
+>
   <:title>Delete Item</:title>
   <:description>This action cannot be undone. Are you sure?</:description>
   <:footer>
-    <.button variant="outline" phx-click={SutraUI.Dialog.hide_dialog("confirm-delete-dialog")}>
+    <.button variant="outline" phx-click="cancel_delete">
       Cancel
     </.button>
     <.button variant="destructive" phx-click="delete_confirmed">
@@ -422,6 +431,27 @@ end
     </.button>
   </:footer>
 </.dialog>
+```
+
+```elixir
+# In your LiveView
+def handle_event("confirm_delete", %{"id" => id}, socket) do
+  {:noreply, assign(socket, delete_target_id: id, show_delete_dialog: true)}
+end
+
+def handle_event("cancel_delete", _, socket) do
+  {:noreply, assign(socket, show_delete_dialog: false)}
+end
+
+def handle_event("delete_confirmed", _, socket) do
+  MyApp.delete_item(socket.assigns.delete_target_id)
+
+  {:noreply,
+   socket
+   |> assign(show_delete_dialog: false)
+   |> put_flash(:info, "Item deleted")
+   |> push_navigate(to: ~p"/items")}
+end
 ```
 
 ### Tabs with Dynamic Content
@@ -572,24 +602,40 @@ end
 
 ### Dialog not opening/closing
 
-**Symptoms:** `show_dialog`/`hide_dialog` functions don't work.
+**Symptoms:** Dialog doesn't show or hide properly.
 
 **Solutions:**
 
-1. **Use correct module path**:
+1. **Use server-controlled pattern (recommended)**:
    ```heex
-   <%# Wrong %>
-   <.button phx-click={show_dialog("my-dialog")}>
-   
-   <%# Correct %>
-   <.button phx-click={SutraUI.Dialog.show_dialog("my-dialog")}>
+   <%!-- Control via show attribute and on_cancel event --%>
+   <.dialog id="my-dialog" show={@show_dialog} on_cancel="close_dialog">
+     ...
+   </.dialog>
+
+   <.button phx-click="open_dialog">Open</.button>
    ```
 
-2. **Check dialog ID** - Must match exactly:
-   ```heex
-   <.dialog id="confirm-dialog">
-   <.button phx-click={SutraUI.Dialog.show_dialog("confirm-dialog")}>
+   ```elixir
+   def handle_event("open_dialog", _, socket) do
+     {:noreply, assign(socket, show_dialog: true)}
+   end
+
+   def handle_event("close_dialog", _, socket) do
+     {:noreply, assign(socket, show_dialog: false)}
+   end
    ```
+
+2. **Or use JS commands** - If using `show_dialog`/`hide_dialog`:
+   ```heex
+   <%!-- Use correct module path --%>
+   <.button phx-click={SutraUI.Dialog.show_dialog("my-dialog")}>
+
+   <%!-- ID must match exactly --%>
+   <.dialog id="my-dialog" on_cancel="close">
+   ```
+
+3. **Check on_cancel handler** - Close button only renders when `on_cancel` is set
 
 ### LiveView disconnects on component interaction
 
