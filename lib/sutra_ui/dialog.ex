@@ -200,7 +200,7 @@ defmodule SutraUI.Dialog do
     </div>
 
     <script :type={Phoenix.LiveView.ColocatedHook} name=".Dialog">
-      {
+      export default {
         mounted() {
           this.showHandler = () => {
             this.el.classList.add("is-open");
