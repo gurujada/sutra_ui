@@ -406,6 +406,166 @@ defmodule SutraUI.InputTest do
     end
   end
 
+  describe "input/1 with description" do
+    test "renders description text for text input" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input
+          type="text"
+          name="username"
+          label="Username"
+          description="This will be your public display name."
+        />
+        """)
+
+      assert html =~ ~s(class="field-description)
+      assert html =~ "This will be your public display name."
+    end
+
+    test "does not render description when not provided" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input type="text" name="username" label="Username" />
+        """)
+
+      refute html =~ "field-description"
+    end
+
+    test "renders description for select type" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input
+          type="select"
+          name="country"
+          label="Country"
+          description="Choose your country of residence."
+          options={[{"United States", "us"}]}
+        />
+        """)
+
+      assert html =~ "Choose your country of residence."
+      assert html =~ "field-description"
+    end
+
+    test "renders description for textarea type" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input type="textarea" name="bio" label="Bio" description="Tell us about yourself." />
+        """)
+
+      assert html =~ "Tell us about yourself."
+      assert html =~ "field-description"
+    end
+
+    test "renders description for checkbox type" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input
+          type="checkbox"
+          name="terms"
+          label="Accept terms"
+          description="You must accept the terms to continue."
+        />
+        """)
+
+      assert html =~ "You must accept the terms to continue."
+      assert html =~ "field-description"
+    end
+
+    test "renders description for switch type" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input
+          type="switch"
+          name="notifications"
+          label="Notifications"
+          description="Receive email notifications."
+        />
+        """)
+
+      assert html =~ "Receive email notifications."
+      assert html =~ "field-description"
+    end
+
+    test "renders description for range type" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input type="range" name="volume" label="Volume" description="Adjust the volume level." />
+        """)
+
+      assert html =~ "Adjust the volume level."
+      assert html =~ "field-description"
+    end
+
+    test "sets aria-describedby when description and id are present" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input type="text" name="username" id="username" description="Pick something unique." />
+        """)
+
+      assert html =~ ~s(aria-describedby="username-description")
+      assert html =~ ~s(id="username-description")
+    end
+
+    test "does not set aria-describedby when no description" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input type="text" name="username" id="username" />
+        """)
+
+      refute html =~ "aria-describedby"
+    end
+
+    test "does not set aria-describedby when no id" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input type="text" name="username" description="Helper text" />
+        """)
+
+      assert html =~ "Helper text"
+      refute html =~ ~s(aria-describedby=)
+    end
+
+    test "works with form field and description" do
+      assigns = %{
+        form: Phoenix.Component.to_form(%{"email" => ""}, as: :user)
+      }
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input
+          field={@form[:email]}
+          type="email"
+          label="Email"
+          description="We'll never share your email."
+        />
+        """)
+
+      assert html =~ "We&#39;ll never share your email."
+      assert html =~ ~s(aria-describedby="user_email-description")
+    end
+  end
+
   describe "input/1 hidden type" do
     test "renders hidden input without wrapper" do
       assigns = %{}

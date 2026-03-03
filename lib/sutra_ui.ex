@@ -67,7 +67,6 @@ defmodule SutraUI do
   | `SutraUI.Slider` | Range slider (hook) |
   | `SutraUI.RangeSlider` | Dual-handle range (hook) |
   | `SutraUI.LiveSelect` | Async searchable select (hook) |
-  | `SutraUI.Field` | Field wrapper with label/error |
   | `SutraUI.Label` | Form labels |
   | `SutraUI.SimpleForm` | Form with auto-styling |
   | `SutraUI.InputGroup` | Input with prefix/suffix |
@@ -198,7 +197,6 @@ defmodule SutraUI do
       import SutraUI.Checkbox
       import SutraUI.Switch
       import SutraUI.RadioGroup
-      import SutraUI.Field
       import SutraUI.Select
       import SutraUI.Slider
 

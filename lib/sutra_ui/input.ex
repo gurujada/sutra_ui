@@ -1,20 +1,77 @@
 defmodule SutraUI.Input do
   @moduledoc """
-  Renders form input elements with label and error handling.
+  Renders form input elements with label, description, and error handling.
 
-  A drop-in replacement for Phoenix's generated input component, providing
-  full parity with Phoenix generators while using Sutra UI styling.
+  The unified form field component for Sutra UI. This is a drop-in replacement
+  for Phoenix's generated `input` component, providing full parity with Phoenix
+  generators while using Sutra UI styling.
 
-  ## Examples
+  ## Basic Usage
 
-      # Basic text input
+      # Simple text input
       <.input type="text" name="username" placeholder="Username" />
 
-      # With form field (auto-extracts id, name, value, errors)
-      <.input field={@form[:email]} type="email" label="Email" />
+      # With label
+      <.input type="email" name="email" label="Email" placeholder="you@example.com" />
 
-      # Password input with label
-      <.input type="password" name="password" label="Password" required />
+      # With label and description
+      <.input
+        type="text"
+        name="username"
+        label="Username"
+        description="This will be your public display name."
+        placeholder="johndoe"
+      />
+
+  ## Phoenix Form Integration
+
+  Pass a `Phoenix.HTML.FormField` via the `field` attribute to automatically
+  extract the input's `id`, `name`, `value`, and validation errors:
+
+      <.simple_form for={@form} phx-submit="save">
+        <.input field={@form[:email]} type="email" label="Email" />
+        <.input field={@form[:password]} type="password" label="Password" />
+        <.input
+          field={@form[:bio]}
+          type="textarea"
+          label="Bio"
+          description="Tell us about yourself."
+        />
+        <:actions>
+          <.button type="submit">Save</.button>
+        </:actions>
+      </.simple_form>
+
+  Errors are displayed automatically when the field has been interacted with
+  (via `Phoenix.Component.used_input?/1`), so errors won't flash on first render.
+
+  ## Error Handling
+
+  Errors can come from two sources:
+
+  1. **Automatic** - from a `Phoenix.HTML.FormField` (Ecto changeset errors):
+
+          <.input field={@form[:email]} type="email" label="Email" />
+
+  2. **Manual** - via the `errors` attribute:
+
+          <.input name="email" errors={["can't be blank"]} />
+
+  When errors are present, the input gets `aria-invalid="true"` and error
+  messages render below the input with a destructive icon.
+
+  ## Input Types
+
+  This component handles all standard HTML input types, with special handling for:
+
+    * `type="checkbox"` - Delegates to `SutraUI.Checkbox` with hidden false value
+    * `type="switch"` - Delegates to `SutraUI.Switch` (toggle with role="switch")
+    * `type="select"` - Renders a native `<select>` element
+    * `type="textarea"` - Delegates to `SutraUI.Textarea`
+    * `type="range"` - Delegates to `SutraUI.Slider` with colocated hook
+    * `type="hidden"` - Renders just the input, no wrapper or label
+
+  ### Type Examples
 
       # Select with options
       <.input
@@ -36,19 +93,6 @@ defmodule SutraUI.Input do
 
       # Range slider
       <.input type="range" name="volume" label="Volume" min={0} max={100} />
-
-  ## Types
-
-  This component accepts all HTML input types, with special handling for:
-
-    * `type="checkbox"` - Delegates to `SutraUI.Checkbox` with hidden false value
-    * `type="switch"` - Delegates to `SutraUI.Switch` (toggle with role="switch")
-    * `type="select"` - Renders a native `<select>` element
-    * `type="textarea"` - Delegates to `SutraUI.Textarea`
-    * `type="range"` - Delegates to `SutraUI.Slider` with colocated hook
-    * `type="hidden"` - Renders just the input, no wrapper or label
-
-  For live file uploads, see `Phoenix.Component.live_file_input/1`.
 
   ## Select Types
 
@@ -78,11 +122,96 @@ defmodule SutraUI.Input do
 
   See `SutraUI.Select` for more details.
 
+  ## Complete Form Example
+
+  Here is a realistic registration form demonstrating labels, descriptions,
+  error handling, and multiple input types working together:
+
+      defmodule MyAppWeb.RegistrationLive do
+        use MyAppWeb, :live_view
+
+        def mount(_params, _session, socket) do
+          changeset = Accounts.change_user(%User{})
+          {:ok, assign(socket, form: to_form(changeset))}
+        end
+
+        def handle_event("validate", %{"user" => params}, socket) do
+          changeset =
+            %User{}
+            |> Accounts.change_user(params)
+            |> Map.put(:action, :validate)
+
+          {:noreply, assign(socket, form: to_form(changeset))}
+        end
+
+        def handle_event("save", %{"user" => params}, socket) do
+          case Accounts.create_user(params) do
+            {:ok, _user} -> {:noreply, push_navigate(socket, to: ~p"/dashboard")}
+            {:error, changeset} -> {:noreply, assign(socket, form: to_form(changeset))}
+          end
+        end
+
+        def render(assigns) do
+          ~H\"\"\"
+          <.simple_form for={@form} phx-change="validate" phx-submit="save">
+            <.input
+              field={@form[:name]}
+              label="Full Name"
+              placeholder="Jane Smith"
+            />
+            <.input
+              field={@form[:email]}
+              type="email"
+              label="Email"
+              description="We'll send a confirmation link to this address."
+              placeholder="jane@example.com"
+            />
+            <.input
+              field={@form[:password]}
+              type="password"
+              label="Password"
+              description="Must be at least 8 characters."
+              placeholder="Create a password"
+            />
+            <.input
+              field={@form[:role]}
+              type="select"
+              label="Role"
+              prompt="Choose a role"
+              options={[{"Developer", "dev"}, {"Designer", "design"}, {"Manager", "pm"}]}
+            />
+            <.input
+              field={@form[:bio]}
+              type="textarea"
+              label="Bio"
+              description="Brief description for your profile."
+              rows={3}
+            />
+            <.input
+              field={@form[:terms]}
+              type="checkbox"
+              label="I agree to the terms of service"
+            />
+            <.input
+              field={@form[:newsletter]}
+              type="switch"
+              label="Subscribe to newsletter"
+              description="Receive weekly updates about new features."
+            />
+            <:actions>
+              <.button type="submit">Create Account</.button>
+            </:actions>
+          </.simple_form>
+          \"\"\"
+        end
+      end
+
   ## Accessibility
 
-  - Labels are properly associated with inputs via wrapping
+  - Labels are properly associated with inputs via wrapping `<label>` elements
+  - Description text is linked via `aria-describedby` on the input
   - `aria-invalid` is automatically set when errors are present
-  - Error messages are displayed below inputs
+  - Error messages are displayed below inputs with destructive styling
   - Switch inputs include `role="switch"` and `aria-checked`
   - Range inputs include `aria-valuemin`, `aria-valuemax`, `aria-valuenow`
   - Supports standard ARIA attributes via `:rest`
@@ -93,7 +222,7 @@ defmodule SutraUI.Input do
   alias Phoenix.HTML.FormField
 
   @doc """
-  Renders an input with label and error messages.
+  Renders an input with label, description, and error messages.
 
   A `Phoenix.HTML.FormField` may be passed as argument,
   which is used to retrieve the input name, id, and values.
@@ -101,13 +230,20 @@ defmodule SutraUI.Input do
 
   ## Examples
 
-      <.input field={@form[:email]} type="email" />
+      <.input field={@form[:email]} type="email" label="Email" />
       <.input name="my-input" errors={["oh no!"]} />
+      <.input field={@form[:username]} label="Username" description="Pick something unique." />
   """
 
   attr(:id, :any, default: nil, doc: "The id attribute for the input")
   attr(:name, :any, default: nil, doc: "The name attribute for the input")
   attr(:label, :string, default: nil, doc: "Label text - renders label before input")
+
+  attr(:description, :string,
+    default: nil,
+    doc: "Helper text rendered below the label, above the input"
+  )
+
   attr(:value, :any, default: nil, doc: "The value of the input")
 
   attr(:type, :string,
@@ -183,6 +319,7 @@ defmodule SutraUI.Input do
         />
         <span :if={@label} class="label">{@label}</span>
       </label>
+      <p :if={@description} class="field-description mt-1">{@description}</p>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -190,16 +327,22 @@ defmodule SutraUI.Input do
 
   # Select input - native HTML select
   def input(%{type: "select"} = assigns) do
+    assigns = assign_description_id(assigns)
+
     ~H"""
     <div class="fieldset mb-2">
       <label>
         <span :if={@label} class="label mb-1">{@label}</span>
+        <p :if={@description} id={@description_id} class="field-description mb-1.5">
+          {@description}
+        </p>
         <select
           id={@id}
           name={@name}
           class={["select w-full", @class]}
           multiple={@multiple}
           aria-invalid={@errors != [] && "true"}
+          aria-describedby={@description_id}
           {@rest}
         >
           <option :if={@prompt} value="">{@prompt}</option>
@@ -214,22 +357,27 @@ defmodule SutraUI.Input do
   # Textarea input - delegates to SutraUI.Textarea
   def input(%{type: "textarea"} = assigns) do
     assigns =
-      assign(
-        assigns,
+      assigns
+      |> assign(
         :textarea_value,
         Phoenix.HTML.Form.normalize_value("textarea", assigns.value)
       )
+      |> assign_description_id()
 
     ~H"""
     <div class="fieldset mb-2">
       <label>
         <span :if={@label} class="label mb-1">{@label}</span>
+        <p :if={@description} id={@description_id} class="field-description mb-1.5">
+          {@description}
+        </p>
         <SutraUI.Textarea.textarea
           id={@id}
           name={@name}
           value={@textarea_value}
           class={@class}
           aria-invalid={@errors != [] && "true"}
+          aria-describedby={@description_id}
           {@rest}
         />
       </label>
@@ -266,6 +414,7 @@ defmodule SutraUI.Input do
         />
         <span :if={@label} class="label">{@label}</span>
       </label>
+      <p :if={@description} class="field-description mt-1">{@description}</p>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -284,6 +433,7 @@ defmodule SutraUI.Input do
       <label :if={@label}>
         <span class="label mb-1">{@label}</span>
       </label>
+      <p :if={@description} class="field-description mb-1.5">{@description}</p>
       <SutraUI.Slider.slider
         id={@id}
         name={@name}
@@ -298,10 +448,15 @@ defmodule SutraUI.Input do
 
   # All other inputs: text, email, password, number, date, etc.
   def input(assigns) do
+    assigns = assign_description_id(assigns)
+
     ~H"""
     <div class="fieldset mb-2">
       <label>
         <span :if={@label} class="label mb-1">{@label}</span>
+        <p :if={@description} id={@description_id} class="field-description mb-1.5">
+          {@description}
+        </p>
         <input
           type={@type}
           name={@name}
@@ -310,12 +465,22 @@ defmodule SutraUI.Input do
           class={["input w-full", @class]}
           multiple={@multiple}
           aria-invalid={@errors != [] && "true"}
+          aria-describedby={@description_id}
           {@rest}
         />
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
+  end
+
+  # Assigns a description_id based on the input's id, or nil if no description.
+  defp assign_description_id(%{description: nil} = assigns),
+    do: assign(assigns, :description_id, nil)
+
+  defp assign_description_id(%{description: _} = assigns) do
+    desc_id = if assigns.id, do: "#{assigns.id}-description", else: nil
+    assign(assigns, :description_id, desc_id)
   end
 
   # Renders an error message with icon.
