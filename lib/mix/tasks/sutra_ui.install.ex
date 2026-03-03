@@ -9,7 +9,13 @@ defmodule Mix.Tasks.SutraUi.Install do
   This task will:
 
   1. Add the CSS import to your `assets/css/app.css`
-  2. Add `use SutraUI` to your web module
+  2. Add `use SutraUI` to your web module's `html_helpers`
+
+  After running this task, you need to manually:
+
+  1. Delete `lib/my_app_web/components/core_components.ex`
+  2. Remove the `import MyAppWeb.CoreComponents` line from your web module
+  3. Add colocated hooks to `assets/js/app.js` (see docs)
 
   ## Runtime Hooks
 
@@ -44,14 +50,37 @@ defmodule Mix.Tasks.SutraUi.Install do
 
     app_name = Mix.Project.config()[:app]
     web_module = web_module_name(app_name)
+    web_file = Macro.underscore(web_module) <> ".ex"
 
     unless Keyword.get(opts, :no_css), do: setup_css(dry_run?)
     unless Keyword.get(opts, :no_web), do: setup_web_module(web_module, dry_run?)
 
+    core_components_path =
+      Path.join(["lib", Macro.underscore(web_module), "components", "core_components.ex"])
+
+    core_components_warning =
+      if File.exists?(core_components_path) do
+        """
+
+        #{IO.ANSI.yellow()}⚠  Manual steps required:#{IO.ANSI.reset()}
+
+          1. Delete core_components.ex (Sutra UI replaces it):
+
+             rm #{core_components_path}
+
+          2. Remove its import from lib/#{web_file}:
+
+             # Remove this line:
+             import #{web_module}.CoreComponents
+        """
+      else
+        ""
+      end
+
     Mix.shell().info("""
 
     #{IO.ANSI.green()}✓ Sutra UI installed#{IO.ANSI.reset()}
-
+    #{core_components_warning}
     Next: Start your server with `mix phx.server`
 
     Docs: https://hexdocs.pm/sutra_ui
@@ -124,7 +153,7 @@ defmodule Mix.Tasks.SutraUi.Install do
           if String.contains?(content, "defp html_helpers") do
             String.replace(
               content,
-              ~r/(defp html_helpers.*do\s+quote do\s+)/s,
+              ~r/(defp html_helpers.*?do\s+quote do\s+)/s,
               "\\1use SutraUI\n        ",
               global: false
             )

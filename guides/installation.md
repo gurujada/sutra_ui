@@ -36,7 +36,36 @@ Then fetch dependencies:
 mix deps.get
 ```
 
-## Step 2: Delete core_components.ex
+## Step 2: Run the Installer
+
+```bash
+mix sutra_ui.install
+```
+
+This will:
+
+1. Add `@source` and `@import` lines to your `assets/css/app.css`
+2. Add `use SutraUI` to the `html_helpers` function in your web module
+
+The installer will also warn you if `core_components.ex` still exists (see Step 3).
+
+> #### Manual CSS setup {: .tip}
+>
+> If the installer can't find your `app.css` or you prefer to do it manually, add these lines to `assets/css/app.css`:
+>
+> ```css
+> @import "tailwindcss";
+>
+> /* Add Sutra UI source paths for Tailwind to scan */
+> @source "../../deps/sutra_ui/lib";
+>
+> /* Import Sutra UI component styles */
+> @import "../../deps/sutra_ui/priv/static/sutra_ui.css";
+>
+> /* Your app's custom styles below... */
+> ```
+
+## Step 3: Delete core_components.ex
 
 Sutra UI provides a complete replacement for Phoenix's default `core_components.ex`, including the `icon/1` component.
 
@@ -57,7 +86,7 @@ defmodule MyAppWeb do
       # Remove or comment out this line:
       # import MyAppWeb.CoreComponents
       
-      use SutraUI  # Add this instead (Step 5)
+      use SutraUI  # Already added by the installer
       
       # ... other imports
     end
@@ -68,28 +97,6 @@ end
 > #### Why delete core_components? {: .info}
 >
 > Phoenix generates `core_components.ex` with basic UI components. Sutra UI provides enhanced versions of all these components plus 40+ more. Keeping both would cause naming conflicts and confusion.
-
-## Step 3: Configure Tailwind CSS v4
-
-Sutra UI is built for Tailwind CSS v4, which uses a CSS-first configuration approach.
-
-In your `assets/css/app.css`:
-
-```css
-@import "tailwindcss";
-
-/* Add Sutra UI source paths for Tailwind to scan */
-@source "../../deps/sutra_ui/lib";
-
-/* Import Sutra UI component styles */
-@import "../../deps/sutra_ui/priv/static/sutra_ui.css";
-
-/* Your app's custom styles below... */
-```
-
-> #### Tailwind v4 Changes {: .tip}
->
-> Tailwind v4 uses `@source` directives instead of the `content` array in `tailwind.config.js`. The `@source` directive tells Tailwind where to look for class names to include in your CSS.
 
 ## Step 4: Setup JavaScript Hooks
 
@@ -122,39 +129,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
 > ]
 > ```
 
-## Step 5: Import Components
-
-In your `lib/my_app_web.ex`, add `use SutraUI` to your `html_helpers`:
-
-```elixir
-defmodule MyAppWeb do
-  # ...
-
-  defp html_helpers do
-    quote do
-      use SutraUI  # Imports all 44 components
-      
-      # ... other imports
-    end
-  end
-end
-```
-
-Alternatively, import only the components you need:
-
-```elixir
-defmodule MyAppWeb.SomeLive do
-  use MyAppWeb, :live_view
-  
-  import SutraUI.Button
-  import SutraUI.Dialog
-  import SutraUI.Input
-  
-  # ...
-end
-```
-
-## Step 6: Verify Installation
+## Step 5: Verify Installation
 
 Create a simple test to verify everything works:
 

@@ -49,7 +49,15 @@ Then run:
 mix deps.get
 ```
 
-### 2. Delete core_components.ex
+### 2. Run the Installer
+
+```bash
+mix sutra_ui.install
+```
+
+This handles CSS setup and adds `use SutraUI` to your web module's `html_helpers`.
+
+### 3. Delete core_components.ex
 
 Sutra UI replaces Phoenix's default `core_components.ex`. Delete it and remove its import:
 
@@ -58,18 +66,6 @@ rm lib/my_app_web/components/core_components.ex
 ```
 
 In your `my_app_web.ex`, remove the `import MyAppWeb.CoreComponents` line.
-
-### 3. Setup CSS (Tailwind v4)
-
-In your `assets/css/app.css`:
-
-```css
-@import "tailwindcss";
-
-/* Sutra UI */
-@source "../../deps/sutra_ui/lib";
-@import "../../deps/sutra_ui/priv/static/sutra_ui.css";
-```
 
 ### 4. Setup JavaScript Hooks
 
@@ -84,20 +80,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
 });
 ```
 
-### 5. Import Components
-
-In your `my_app_web.ex`:
-
-```elixir
-defp html_helpers do
-  quote do
-    use SutraUI
-    # ... other imports
-  end
-end
-```
-
-### 6. Deployment Setup
+### 5. Deployment Setup
 
 Update your deployment aliases in `mix.exs`:
 
