@@ -154,6 +154,12 @@ defmodule SutraUI.Select do
   attr(:id, :string, required: true, doc: "Unique identifier for the select (required for hook)")
   attr(:name, :string, default: nil, doc: "Form input name")
   attr(:value, :string, default: nil, doc: "Currently selected value")
+
+  attr(:selected_label, :string,
+    default: nil,
+    doc: "Display label for the current value (defaults to value if not set)"
+  )
+
   attr(:searchable, :boolean, default: false, doc: "Enable search/filter functionality")
 
   attr(:search_placeholder, :string,
@@ -200,7 +206,7 @@ defmodule SutraUI.Select do
           <%= if @trigger != [] do %>
             {render_slot(@trigger)}
           <% else %>
-            Select...
+            {@selected_label || @value || "Select..."}
           <% end %>
         </span>
         <%= if @searchable do %>
@@ -237,7 +243,12 @@ defmodule SutraUI.Select do
           </svg>
         <% end %>
       </button>
-      <div id={"#{@id}-popover"} class="select-popover" data-popover aria-hidden="true">
+      <div
+        id={"#{@id}-popover"}
+        class="select-popover"
+        data-popover
+        aria-hidden="true"
+      >
         <%= if @searchable do %>
           <header>
             <svg
@@ -293,10 +304,52 @@ defmodule SutraUI.Select do
             this.initSelect();
           },
 
+          beforeUpdate() {
+            // Save popover state BEFORE morphdom patches aria-hidden back to "true"
+            this._wasOpen = this.popover && this.popover.getAttribute('aria-hidden') === 'false';
+            this._filterValue = this.filter ? this.filter.value : '';
+          },
+
           updated() {
+            // Re-query ALL DOM refs (morphdom may have replaced inner elements)
+            const oldFilter = this.filter;
+            this.trigger = this.el.querySelector(':scope > button');
+            this.selectedLabel = this.trigger.querySelector('[data-selected-label]');
+            this.popover = this.el.querySelector('[data-popover]');
+            this.listbox = this.popover.querySelector('[role="listbox"]');
+            this.input = this.el.querySelector('[data-select-input]');
+            this.filter = this.el.querySelector('input[type="text"]');
+
+            // Refresh option references
+            this.allOptions = Array.from(this.listbox.querySelectorAll('[role="option"]'));
+            this.options = this.allOptions.filter(opt => opt.getAttribute('aria-disabled') !== 'true');
+            this.visibleOptions = [...this.options];
+
+            // Re-register filter listeners if the element was replaced by morphdom
+            if (this.filter && this.filter !== oldFilter) {
+              this.filter.addEventListener('input', (e) => {
+                e.stopPropagation();
+                this.filterOptions();
+              });
+              this.filter.addEventListener('change', (e) => e.stopPropagation());
+              this.filter.addEventListener('keydown', (e) => this.handleKeyNavigation(e));
+            }
+
+            // Sync value from server
             const newValue = this.el.dataset.selectValue;
-            if (newValue !== this.input.value) {
-              this.selectByValue(newValue, false);
+            this.selectByValue(newValue || this.input.value, false);
+
+            // Restore popover state saved in beforeUpdate
+            if (this._wasOpen) {
+              this.popover.setAttribute('aria-hidden', 'false');
+              this.trigger.setAttribute('aria-expanded', 'true');
+              if (this.filter) {
+                this.filter.value = this._filterValue;
+                if (this._filterValue) {
+                  this.filterOptions();
+                }
+                setTimeout(() => this.filter.focus(), 0);
+              }
             }
           },
 
@@ -329,7 +382,11 @@ defmodule SutraUI.Select do
             this.listbox.addEventListener('mouseleave', () => this.handleMouseLeave());
 
             if (this.filter) {
-              this.filter.addEventListener('input', () => this.filterOptions());
+              this.filter.addEventListener('input', (e) => {
+                e.stopPropagation(); // Prevent bubbling to parent form's phx-change
+                this.filterOptions();
+              });
+              this.filter.addEventListener('change', (e) => e.stopPropagation());
               this.filter.addEventListener('keydown', (e) => this.handleKeyNavigation(e));
             }
 
@@ -382,7 +439,7 @@ defmodule SutraUI.Select do
               option.setAttribute('aria-selected', 'true');
 
               if (triggerEvent) {
-                this.input.dispatchEvent(new Event('change', { bubbles: true }));
+                this.input.dispatchEvent(new Event('input', { bubbles: true }));
               }
             }
           },
@@ -466,8 +523,8 @@ defmodule SutraUI.Select do
           handleKeyNavigation(event) {
             const isPopoverOpen = this.popover.getAttribute('aria-hidden') === 'false';
 
-            // Handle letter navigation when popover is open
-            if (isPopoverOpen && event.key.length === 1 && /[a-zA-Z]/.test(event.key)) {
+            // Handle letter navigation when popover is open (but NOT when typing in search)
+            if (isPopoverOpen && event.key.length === 1 && /[a-zA-Z]/.test(event.key) && event.target !== this.filter) {
               this.jumpToLetter(event.key.toLowerCase());
               return;
             }

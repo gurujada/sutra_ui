@@ -190,9 +190,8 @@ defmodule SutraUI.Button do
     end
   end
 
-  # Build simple semantic CSS class based on variant/size
-  # CSS classes defined in phx_ui.css handle all styling via @apply
-  defp button_class(variant, size, extra_class) do
+  @doc false
+  def button_class(variant, size, extra_class) do
     base =
       case {size, variant} do
         # Icon buttons

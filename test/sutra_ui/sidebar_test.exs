@@ -99,7 +99,7 @@ defmodule SutraUI.SidebarTest do
   end
 
   describe "sidebar/1 state" do
-    test "defaults to open" do
+    test "defaults to closed" do
       assigns = %{}
 
       html =
@@ -109,22 +109,22 @@ defmodule SutraUI.SidebarTest do
         </Sidebar.sidebar>
         """)
 
-      assert html =~ ~s(aria-hidden="false")
-      assert html =~ ~s(data-initial-open="true")
+      assert html =~ ~s(aria-hidden="true")
+      assert html =~ ~s(data-initial-open="false")
     end
 
-    test "can be initially closed" do
+    test "can be initially open" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar" open={false}>
+        <Sidebar.sidebar id="main-sidebar" open>
           Content
         </Sidebar.sidebar>
         """)
 
-      assert html =~ ~s(aria-hidden="true")
-      assert html =~ ~s(data-initial-open="false")
+      assert html =~ ~s(aria-hidden="false")
+      assert html =~ ~s(data-initial-open="true")
     end
   end
 
@@ -292,6 +292,90 @@ defmodule SutraUI.SidebarTest do
         """)
 
       assert html =~ ~s(phx-hook="SutraUI.Sidebar.Sidebar")
+    end
+  end
+
+  describe "sidebar_trigger/1" do
+    test "renders trigger button" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Sidebar.sidebar_trigger for="main-sidebar" />
+        """)
+
+      assert html =~ "<button"
+      assert html =~ ~s(data-for="main-sidebar")
+      assert html =~ ~s(aria-label="Toggle sidebar")
+      assert html =~ "phx-click"
+    end
+
+    test "renders with default icon" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Sidebar.sidebar_trigger for="main-sidebar" />
+        """)
+
+      assert html =~ "<svg"
+      assert html =~ "lucide"
+    end
+
+    test "accepts custom content" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Sidebar.sidebar_trigger for="main-sidebar">Menu</Sidebar.sidebar_trigger>
+        """)
+
+      assert html =~ "Menu"
+      refute html =~ "<svg"
+    end
+
+    test "applies ghost icon variant by default" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Sidebar.sidebar_trigger for="main-sidebar" />
+        """)
+
+      assert html =~ "btn-icon-ghost"
+    end
+
+    test "accepts custom variant" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Sidebar.sidebar_trigger for="main-sidebar" variant="outline" />
+        """)
+
+      assert html =~ "btn-icon-outline"
+    end
+
+    test "accepts custom size" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Sidebar.sidebar_trigger for="main-sidebar" size="sm" />
+        """)
+
+      assert html =~ "btn-sm-ghost"
+    end
+
+    test "includes custom classes" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Sidebar.sidebar_trigger for="main-sidebar" class="my-class" />
+        """)
+
+      assert html =~ "my-class"
     end
   end
 end

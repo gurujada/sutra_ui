@@ -529,10 +529,12 @@ defmodule SutraUI.LiveSelect do
   # ============================================================================
 
   @doc """
-  Decodes JSON-encoded selection values from form params.
+  Extracts the selected value from form params.
 
-  Uses `Phoenix.json_library()` for flexibility. Handles decode errors gracefully
-  by returning the original value if not valid JSON.
+  Hidden inputs now use plain values (not JSON). Form params arrive as:
+  - Single mode: `%{"value" => "nyc", "label" => "New York"}` → returns `"nyc"`
+  - Tags mode: `%{"id" => ["nyc", "london"]}` → returns `["nyc", "london"]`
+  - Legacy JSON strings are still decoded for backwards compatibility.
 
   ## Examples
 
@@ -542,20 +544,19 @@ defmodule SutraUI.LiveSelect do
       iex> SutraUI.LiveSelect.decode("")
       nil
 
-      iex> SutraUI.LiveSelect.decode("nyc")
+      iex> SutraUI.LiveSelect.decode(%{"value" => "nyc", "label" => "New York"})
       "nyc"
 
-      iex> SutraUI.LiveSelect.decode("42")
-      42
+      iex> SutraUI.LiveSelect.decode(%{"id" => ["nyc", "london"]})
+      ["nyc", "london"]
 
-      iex> SutraUI.LiveSelect.decode(~s({"name":"Berlin"}))
-      %{"name" => "Berlin"}
-
-      iex> SutraUI.LiveSelect.decode([~s({"id":1}), ~s({"id":2})])
-      [%{"id" => 1}, %{"id" => 2}]
+      iex> SutraUI.LiveSelect.decode("nyc")
+      "nyc"
   """
   def decode(nil), do: []
   def decode(""), do: nil
+  def decode(%{"value" => value}), do: value
+  def decode(%{"id" => ids}) when is_list(ids), do: ids
 
   def decode(values) when is_list(values) do
     Enum.map(values, &json_decode/1)
@@ -942,22 +943,8 @@ defmodule SutraUI.LiveSelect do
   defp input_name(%{field: %{name: name}}), do: name
   defp input_name(_), do: "live_select"
 
-  # Encode selection with both label and value for form submission
-  defp encode_selection(%{label: label, value: value}) when is_binary(value) do
-    Phoenix.json_library().encode!(%{label: label, value: value})
-  end
-
-  defp encode_selection(%{label: label, value: value}) when is_atom(value) do
-    Phoenix.json_library().encode!(%{label: label, value: Atom.to_string(value)})
-  end
-
-  defp encode_selection(%{label: label, value: value}) when is_number(value) do
-    Phoenix.json_library().encode!(%{label: label, value: value})
-  end
-
-  defp encode_selection(%{label: label, value: value}) do
-    Phoenix.json_library().encode!(%{label: label, value: value})
-  end
+  defp encode_value(%{value: value}) when is_atom(value), do: Atom.to_string(value)
+  defp encode_value(%{value: value}), do: to_string(value)
 
   defp tag_label(option) do
     option[:tag_label] || option.label
@@ -1107,23 +1094,23 @@ defmodule SutraUI.LiveSelect do
         </li>
       </ul>
 
-      <%!-- Hidden inputs for form integration --%>
+      <%!-- Hidden inputs for form integration — structured names, plain values --%>
       <%= if @mode == :single do %>
         <input
           type="hidden"
-          name={input_name(assigns)}
-          value={if @selection != [], do: encode_selection(hd(@selection)), else: ""}
+          name={"#{input_name(assigns)}[value]"}
+          value={if @selection != [], do: encode_value(hd(@selection)), else: ""}
           data-live-select-input
         />
       <% else %>
         <%= if @selection == [] do %>
-          <input type="hidden" name={"#{input_name(assigns)}[]"} value="" data-live-select-input />
+          <input type="hidden" name={"#{input_name(assigns)}[id][]"} value="" data-live-select-input />
         <% else %>
           <%= for option <- @selection do %>
             <input
               type="hidden"
-              name={"#{input_name(assigns)}[]"}
-              value={encode_selection(option)}
+              name={"#{input_name(assigns)}[id][]"}
+              value={encode_value(option)}
               data-live-select-input
             />
           <% end %>
@@ -1159,23 +1146,26 @@ defmodule SutraUI.LiveSelect do
           },
 
           initSelectionFromDOM() {
-            // Read selection from hidden inputs that were server-rendered
-            const hiddenInputs = this.el.querySelectorAll('[data-live-select-input]');
+            // Read selection from hidden inputs that were server-rendered.
+            // Single flat hidden input per selection, plain values (not JSON).
             const selection = [];
-            
-            hiddenInputs.forEach(input => {
-              if (input.value && input.value !== '') {
-                try {
-                  const parsed = JSON.parse(input.value);
-                  if (parsed && parsed.label !== undefined) {
-                    selection.push(parsed);
-                  }
-                } catch (e) {
-                  // Not JSON, might be a simple value - ignore for now
-                }
+
+            if (this.mode() === 'single') {
+              const valueInput = this.el.querySelector('[data-live-select-input]');
+              if (valueInput && valueInput.value) {
+                // Label comes from the visible text input (server-rendered)
+                const label = this.input ? this.input.value : valueInput.value;
+                selection.push({ label: label, value: valueInput.value });
               }
-            });
-            
+            } else {
+              const valueInputs = this.el.querySelectorAll('[data-live-select-input]');
+              valueInputs.forEach(input => {
+                if (input.value && input.value !== '') {
+                  selection.push({ label: input.value, value: input.value });
+                }
+              });
+            }
+
             this.selection = selection;
           },
 

@@ -63,6 +63,23 @@ defmodule SutraUI.LiveSelectTest do
     test "decodes JSON array" do
       assert LiveSelect.decode("[1,2,3]") == [1, 2, 3]
     end
+
+    # Structured data from new hidden input format
+    test "extracts value from structured single-mode map" do
+      assert LiveSelect.decode(%{"value" => "nyc", "label" => "NYC"}) == "nyc"
+    end
+
+    test "extracts ids from structured tags-mode map" do
+      assert LiveSelect.decode(%{"id" => ["nyc", "london"]}) == ["nyc", "london"]
+    end
+
+    test "extracts value from structured map with atom value" do
+      assert LiveSelect.decode(%{"value" => "open"}) == "open"
+    end
+
+    test "extracts empty ids list from structured tags-mode map" do
+      assert LiveSelect.decode(%{"id" => []}) == []
+    end
   end
 
   # =============================================================================
@@ -272,16 +289,32 @@ defmodule SutraUI.LiveSelectTest do
   # =============================================================================
 
   describe "form integration patterns" do
-    test "decodes single selection from form params" do
-      # Simulating what comes from a form for single mode
+    # New structured format (from hidden inputs with [value]/[label] and [id][])
+    test "decodes structured single-mode params" do
+      # Single mode hidden inputs send: field[value]=nyc&field[label]=NYC
+      params = %{"city" => %{"value" => "nyc", "label" => "NYC"}}
+      decoded = LiveSelect.decode(params["city"])
+
+      assert decoded == "nyc"
+    end
+
+    test "decodes structured tags-mode params" do
+      # Tags mode hidden inputs send: field[id][]=nyc&field[id][]=london
+      params = %{"cities" => %{"id" => ["nyc", "london"]}}
+      decoded = LiveSelect.decode(params["cities"])
+
+      assert decoded == ["nyc", "london"]
+    end
+
+    # Legacy JSON format (backwards compat)
+    test "decodes legacy JSON single selection from form params" do
       params = %{"city" => ~s({"id":1,"name":"NYC"})}
       decoded = LiveSelect.decode(params["city"])
 
       assert decoded == %{"id" => 1, "name" => "NYC"}
     end
 
-    test "decodes multiple selections from form params (tags mode)" do
-      # Simulating what comes from a form for tags mode
+    test "decodes legacy JSON multiple selections from form params" do
       params = %{"cities" => [~s({"id":1}), ~s({"id":2}), ~s({"id":3})]}
       decoded = LiveSelect.decode(params["cities"])
 
@@ -315,16 +348,29 @@ defmodule SutraUI.LiveSelectTest do
   # =============================================================================
 
   describe "edge cases" do
-    test "decodes label+value format from hidden input" do
-      # This is the format we encode in hidden inputs
+    test "decodes structured single-mode map from hidden input" do
+      # New hidden input format: two inputs with [value] and [label] suffixes
+      # Form params arrive as a map
+      decoded = LiveSelect.decode(%{"value" => "nyc", "label" => "New York"})
+
+      assert decoded == "nyc"
+    end
+
+    test "decodes structured tags-mode map from hidden input" do
+      # New hidden input format: inputs with [id][] suffix
+      decoded = LiveSelect.decode(%{"id" => ["nyc", "berlin"]})
+
+      assert decoded == ["nyc", "berlin"]
+    end
+
+    test "legacy JSON label+value still decodes" do
       encoded = ~s({"label":"New York","value":"nyc"})
       decoded = LiveSelect.decode(encoded)
 
       assert decoded == %{"label" => "New York", "value" => "nyc"}
     end
 
-    test "decodes label+value with complex value" do
-      # Complex values like maps are JSON-encoded within the value
+    test "legacy JSON label+value with complex value still decodes" do
       encoded = ~s({"label":"Berlin","value":{"lat":52.52,"lng":13.405}})
       decoded = LiveSelect.decode(encoded)
 
@@ -446,7 +492,7 @@ defmodule SutraUI.LiveSelectTest do
       assert tags == []
     end
 
-    test "tags with mix of valid and empty values" do
+    test "tags with mix of valid and empty values (legacy JSON)" do
       params = %{"tags" => ["", ~s({"label":"A","value":"a"}), ""]}
 
       tags =
@@ -455,6 +501,13 @@ defmodule SutraUI.LiveSelectTest do
         |> Enum.reject(&(&1 == "" or &1 == nil))
 
       assert tags == [%{"label" => "A", "value" => "a"}]
+    end
+
+    test "structured tags with mix of valid and empty values" do
+      params = %{"tags" => %{"id" => ["", "a", ""]}}
+      tags = LiveSelect.decode(params["tags"]) |> Enum.reject(&(&1 == ""))
+
+      assert tags == ["a"]
     end
   end
 
@@ -645,8 +698,25 @@ defmodule SutraUI.LiveSelectFormTest do
   alias SutraUI.LiveSelect
 
   describe "extracting values from decoded params" do
-    test "extracts value from single selection" do
-      # Form sends: %{"city" => "{\"label\":\"NYC\",\"value\":\"nyc\"}"}
+    # New structured format
+    test "extracts value from structured single-mode params" do
+      # Hidden inputs: field[value]=nyc, field[label]=NYC
+      params = %{"city" => %{"value" => "nyc", "label" => "NYC"}}
+      value = LiveSelect.decode(params["city"])
+
+      assert value == "nyc"
+    end
+
+    test "extracts values from structured tags-mode params" do
+      # Hidden inputs: field[id][]=a, field[id][]=b
+      params = %{"tags" => %{"id" => ["a", "b"]}}
+      values = LiveSelect.decode(params["tags"])
+
+      assert values == ["a", "b"]
+    end
+
+    # Legacy JSON format (backwards compat)
+    test "extracts value from legacy JSON single selection" do
       params = %{"city" => ~s({"label":"NYC","value":"nyc"})}
 
       decoded = LiveSelect.decode(params["city"])
@@ -655,7 +725,7 @@ defmodule SutraUI.LiveSelectFormTest do
       assert value == "nyc"
     end
 
-    test "extracts values from tags selection" do
+    test "extracts values from legacy JSON tags selection" do
       params = %{
         "tags" => [
           ~s({"label":"A","value":"a"}),
@@ -676,20 +746,25 @@ defmodule SutraUI.LiveSelectFormTest do
         params["tags"]
         |> LiveSelect.decode()
         |> Enum.reject(&(&1 == "" or &1 == nil))
-        |> Enum.map(fn item ->
-          case item do
-            %{"value" => v} -> v
-            _ -> nil
-          end
-        end)
-        |> Enum.reject(&is_nil/1)
 
       assert values == []
     end
   end
 
   describe "Ecto-style value extraction" do
-    test "extracts IDs for belongs_to association" do
+    test "extracts ID from structured single-mode params" do
+      # New format: form sends category_id[value]=42
+      params = %{"category_id" => %{"value" => "42"}}
+      assert LiveSelect.decode(params["category_id"]) == "42"
+    end
+
+    test "extracts IDs from structured tags-mode params" do
+      # New format: form sends tag_ids[id][]=1&tag_ids[id][]=2
+      params = %{"tag_ids" => %{"id" => ["1", "2"]}}
+      assert LiveSelect.decode(params["tag_ids"]) == ["1", "2"]
+    end
+
+    test "legacy JSON: extracts IDs for belongs_to association" do
       params = %{"category_id" => ~s({"label":"Tech","value":42})}
 
       category_id =
@@ -701,7 +776,7 @@ defmodule SutraUI.LiveSelectFormTest do
       assert category_id == 42
     end
 
-    test "extracts IDs for many_to_many association" do
+    test "legacy JSON: extracts IDs for many_to_many association" do
       params = %{
         "tag_ids" => [
           ~s({"label":"Elixir","value":1}),
@@ -720,7 +795,7 @@ defmodule SutraUI.LiveSelectFormTest do
   end
 
   describe "complex value handling" do
-    test "handles map values" do
+    test "handles map values via legacy JSON" do
       params = %{
         "location" => ~s({"label":"NYC","value":{"lat":40.7,"lng":-74.0}})
       }
@@ -731,7 +806,7 @@ defmodule SutraUI.LiveSelectFormTest do
       assert value == %{"lat" => 40.7, "lng" => -74.0}
     end
 
-    test "handles nested struct-like values" do
+    test "handles nested struct-like values via legacy JSON" do
       params = %{
         "user" => ~s({"label":"John","value":{"id":1,"name":"John","email":"john@example.com"}})
       }
@@ -809,8 +884,7 @@ defmodule SutraUI.LiveSelectBugPreventionTest do
       assert tags == []
     end
 
-    test "mixed empty and valid values" do
-      # Form params would have empty strings, not nil
+    test "mixed empty and valid values (legacy JSON)" do
       params = %{"tags" => ["", ~s({"label":"Valid","value":"v"}), ""]}
 
       result = LiveSelect.decode(params["tags"])
@@ -824,6 +898,14 @@ defmodule SutraUI.LiveSelectBugPreventionTest do
         end)
 
       assert filtered == [%{"label" => "Valid", "value" => "v"}]
+    end
+
+    test "structured tags with empty id list" do
+      params = %{"tags" => %{"id" => [""]}}
+      decoded = LiveSelect.decode(params["tags"])
+      filtered = Enum.reject(decoded, &(&1 == ""))
+
+      assert filtered == []
     end
   end
 

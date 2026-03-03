@@ -3,9 +3,12 @@ defmodule SutraUI.Sidebar do
   A collapsible sidebar navigation component with mobile toggle support.
 
   The sidebar provides a responsive navigation panel that can be toggled open/closed.
+  By default, sidebars are closed on desktop and require a trigger button or programmatic
+  control to open. Use the `open` attribute to make a sidebar initially open.
+
   It supports:
   - Mobile overlay mode with backdrop
-  - Desktop persistent mode
+  - Desktop persistent mode (via `open` attribute)
   - Left or right positioning
   - Collapsible submenu sections
   - Active page highlighting
@@ -15,7 +18,8 @@ defmodule SutraUI.Sidebar do
 
   The sidebar requires JavaScript for:
   - Mobile toggle functionality
-  - Close on backdrop/outside click
+  - Close on backdrop click
+  - Close on click outside (when sidebar is open)
   - Responsive breakpoint handling
   - Active page link detection and highlighting
   - Managing open/closed state
@@ -23,56 +27,68 @@ defmodule SutraUI.Sidebar do
   The component uses a colocated JavaScript hook that is initialized by
   providing a unique `id` attribute.
 
+  ## Click Outside to Close
+
+  When the sidebar is open, clicking anywhere outside of it (except on trigger buttons)
+  will automatically close the sidebar. This provides an intuitive way to dismiss
+  the sidebar without requiring an explicit close button.
+
   ## Examples
 
-      # Basic sidebar with simple links
-      <.sidebar id="main-sidebar">
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/dashboard">Dashboard</a></li>
-          <li><a href="/settings">Settings</a></li>
-        </ul>
-      </.sidebar>
+  # Basic sidebar with trigger button
+  <.sidebar_trigger for="main-sidebar" />
+  <.sidebar id="main-sidebar">
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/settings">Settings</a></li>
+  </ul>
+  </.sidebar>
 
-      # Sidebar with header and footer
-      <.sidebar id="app-sidebar" side="left">
-        <:header>
-          <div class="flex items-center gap-2 p-2">
-            <img src="/logo.svg" alt="Logo" class="w-8 h-8" />
-            <span class="font-semibold">My App</span>
-          </div>
-        </:header>
+  # Sidebar initially open on desktop
+  <.sidebar_trigger for="app-sidebar" />
+  <.sidebar id="app-sidebar" side="left" open>
+  <:header>
+    <div class="flex items-center gap-2 p-2">
+      <img src="/logo.svg" alt="Logo" class="w-8 h-8" />
+      <span class="font-semibold">My App</span>
+    </div>
+  </:header>
 
-        <.sidebar_group label="Main">
-          <.sidebar_item href="/">Home</.sidebar_item>
-          <.sidebar_item href="/dashboard">Dashboard</.sidebar_item>
-        </.sidebar_group>
+  <.sidebar_group label="Main">
+    <.sidebar_item href="/">Home</.sidebar_item>
+    <.sidebar_item href="/dashboard">Dashboard</.sidebar_item>
+  </.sidebar_group>
 
-        <:footer>
-          <.sidebar_item href="/settings">Settings</.sidebar_item>
-        </:footer>
-      </.sidebar>
+  <:footer>
+    <.sidebar_item href="/settings">Settings</.sidebar_item>
+  </:footer>
+  </.sidebar>
 
-      # Sidebar with collapsible sections
-      <.sidebar id="nav-sidebar">
-        <.sidebar_group label="Navigation">
-          <.sidebar_item href="/">Overview</.sidebar_item>
+  # Sidebar with collapsible sections
+  <.sidebar_trigger for="nav-sidebar" />
+  <.sidebar id="nav-sidebar">
+  <.sidebar_group label="Navigation">
+    <.sidebar_item href="/">Overview</.sidebar_item>
 
-          <.sidebar_submenu label="Projects" open>
-            <.sidebar_item href="/projects/active">Active</.sidebar_item>
-            <.sidebar_item href="/projects/archived">Archived</.sidebar_item>
-          </.sidebar_submenu>
+    <.sidebar_submenu label="Projects" open>
+      <.sidebar_item href="/projects/active">Active</.sidebar_item>
+      <.sidebar_item href="/projects/archived">Archived</.sidebar_item>
+    </.sidebar_submenu>
 
-          <.sidebar_item href="/team">Team</.sidebar_item>
-        </.sidebar_group>
-      </.sidebar>
+    <.sidebar_item href="/team">Team</.sidebar_item>
+  </.sidebar_group>
+  </.sidebar>
 
-      # Right-side sidebar, initially closed
-      <.sidebar id="filter-sidebar" side="right" open={false}>
-        <.sidebar_group label="Filters">
-          <p>Filter options here...</p>
-        </.sidebar_group>
-      </.sidebar>
+  # Right-side sidebar with custom trigger
+  <.sidebar_trigger for="filter-sidebar" variant="outline">
+  <span>Toggle Filters</span>
+  </.sidebar_trigger>
+  <.sidebar id="filter-sidebar" side="right">
+  <.sidebar_group label="Filters">
+    <p>Filter options here...</p>
+  </.sidebar_group>
+  </.sidebar>
 
   ## Programmatic Control
 
@@ -133,7 +149,7 @@ defmodule SutraUI.Sidebar do
 
   - `id` (required) - Unique identifier for the sidebar (required for hook)
   - `side` - Which side to position the sidebar ("left" or "right", default: "left")
-  - `open` - Initial open state for desktop (default: true)
+  - `open` - Initial open state for desktop (default: false)
   - `mobile_open` - Initial open state for mobile (default: false)
   - `breakpoint` - Pixel width for mobile breakpoint (default: 768)
   - `label` - ARIA label for navigation (default: "Sidebar navigation")
@@ -144,6 +160,15 @@ defmodule SutraUI.Sidebar do
   - `header` - Optional header content (rendered in nav > header)
   - `footer` - Optional footer content (rendered in nav > footer)
   - `inner_block` (required) - Main sidebar content (rendered in nav > section)
+
+  ## Toggle Button
+
+  Use `sidebar_trigger/1` to create a toggle button for the sidebar:
+
+      <.sidebar_trigger for="my-sidebar" />
+      <.sidebar id="my-sidebar">
+        <!-- sidebar content -->
+      </.sidebar>
   """
   attr(:id, :string, required: true, doc: "Unique identifier for the sidebar (required for hook)")
 
@@ -153,7 +178,7 @@ defmodule SutraUI.Sidebar do
     doc: "Which side to position the sidebar"
   )
 
-  attr(:open, :boolean, default: true, doc: "Initial open state for desktop")
+  attr(:open, :boolean, default: false, doc: "Initial open state for desktop")
   attr(:mobile_open, :boolean, default: false, doc: "Initial open state for mobile")
   attr(:breakpoint, :integer, default: 768, doc: "Pixel width for mobile breakpoint")
   attr(:label, :string, default: "Sidebar navigation", doc: "ARIA label for navigation")
@@ -209,6 +234,7 @@ defmodule SutraUI.Sidebar do
           window.removeEventListener('popstate', this.updateCurrentPageLinksHandler);
           window.removeEventListener('sutra-ui:locationchange', this.updateCurrentPageLinksHandler);
           document.removeEventListener('sutra-ui:sidebar', this.sidebarEventHandler);
+          document.removeEventListener('click', this.handleClickOutside);
         },
 
         initializeSidebar() {
@@ -244,6 +270,14 @@ defmodule SutraUI.Sidebar do
 
           // Handle clicks on links to close on mobile
           this.aside.addEventListener('click', (event) => this.handleAsideClick(event));
+
+          // Handle clicks outside sidebar to close (for demo containers)
+          this.handleClickOutside = (event) => {
+            if (this.open && !this.aside.contains(event.target) && !event.target.closest('.sidebar-trigger')) {
+              this.setState(false);
+            }
+          };
+          document.addEventListener('click', this.handleClickOutside);
 
           // Initialize state
           this.updateState();
@@ -460,11 +494,81 @@ defmodule SutraUI.Sidebar do
 
   ## Examples
 
-      <.sidebar_separator />
+  <.sidebar_separator />
   """
   def sidebar_separator(assigns) do
     ~H"""
     <hr role="separator" />
     """
+  end
+
+  @doc """
+  Renders a button to toggle the sidebar open/closed.
+
+  ## Attributes
+
+  - `for` (required) - The ID of the sidebar to toggle
+  - `variant` - Visual variant. One of `primary`, `secondary`, `destructive`, `outline`, `ghost`, `link`. Defaults to `ghost`.
+  - `size` - Size variant. One of `default`, `sm`, `lg`, `icon`. Defaults to `icon`.
+  - `class` - Additional CSS classes
+
+  ## Examples
+
+  # Default icon button (hamburger menu)
+  <.sidebar_trigger for="main-sidebar" />
+
+  # Custom variant and size
+  <.sidebar_trigger for="main-sidebar" variant="outline" size="sm" />
+
+  # Custom content
+  <.sidebar_trigger for="main-sidebar" variant="primary">
+    <span>Menu</span>
+  </.sidebar_trigger>
+  """
+  attr(:for, :string, required: true, doc: "ID of the sidebar to toggle")
+
+  attr(:variant, :string,
+    default: "ghost",
+    values: ~w(primary secondary destructive outline ghost link),
+    doc: "Visual style variant"
+  )
+
+  attr(:size, :string,
+    default: "icon",
+    values: ~w(default sm lg icon),
+    doc: "Size variant"
+  )
+
+  attr(:class, :string, default: nil, doc: "Additional CSS classes")
+
+  attr(:rest, :global, doc: "Additional HTML attributes")
+
+  slot(:inner_block, doc: "Custom button content (defaults to hamburger icon)")
+
+  def sidebar_trigger(assigns) do
+    ~H"""
+    <button
+      type="button"
+      class={["sidebar-trigger", sidebar_trigger_class(@variant, @size), @class]}
+      data-for={@for}
+      aria-label="Toggle sidebar"
+      phx-click={Phoenix.LiveView.JS.dispatch("sutra-ui:sidebar", detail: %{id: @for})}
+      {@rest}
+    >
+      {render_slot(@inner_block) || default_trigger_icon()}
+    </button>
+    """
+  end
+
+  defp sidebar_trigger_class(variant, size) do
+    [base, _extra] = SutraUI.Button.button_class(variant, size, nil)
+    base
+  end
+
+  defp default_trigger_icon do
+    # Hamburger icon (3 horizontal lines)
+    Phoenix.HTML.raw(
+      ~s(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>)
+    )
   end
 end
