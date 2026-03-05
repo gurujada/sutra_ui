@@ -60,12 +60,11 @@ The full hook name becomes `ModuleName.HookName` (e.g., `SutraUI.Dialog.Dialog`)
 
 ## Custom Events
 
-Sutra UI hooks dispatch custom events using the `sutra-ui:` namespace:
+Sutra UI hooks dispatch custom events using the `sutra-ui:` namespace.
 
 ```javascript
-// Dispatching an event
-this.el.dispatchEvent(new CustomEvent('sutra-ui:select-change', {
-  detail: { value: selectedValue }
+document.dispatchEvent(new CustomEvent('sutra-ui:drawer', {
+  detail: { id: 'main-drawer', open: true }
 }))
 ```
 
@@ -73,30 +72,29 @@ this.el.dispatchEvent(new CustomEvent('sutra-ui:select-change', {
 
 Listen for Sutra UI events in your LiveView:
 
-```elixir
-def handle_event("sutra-ui:select-change", %{"value" => value}, socket) do
-  {:noreply, assign(socket, selected: value)}
-end
+```javascript
+document.addEventListener('sutra-ui:drawer', (e) => {
+  console.log('Drawer event:', e.detail)
+})
 ```
 
-Or in JavaScript:
+LiveSelect search is a LiveView event (not a `sutra-ui:*` browser event):
 
-```javascript
-document.addEventListener('sutra-ui:select-change', (e) => {
-  console.log('Selected:', e.detail.value)
-})
+```elixir
+def handle_event("live_select_change", %{"text" => text, "id" => id}, socket) do
+  options = MyApp.search_options(text)
+  send_update(SutraUI.LiveSelect, id: id, options: options)
+  {:noreply, socket}
+end
 ```
 
 ### Event Reference
 
 | Event | Component | Detail |
 |-------|-----------|--------|
-| `sutra-ui:select-change` | Select | `{ value }` |
-| `sutra-ui:dialog-open` | Dialog | `{ id }` |
-| `sutra-ui:dialog-close` | Dialog | `{ id }` |
-| `sutra-ui:tab-change` | Tabs | `{ value }` |
-| `sutra-ui:toast-dismiss` | Toast | `{ id }` |
-| `sutra-ui:slider-change` | Slider | `{ value }` |
+| `sutra-ui:drawer` | Drawer | `{ id, open }` |
+| `sutra-ui:set-theme` | ThemeSwitcher | `{ theme }` |
+| `sutra-ui:range-slide` | RangeSlider | `{ min, max }` |
 | `sutra-ui:range-change` | RangeSlider | `{ min, max }` |
 
 ## Using JS Commands with Hooks

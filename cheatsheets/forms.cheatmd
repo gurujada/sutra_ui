@@ -5,30 +5,23 @@ Quick reference for form controls and patterns in Sutra UI.
 ## Basic Form
 {: .col-2}
 
-### Simple Form with Changeset
+### LiveView Form with Changeset
 
 ```heex
-<.simple_form for={@form} phx-change="validate" phx-submit="save">
+<.form for={@form} class="form" phx-change="validate" phx-submit="save">
   <.input field={@form[:name]} label="Name" />
   <.input field={@form[:email]} type="email" label="Email" />
-  <:actions>
-    <.button type="submit" phx-disable-with="Saving...">
-      Save
-    </.button>
-  </:actions>
-</.simple_form>
+  <.button type="submit" phx-disable-with="Saving...">Save</.button>
+</.form>
 ```
 
 ### Manual Form
 
 ```heex
-<form phx-submit="save">
-  <.field>
-    <:label>Name</:label>
-    <.input type="text" name="name" value={@name} />
-  </.field>
+<.form for={@form} phx-submit="save">
+  <.input field={@form[:name]} label="Name" />
   <.button type="submit">Save</.button>
-</form>
+</.form>
 ```
 
 ## Text Inputs
@@ -42,29 +35,25 @@ Quick reference for form controls and patterns in Sutra UI.
 <.input type="text" name="name" disabled />
 ```
 
-### With Field Wrapper
+### With Label and Description
 
 ```heex
-<.field>
-  <:label>Full Name</:label>
-  <.input type="text" name="name" />
-  <:description>Enter your legal name</:description>
-</.field>
+<.input
+  field={@form[:name]}
+  label="Full Name"
+  description="Enter your legal name"
+/>
 ```
 
 ### Input with Errors
 
 ```heex
-<.field>
-  <:label>Email</:label>
-  <.input 
-    type="email" 
-    name="email"
-    value={@email}
-    aria-invalid={@errors != []}
-  />
-  <:error :for={error <- @errors}>{error}</:error>
-</.field>
+<.input
+  field={@form[:email]}
+  type="email"
+  label="Email"
+  errors={@errors}
+/>
 ```
 
 ### Input Types Reference
@@ -96,11 +85,13 @@ Quick reference for form controls and patterns in Sutra UI.
 ### With Character Count
 
 ```heex
-<.field>
-  <:label>Bio</:label>
-  <.textarea name="bio" maxlength="500" />
-  <:description>{String.length(@bio)}/500 characters</:description>
-</.field>
+<.input
+  field={@form[:bio]}
+  type="textarea"
+  label="Bio"
+  description={"#{String.length(@bio || "")}/500 characters"}
+  maxlength="500"
+/>
 ```
 
 ## Input Groups
@@ -270,22 +261,29 @@ Quick reference for form controls and patterns in Sutra UI.
 ### Live Select (Async Search)
 
 ```heex
-<.live_select
-  id="user-select"
-  name="user_id"
-  placeholder="Search users..."
-  search_event="search_users"
-  value={@selected_user}
-/>
+<.form for={@form} class="form" phx-change="validate">
+  <.live_component
+    module={SutraUI.LiveSelect}
+    id="user-select"
+    field={@form[:user_id]}
+    placeholder="Search users..."
+  />
+</.form>
+
+<%= if user = SutraUI.LiveSelect.decode(@form.params["user_id"]) do %>
+  Selected user id: {user}
+<% end %>
 ```
 
 In your LiveView:
 
 ```elixir
-def handle_event("search_users", %{"query" => query}, socket) do
-  users = Accounts.search_users(query)
+def handle_event("live_select_change", %{"text" => text, "id" => id}, socket) do
+  users = Accounts.search_users(text)
   options = Enum.map(users, &{&1.name, &1.id})
-  {:noreply, push_event(socket, "live_select:options", %{options: options})}
+
+  send_update(SutraUI.LiveSelect, id: id, options: options)
+  {:noreply, socket}
 end
 ```
 
@@ -320,17 +318,17 @@ end
 ### Slider with Labels
 
 ```heex
-<.field>
-  <:label>Volume: {@ volume}%</:label>
-  <.slider 
-    id="volume" 
-    name="volume" 
-    min="0" 
-    max="100" 
-    value={@volume}
+<div class="space-y-2">
+  <.input
+    field={@form[:volume]}
+    type="number"
+    label={"Volume: #{@volume}%"}
+    min="0"
+    max="100"
     phx-change="update_volume"
   />
-</.field>
+  <.slider id="volume" name="volume" min="0" max="100" value={@volume} />
+</div>
 ```
 
 ## Form Patterns
@@ -351,25 +349,19 @@ end
 ```
 
 ```heex
-<.simple_form for={@form} phx-change="validate" phx-submit="save">
+<.form for={@form} class="form" phx-change="validate" phx-submit="save">
   <.input field={@form[:email]} type="email" label="Email" />
-  <:actions>
-    <.button type="submit">Save</.button>
-  </:actions>
-</.simple_form>
+  <.button type="submit">Save</.button>
+</.form>
 ```
 
 ### Form with Loading State
 
 ```heex
-<.simple_form for={@form} phx-submit="save">
+<.form for={@form} class="form" phx-submit="save">
   <.input field={@form[:name]} label="Name" />
-  <:actions>
-    <.button type="submit" loading={@saving} phx-disable-with="Saving...">
-      Save
-    </.button>
-  </:actions>
-</.simple_form>
+  <.button type="submit" loading={@saving} phx-disable-with="Saving...">Save</.button>
+</.form>
 ```
 
 ### Multi-Step Form
@@ -381,12 +373,10 @@ end
   <:tab value="3" disabled={@step < 3}>Review</:tab>
   
   <:panel value="1">
-    <.simple_form for={@form} phx-submit="next_step">
+    <.form for={@form} class="form" phx-submit="next_step">
       <.input field={@form[:name]} label="Name" />
-      <:actions>
-        <.button type="submit">Next</.button>
-      </:actions>
-    </.simple_form>
+      <.button type="submit">Next</.button>
+    </.form>
   </:panel>
   <!-- Additional panels... -->
 </.tabs>
@@ -433,35 +423,29 @@ end
 ## Error Handling
 {: .col-2}
 
-### Field with Error
+### Input with Error
 
 ```heex
-<.field>
-  <:label>Email</:label>
-  <.input 
-    field={@form[:email]} 
-    type="email"
-    phx-debounce="blur"
-  />
-  <:error :for={error <- @form[:email].errors}>
-    {translate_error(error)}
-  </:error>
-</.field>
+<.input
+  field={@form[:email]}
+  type="email"
+  label="Email"
+  phx-debounce="blur"
+  errors={Enum.map(@form[:email].errors, &translate_error/1)}
+/>
 ```
 
 ### Form-Level Errors
 
 ```heex
-<.simple_form for={@form} phx-submit="save">
+<.form for={@form} class="form" phx-submit="save">
   <.alert :if={@form.errors[:base]} variant="destructive">
     {translate_error(@form.errors[:base])}
   </.alert>
-  
+
   <.input field={@form[:email]} label="Email" />
-  <:actions>
-    <.button type="submit">Save</.button>
-  </:actions>
-</.simple_form>
+  <.button type="submit">Save</.button>
+</.form>
 ```
 
 ### Async Validation
@@ -476,14 +460,12 @@ end
 ```
 
 ```heex
-<.field>
-  <:label>Email</:label>
-  <.input 
-    type="email" 
-    name="email"
-    phx-blur="validate_email"
-    phx-debounce="500"
-  />
-  <:error :if={@email_error}>{@email_error}</:error>
-</.field>
+<.input
+  field={@form[:email]}
+  type="email"
+  label="Email"
+  phx-blur="validate_email"
+  phx-debounce="500"
+  errors={if @email_error, do: [@email_error], else: []}
+/>
 ```

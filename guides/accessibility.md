@@ -93,11 +93,12 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 ### Form Controls
 
 ```heex
-<.field>
-  <:label>Email</:label>
-  <.input type="email" name="email" />
-  <:error>Invalid email</:error>
-</.field>
+<.input
+  field={@form[:email]}
+  type="email"
+  label="Email"
+  errors={["Invalid email"]}
+/>
 <!-- Automatically links label, input, and error with aria-describedby -->
 ```
 
@@ -264,15 +265,12 @@ Use the `disabled` attribute, not just styling:
 Associate errors with inputs:
 
 ```heex
-<.field>
-  <:label>Password</:label>
-  <.input 
-    type="password" 
-    name="password"
-    aria-invalid={@errors != []}
-  />
-  <:error :for={error <- @errors}>{error}</:error>
-</.field>
+<.input
+  field={@form[:password]}
+  type="password"
+  label="Password"
+  errors={Enum.map(@form[:password].errors, &translate_error/1)}
+/>
 ```
 
 ## Next Steps

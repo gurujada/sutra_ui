@@ -1,25 +1,25 @@
-defmodule SutraUI.SidebarTest do
+defmodule SutraUI.DrawerTest do
   use ExUnit.Case, async: true
 
   import Phoenix.LiveViewTest
   import Phoenix.Component
 
-  alias SutraUI.Sidebar
+  alias SutraUI.Drawer
 
-  describe "sidebar/1 rendering" do
-    test "renders sidebar as aside element" do
+  describe "drawer/1 rendering" do
+    test "renders drawer as aside element" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar">
-          <p>Sidebar content</p>
-        </Sidebar.sidebar>
+        <Drawer.drawer id="main-drawer">
+          <p>Drawer content</p>
+        </Drawer.drawer>
         """)
 
       assert html =~ "<aside"
-      assert html =~ "sidebar"
-      assert html =~ "Sidebar content"
+      assert html =~ "drawer"
+      assert html =~ "Drawer content"
     end
 
     test "renders nav element inside" do
@@ -27,9 +27,9 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar">
+        <Drawer.drawer id="main-drawer">
           Content
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
       assert html =~ "<nav"
@@ -40,12 +40,12 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar">
+        <Drawer.drawer id="main-drawer">
           <:header>
             <div class="logo">Logo</div>
           </:header>
           Content
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
       assert html =~ "<header"
@@ -57,12 +57,12 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar">
+        <Drawer.drawer id="main-drawer">
           Content
           <:footer>
             <div>Footer</div>
           </:footer>
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
       assert html =~ "<footer"
@@ -70,15 +70,15 @@ defmodule SutraUI.SidebarTest do
     end
   end
 
-  describe "sidebar/1 positioning" do
+  describe "drawer/1 positioning" do
     test "defaults to left side" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar">
+        <Drawer.drawer id="main-drawer">
           Content
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
       assert html =~ ~s(data-side="left")
@@ -89,24 +89,24 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar" side="right">
+        <Drawer.drawer id="main-drawer" side="right">
           Content
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
       assert html =~ ~s(data-side="right")
     end
   end
 
-  describe "sidebar/1 state" do
+  describe "drawer/1 state" do
     test "defaults to closed" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar">
+        <Drawer.drawer id="main-drawer">
           Content
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
       assert html =~ ~s(aria-hidden="true")
@@ -118,9 +118,9 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar" open>
+        <Drawer.drawer id="main-drawer" open>
           Content
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
       assert html =~ ~s(aria-hidden="false")
@@ -128,15 +128,15 @@ defmodule SutraUI.SidebarTest do
     end
   end
 
-  describe "sidebar/1 accessibility" do
+  describe "drawer/1 accessibility" do
     test "includes aria-label on nav" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar" label="Main menu">
+        <Drawer.drawer id="main-drawer" label="Main menu">
           Content
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
       assert html =~ ~s(aria-label="Main menu")
@@ -147,24 +147,24 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar">
+        <Drawer.drawer id="main-drawer">
           Content
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
-      assert html =~ ~s(aria-label="Sidebar navigation")
+      assert html =~ ~s(aria-label="Drawer navigation")
     end
   end
 
-  describe "sidebar_group/1" do
+  describe "drawer_group/1" do
     test "renders group with label" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_group label="Navigation">
+        <Drawer.drawer_group label="Navigation">
           <li>Item</li>
-        </Sidebar.sidebar_group>
+        </Drawer.drawer_group>
         """)
 
       assert html =~ ~s(role="group")
@@ -177,9 +177,9 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_group>
+        <Drawer.drawer_group>
           <li>Item</li>
-        </Sidebar.sidebar_group>
+        </Drawer.drawer_group>
         """)
 
       assert html =~ ~s(role="group")
@@ -187,13 +187,13 @@ defmodule SutraUI.SidebarTest do
     end
   end
 
-  describe "sidebar_item/1" do
+  describe "drawer_item/1" do
     test "renders item as link" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_item href="/home">Home</Sidebar.sidebar_item>
+        <Drawer.drawer_item href="/home">Home</Drawer.drawer_item>
         """)
 
       assert html =~ "<li>"
@@ -207,7 +207,7 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_item href="/home" current>Home</Sidebar.sidebar_item>
+        <Drawer.drawer_item href="/home" current>Home</Drawer.drawer_item>
         """)
 
       assert html =~ ~s(aria-current="page")
@@ -218,7 +218,7 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_item href="/home" variant="outline">Home</Sidebar.sidebar_item>
+        <Drawer.drawer_item href="/home" variant="outline">Home</Drawer.drawer_item>
         """)
 
       assert html =~ ~s(data-variant="outline")
@@ -229,22 +229,22 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_item href="/home" size="sm">Home</Sidebar.sidebar_item>
+        <Drawer.drawer_item href="/home" size="sm">Home</Drawer.drawer_item>
         """)
 
       assert html =~ ~s(data-size="sm")
     end
   end
 
-  describe "sidebar_submenu/1" do
+  describe "drawer_submenu/1" do
     test "renders collapsible submenu" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_submenu label="Projects">
-          <Sidebar.sidebar_item href="/active">Active</Sidebar.sidebar_item>
-        </Sidebar.sidebar_submenu>
+        <Drawer.drawer_submenu label="Projects">
+          <Drawer.drawer_item href="/active">Active</Drawer.drawer_item>
+        </Drawer.drawer_submenu>
         """)
 
       assert html =~ "<details"
@@ -257,22 +257,22 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_submenu label="Projects" open>
-          <Sidebar.sidebar_item href="/active">Active</Sidebar.sidebar_item>
-        </Sidebar.sidebar_submenu>
+        <Drawer.drawer_submenu label="Projects" open>
+          <Drawer.drawer_item href="/active">Active</Drawer.drawer_item>
+        </Drawer.drawer_submenu>
         """)
 
       assert html =~ "<details open"
     end
   end
 
-  describe "sidebar_separator/1" do
+  describe "drawer_separator/1" do
     test "renders horizontal rule" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_separator />
+        <Drawer.drawer_separator />
         """)
 
       assert html =~ "<hr"
@@ -280,33 +280,33 @@ defmodule SutraUI.SidebarTest do
     end
   end
 
-  describe "sidebar/1 hook" do
+  describe "drawer/1 hook" do
     test "includes phx-hook attribute" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar id="main-sidebar">
+        <Drawer.drawer id="main-drawer">
           Content
-        </Sidebar.sidebar>
+        </Drawer.drawer>
         """)
 
-      assert html =~ ~s(phx-hook="SutraUI.Sidebar.Sidebar")
+      assert html =~ ~s(phx-hook="SutraUI.Drawer.Drawer")
     end
   end
 
-  describe "sidebar_trigger/1" do
+  describe "drawer_trigger/1" do
     test "renders trigger button" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_trigger for="main-sidebar" />
+        <Drawer.drawer_trigger for="main-drawer" />
         """)
 
       assert html =~ "<button"
-      assert html =~ ~s(data-for="main-sidebar")
-      assert html =~ ~s(aria-label="Toggle sidebar")
+      assert html =~ ~s(data-for="main-drawer")
+      assert html =~ ~s(aria-label="Toggle drawer")
       assert html =~ "phx-click"
     end
 
@@ -315,7 +315,7 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_trigger for="main-sidebar" />
+        <Drawer.drawer_trigger for="main-drawer" />
         """)
 
       assert html =~ "<svg"
@@ -327,7 +327,7 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_trigger for="main-sidebar">Menu</Sidebar.sidebar_trigger>
+        <Drawer.drawer_trigger for="main-drawer">Menu</Drawer.drawer_trigger>
         """)
 
       assert html =~ "Menu"
@@ -339,7 +339,7 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_trigger for="main-sidebar" />
+        <Drawer.drawer_trigger for="main-drawer" />
         """)
 
       assert html =~ "btn-icon-ghost"
@@ -350,7 +350,7 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_trigger for="main-sidebar" variant="outline" />
+        <Drawer.drawer_trigger for="main-drawer" variant="outline" />
         """)
 
       assert html =~ "btn-icon-outline"
@@ -361,7 +361,7 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_trigger for="main-sidebar" size="sm" />
+        <Drawer.drawer_trigger for="main-drawer" size="sm" />
         """)
 
       assert html =~ "btn-sm-ghost"
@@ -372,7 +372,7 @@ defmodule SutraUI.SidebarTest do
 
       html =
         rendered_to_string(~H"""
-        <Sidebar.sidebar_trigger for="main-sidebar" class="my-class" />
+        <Drawer.drawer_trigger for="main-drawer" class="my-class" />
         """)
 
       assert html =~ "my-class"

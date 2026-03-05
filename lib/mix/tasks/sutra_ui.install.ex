@@ -15,7 +15,6 @@ defmodule Mix.Tasks.SutraUi.Install do
 
   1. Delete `lib/my_app_web/components/core_components.ex`
   2. Remove the `import MyAppWeb.CoreComponents` line from your web module
-  3. Add colocated hooks to `assets/js/app.js` (see docs)
 
   ## Runtime Hooks
 

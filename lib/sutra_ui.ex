@@ -82,7 +82,7 @@ defmodule SutraUI do
   | `SutraUI.Header` | Page headers |
   | `SutraUI.Table` | Data tables |
   | `SutraUI.Item` | List items |
-  | `SutraUI.Sidebar` | Navigation sidebar (hook) |
+  | `SutraUI.Drawer` | Navigation drawer (hook) |
 
   ### Feedback
 
@@ -235,7 +235,7 @@ defmodule SutraUI do
 
       # Phase 7: Navigation
       import SutraUI.NavPills
-      import SutraUI.Sidebar
+      import SutraUI.Drawer
       import SutraUI.TabNav
       import SutraUI.ThemeSwitcher
 

@@ -97,7 +97,6 @@ defmodule SutraUI.MixProject do
           SutraUI.Slider,
           SutraUI.RangeSlider,
           SutraUI.LiveSelect,
-          SutraUI.Field,
           SutraUI.SimpleForm,
           SutraUI.InputGroup,
           SutraUI.FilterBar
@@ -107,7 +106,7 @@ defmodule SutraUI.MixProject do
           SutraUI.Header,
           SutraUI.Table,
           SutraUI.Item,
-          SutraUI.Sidebar
+          SutraUI.Drawer
         ],
         Feedback: [
           SutraUI.Alert,

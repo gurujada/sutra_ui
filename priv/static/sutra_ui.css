@@ -35,6 +35,14 @@
     --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
     --sidebar-border: oklch(0.92 0.004 286.32);
     --sidebar-ring: oklch(0.623 0.214 259.815);
+    --drawer: var(--sidebar);
+    --drawer-foreground: var(--sidebar-foreground);
+    --drawer-primary: var(--sidebar-primary);
+    --drawer-primary-foreground: var(--sidebar-primary-foreground);
+    --drawer-accent: var(--sidebar-accent);
+    --drawer-accent-foreground: var(--sidebar-accent-foreground);
+    --drawer-border: var(--sidebar-border);
+    --drawer-ring: var(--sidebar-ring);
     --scrollbar-track: transparent;
     --scrollbar-thumb: rgba(0, 0, 0, 0.3);
     --scrollbar-width: 6px;
@@ -78,6 +86,14 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.488 0.243 264.376);
+    --drawer: var(--sidebar);
+    --drawer-foreground: var(--sidebar-foreground);
+    --drawer-primary: var(--sidebar-primary);
+    --drawer-primary-foreground: var(--sidebar-primary-foreground);
+    --drawer-accent: var(--sidebar-accent);
+    --drawer-accent-foreground: var(--sidebar-accent-foreground);
+    --drawer-border: var(--sidebar-border);
+    --drawer-ring: var(--sidebar-ring);
     --scrollbar-thumb: rgba(255, 255, 255, 0.3);
     --chevron-down-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="oklch(0.708 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'); /* --muted-foreground */
     --chevron-down-icon-50: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="oklch(0.708 0 0 / 0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'); /* --muted-foreground + 50% opacity */
@@ -121,6 +137,14 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+    --color-drawer: var(--drawer);
+    --color-drawer-foreground: var(--drawer-foreground);
+    --color-drawer-primary: var(--drawer-primary);
+    --color-drawer-primary-foreground: var(--drawer-primary-foreground);
+    --color-drawer-accent: var(--drawer-accent);
+    --color-drawer-accent-foreground: var(--drawer-accent-foreground);
+    --color-drawer-border: var(--drawer-border);
+    --color-drawer-ring: var(--drawer-ring);
 }
 
 @layer base {
@@ -2127,58 +2151,58 @@
     }
 }
 
-/* Sidebar */
+/* Drawer */
 @layer components {
-    .sidebar {
-        --sidebar-width: 16rem;
-        --sidebar-mobile-width: 18rem;
-        --sidebar-height: 16rem;
+    .drawer {
+        --drawer-width: 16rem;
+        --drawer-mobile-width: 18rem;
+        --drawer-height: 16rem;
 
         /* Backdrop overlay */
-        & > .sidebar-backdrop {
+        & > .drawer-backdrop {
             @apply fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity duration-200;
         }
 
-        &[aria-hidden="false"] > .sidebar-backdrop {
+        &[aria-hidden="false"] > .drawer-backdrop {
             @apply opacity-100 pointer-events-auto cursor-pointer;
         }
 
-        /* The aside contains the actual sidebar content */
+        /* The aside contains the actual drawer content */
         & > aside {
             @apply fixed z-50 flex flex-col bg-sidebar text-sidebar-foreground transition-transform duration-200;
 
             /* Left/Right positioning */
             &[data-side="left"],
-            .sidebar[data-side="left"] > & {
-                @apply left-0 inset-y-0 border-r border-sidebar-border w-[var(--sidebar-width)];
+            .drawer[data-side="left"] > & {
+                @apply left-0 inset-y-0 border-r border-sidebar-border w-[var(--drawer-width)];
             }
             &[data-side="right"],
-            .sidebar[data-side="right"] > & {
-                @apply right-0 inset-y-0 border-l border-sidebar-border w-[var(--sidebar-width)];
+            .drawer[data-side="right"] > & {
+                @apply right-0 inset-y-0 border-l border-sidebar-border w-[var(--drawer-width)];
             }
             /* Top/Bottom positioning */
             &[data-side="top"],
-            .sidebar[data-side="top"] > & {
-                @apply top-0 inset-x-0 border-b border-sidebar-border h-[var(--sidebar-height)];
+            .drawer[data-side="top"] > & {
+                @apply top-0 inset-x-0 border-b border-sidebar-border h-[var(--drawer-height)];
             }
             &[data-side="bottom"],
-            .sidebar[data-side="bottom"] > & {
-                @apply bottom-0 inset-x-0 border-t border-sidebar-border h-[var(--sidebar-height)];
+            .drawer[data-side="bottom"] > & {
+                @apply bottom-0 inset-x-0 border-t border-sidebar-border h-[var(--drawer-height)];
             }
         }
 
         /* Position based on parent data-side */
         &[data-side="left"] > aside {
-            @apply left-0 inset-y-0 border-r border-sidebar-border w-[var(--sidebar-width)];
+            @apply left-0 inset-y-0 border-r border-sidebar-border w-[var(--drawer-width)];
         }
         &[data-side="right"] > aside {
-            @apply right-0 inset-y-0 border-l border-sidebar-border w-[var(--sidebar-width)];
+            @apply right-0 inset-y-0 border-l border-sidebar-border w-[var(--drawer-width)];
         }
         &[data-side="top"] > aside {
-            @apply top-0 inset-x-0 border-b border-sidebar-border h-[var(--sidebar-height)];
+            @apply top-0 inset-x-0 border-b border-sidebar-border h-[var(--drawer-height)];
         }
         &[data-side="bottom"] > aside {
-            @apply bottom-0 inset-x-0 border-t border-sidebar-border h-[var(--sidebar-height)];
+            @apply bottom-0 inset-x-0 border-t border-sidebar-border h-[var(--drawer-height)];
         }
 
         /* Hidden state - translate off screen */
@@ -2201,11 +2225,11 @@
         @media (max-width: 767px) {
             &[data-side="left"] > aside,
             &[data-side="right"] > aside {
-                @apply w-[var(--sidebar-mobile-width)] max-w-[80vw];
+                @apply w-[var(--drawer-mobile-width)] max-w-[80vw];
             }
             &[data-side="top"] > aside,
             &[data-side="bottom"] > aside {
-                @apply h-[var(--sidebar-height)] max-h-[60vh];
+                @apply h-[var(--drawer-height)] max-h-[60vh];
             }
         }
 

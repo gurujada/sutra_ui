@@ -98,26 +98,16 @@ end
 >
 > Phoenix generates `core_components.ex` with basic UI components. Sutra UI provides enhanced versions of all these components plus 40+ more. Keeping both would cause naming conflicts and confusion.
 
-## Step 4: Setup JavaScript Hooks
+## Step 4: Runtime Hooks (No JS Setup Required)
 
-Sutra UI components use colocated JavaScript hooks. Add the hooks import to your `assets/js/app.js`:
+Sutra UI uses Phoenix 1.8+ runtime colocated hooks. You do **not** need to add
+anything to `assets/js/app.js`.
 
-```javascript
-import { hooks as sutraUiHooks } from "phoenix-colocated/sutra_ui";
-```
-
-Then spread them into your LiveSocket configuration:
-
-```javascript
-const liveSocket = new LiveSocket("/live", Socket, {
-    params: { _csrf_token: csrfToken },
-    hooks: { ...sutraUiHooks },  // Add other hooks here too
-});
-```
+Just render the components and their hooks are loaded automatically at runtime.
 
 > #### Deployment Note {: .warning}
 >
-> Colocated hooks are extracted at compile time. Ensure your deployment runs `mix compile` **before** `assets.deploy`:
+> Runtime hooks are still compiled with your app code. Ensure your deployment runs `mix compile` **before** `assets.deploy`:
 >
 > ```elixir
 > # mix.exs

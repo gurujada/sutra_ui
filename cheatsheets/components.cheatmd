@@ -167,23 +167,22 @@ Quick reference for all 44 Sutra UI components.
 ### Live Select
 
 ```heex
-<.live_select
+<.live_component
+  module={SutraUI.LiveSelect}
   id="users"
-  name="user_id"
+  field={@form[:user_id]}
   placeholder="Search users..."
-  search_event="search_users"
 />
 ```
 
-### Field
+```elixir
+def handle_event("live_select_change", %{"text" => text, "id" => id}, socket) do
+  users = Accounts.search_users(text)
+  options = Enum.map(users, &{&1.name, &1.id})
 
-```heex
-<.field>
-  <:label>Email</:label>
-  <.input type="email" name="email" />
-  <:description>We'll never share your email.</:description>
-  <:error>Invalid email address</:error>
-</.field>
+  send_update(SutraUI.LiveSelect, id: id, options: options)
+  {:noreply, socket}
+end
 ```
 
 ### Input Group
@@ -203,16 +202,14 @@ Quick reference for all 44 Sutra UI components.
 </.input_group>
 ```
 
-### Simple Form
+### Form (LiveView)
 
 ```heex
-<.simple_form for={@form} phx-submit="save">
+<.form for={@form} class="form" phx-change="validate" phx-submit="save">
   <.input field={@form[:name]} label="Name" />
   <.input field={@form[:email]} type="email" label="Email" />
-  <:actions>
-    <.button type="submit">Save</.button>
-  </:actions>
-</.simple_form>
+  <.button type="submit">Save</.button>
+</.form>
 ```
 
 ### Filter Bar
@@ -280,42 +277,42 @@ Quick reference for all 44 Sutra UI components.
 </.item>
 ```
 
-### Sidebar
+### Drawer
 
 ```heex
-# Basic sidebar with toggle button
-<.sidebar_trigger for="main-sidebar" />
-<.sidebar id="main-sidebar">
+# Basic drawer with toggle button
+<.drawer_trigger for="main-drawer" />
+<.drawer id="main-drawer">
   <:header>
     <img src="/logo.svg" alt="Logo" />
   </:header>
-  <.sidebar_group label="Navigation">
-    <.sidebar_item href="/">Home</.sidebar_item>
-    <.sidebar_item href="/users">Users</.sidebar_item>
-  </.sidebar_group>
+  <.drawer_group label="Navigation">
+    <.drawer_item href="/">Home</.drawer_item>
+    <.drawer_item href="/users">Users</.drawer_item>
+  </.drawer_group>
   <:footer>
-    <.sidebar_item href="/settings">Settings</.sidebar_item>
+    <.drawer_item href="/settings">Settings</.drawer_item>
   </:footer>
-</.sidebar>
+</.drawer>
 
 # Initially open on desktop
-<.sidebar_trigger for="app-sidebar" />
-<.sidebar id="app-sidebar" open>
-  <.sidebar_group label="Main">
-    <.sidebar_item href="/">Home</.sidebar_item>
-    <.sidebar_item href="/dashboard">Dashboard</.sidebar_item>
-  </.sidebar_group>
-</.sidebar>
+<.drawer_trigger for="app-drawer" />
+<.drawer id="app-drawer" open>
+  <.drawer_group label="Main">
+    <.drawer_item href="/">Home</.drawer_item>
+    <.drawer_item href="/dashboard">Dashboard</.drawer_item>
+  </.drawer_group>
+</.drawer>
 
-# Right-side sidebar with custom trigger
-<.sidebar_trigger for="filter-sidebar" variant="outline">
+# Right-side drawer with custom trigger
+<.drawer_trigger for="filter-drawer" variant="outline">
   Filters
-</.sidebar_trigger>
-<.sidebar id="filter-sidebar" side="right">
-  <.sidebar_group label="Filters">
-    <.sidebar_item href="/active">Active</.sidebar_item>
-  </.sidebar_group>
-</.sidebar>
+</.drawer_trigger>
+<.drawer id="filter-drawer" side="right">
+  <.drawer_group label="Filters">
+    <.drawer_item href="/active">Active</.drawer_item>
+  </.drawer_group>
+</.drawer>
 ```
 
 ## Feedback
@@ -520,13 +517,13 @@ import SutraUI.Dialog
 ### Tab Nav
 
 ```heex
-<.tab_nav>
-  <:item href={~p"/settings/profile"} active={@tab == :profile}>
+<.tab_nav id="settings-tabs-nav">
+  <:tab patch={~p"/settings/profile"} active={@tab == :profile}>
     Profile
-  </:item>
-  <:item href={~p"/settings/account"} active={@tab == :account}>
+  </:tab>
+  <:tab patch={~p"/settings/account"} active={@tab == :account}>
     Account
-  </:item>
+  </:tab>
 </.tab_nav>
 ```
 

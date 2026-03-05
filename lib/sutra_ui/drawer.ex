@@ -1,10 +1,10 @@
-defmodule SutraUI.Sidebar do
+defmodule SutraUI.Drawer do
   @moduledoc """
-  A collapsible sidebar navigation component with mobile toggle support.
+  A collapsible drawer navigation component with mobile toggle support.
 
-  The sidebar provides a responsive navigation panel that can be toggled open/closed.
-  By default, sidebars are closed on desktop and require a trigger button or programmatic
-  control to open. Use the `open` attribute to make a sidebar initially open.
+  The drawer provides a responsive navigation panel that can be toggled open/closed.
+  By default, drawers are closed on desktop and require a trigger button or programmatic
+  control to open. Use the `open` attribute to make a drawer initially open.
 
   It supports:
   - Mobile overlay mode with backdrop
@@ -16,10 +16,10 @@ defmodule SutraUI.Sidebar do
 
   ## JavaScript Hook
 
-  The sidebar requires JavaScript for:
+  The drawer requires JavaScript for:
   - Mobile toggle functionality
   - Close on backdrop click
-  - Close on click outside (when sidebar is open)
+  - Close on click outside (when drawer is open)
   - Responsive breakpoint handling
   - Active page link detection and highlighting
   - Managing open/closed state
@@ -29,25 +29,25 @@ defmodule SutraUI.Sidebar do
 
   ## Click Outside to Close
 
-  When the sidebar is open, clicking anywhere outside of it (except on trigger buttons)
-  will automatically close the sidebar. This provides an intuitive way to dismiss
-  the sidebar without requiring an explicit close button.
+  When the drawer is open, clicking anywhere outside of it (except on trigger buttons)
+  will automatically close the drawer. This provides an intuitive way to dismiss
+  the drawer without requiring an explicit close button.
 
   ## Examples
 
-  # Basic sidebar with trigger button
-  <.sidebar_trigger for="main-sidebar" />
-  <.sidebar id="main-sidebar">
+  # Basic drawer with trigger button
+  <.drawer_trigger for="main-drawer" />
+  <.drawer id="main-drawer">
   <ul>
     <li><a href="/">Home</a></li>
     <li><a href="/dashboard">Dashboard</a></li>
     <li><a href="/settings">Settings</a></li>
   </ul>
-  </.sidebar>
+  </.drawer>
 
-  # Sidebar initially open on desktop
-  <.sidebar_trigger for="app-sidebar" />
-  <.sidebar id="app-sidebar" side="left" open>
+  # Drawer initially open on desktop
+  <.drawer_trigger for="app-drawer" />
+  <.drawer id="app-drawer" side="left" open>
   <:header>
     <div class="flex items-center gap-2 p-2">
       <img src="/logo.svg" alt="Logo" class="w-8 h-8" />
@@ -55,58 +55,58 @@ defmodule SutraUI.Sidebar do
     </div>
   </:header>
 
-  <.sidebar_group label="Main">
-    <.sidebar_item href="/">Home</.sidebar_item>
-    <.sidebar_item href="/dashboard">Dashboard</.sidebar_item>
-  </.sidebar_group>
+  <.drawer_group label="Main">
+    <.drawer_item href="/">Home</.drawer_item>
+    <.drawer_item href="/dashboard">Dashboard</.drawer_item>
+  </.drawer_group>
 
   <:footer>
-    <.sidebar_item href="/settings">Settings</.sidebar_item>
+    <.drawer_item href="/settings">Settings</.drawer_item>
   </:footer>
-  </.sidebar>
+  </.drawer>
 
-  # Sidebar with collapsible sections
-  <.sidebar_trigger for="nav-sidebar" />
-  <.sidebar id="nav-sidebar">
-  <.sidebar_group label="Navigation">
-    <.sidebar_item href="/">Overview</.sidebar_item>
+  # Drawer with collapsible sections
+  <.drawer_trigger for="nav-drawer" />
+  <.drawer id="nav-drawer">
+  <.drawer_group label="Navigation">
+    <.drawer_item href="/">Overview</.drawer_item>
 
-    <.sidebar_submenu label="Projects" open>
-      <.sidebar_item href="/projects/active">Active</.sidebar_item>
-      <.sidebar_item href="/projects/archived">Archived</.sidebar_item>
-    </.sidebar_submenu>
+    <.drawer_submenu label="Projects" open>
+      <.drawer_item href="/projects/active">Active</.drawer_item>
+      <.drawer_item href="/projects/archived">Archived</.drawer_item>
+    </.drawer_submenu>
 
-    <.sidebar_item href="/team">Team</.sidebar_item>
-  </.sidebar_group>
-  </.sidebar>
+    <.drawer_item href="/team">Team</.drawer_item>
+  </.drawer_group>
+  </.drawer>
 
-  # Right-side sidebar with custom trigger
-  <.sidebar_trigger for="filter-sidebar" variant="outline">
+  # Right-side drawer with custom trigger
+  <.drawer_trigger for="filter-drawer" variant="outline">
   <span>Toggle Filters</span>
-  </.sidebar_trigger>
-  <.sidebar id="filter-sidebar" side="right">
-  <.sidebar_group label="Filters">
+  </.drawer_trigger>
+  <.drawer id="filter-drawer" side="right">
+  <.drawer_group label="Filters">
     <p>Filter options here...</p>
-  </.sidebar_group>
-  </.sidebar>
+  </.drawer_group>
+  </.drawer>
 
   ## Programmatic Control
 
-  You can control the sidebar state from JavaScript using custom events:
+  You can control the drawer state from JavaScript using custom events:
 
-      // Toggle sidebar
-      document.dispatchEvent(new CustomEvent('sutra-ui:sidebar', {
-        detail: { id: 'main-sidebar' }
+      // Toggle drawer
+      document.dispatchEvent(new CustomEvent('sutra-ui:drawer', {
+        detail: { id: 'main-drawer' }
       }));
 
-      // Open sidebar
-      document.dispatchEvent(new CustomEvent('sutra-ui:sidebar', {
-        detail: { id: 'main-sidebar', action: 'open' }
+      // Open drawer
+      document.dispatchEvent(new CustomEvent('sutra-ui:drawer', {
+        detail: { id: 'main-drawer', action: 'open' }
       }));
 
-      // Close sidebar
-      document.dispatchEvent(new CustomEvent('sutra-ui:sidebar', {
-        detail: { id: 'main-sidebar', action: 'close' }
+      // Close drawer
+      document.dispatchEvent(new CustomEvent('sutra-ui:drawer', {
+        detail: { id: 'main-drawer', action: 'close' }
       }));
 
   ## Accessibility
@@ -120,22 +120,22 @@ defmodule SutraUI.Sidebar do
   ## Mobile Behavior
 
   On mobile (below breakpoint):
-  - Sidebar becomes a full-screen overlay
-  - Clicking outside the nav closes the sidebar
-  - Clicking links automatically closes the sidebar
-  - Use `data-keep-mobile-sidebar-open` attribute to prevent auto-close on specific elements
+  - Drawer becomes a full-screen overlay
+  - Clicking outside the nav closes the drawer
+  - Clicking links automatically closes the drawer
+  - Use `data-keep-mobile-drawer-open` attribute to prevent auto-close on specific elements
 
   ## CSS Variables
 
-  The sidebar uses these CSS variables:
-  - `--sidebar-width`: Desktop sidebar width (default: 16rem)
-  - `--sidebar-mobile-width`: Mobile sidebar width (default: 18rem)
-  - `--sidebar`: Background color
-  - `--sidebar-foreground`: Text color
-  - `--sidebar-accent`: Hover/active background
-  - `--sidebar-accent-foreground`: Hover/active text color
-  - `--sidebar-border`: Border color
-  - `--sidebar-ring`: Focus ring color
+  The drawer uses these CSS variables:
+  - `--drawer-width`: Desktop drawer width (default: 16rem)
+  - `--drawer-mobile-width`: Mobile drawer width (default: 18rem)
+  - `--drawer`: Background color
+  - `--drawer-foreground`: Text color
+  - `--drawer-accent`: Hover/active background
+  - `--drawer-accent-foreground`: Hover/active text color
+  - `--drawer-border`: Border color
+  - `--drawer-ring`: Focus ring color
   """
 
   use Phoenix.Component
@@ -143,64 +143,64 @@ defmodule SutraUI.Sidebar do
   alias Phoenix.LiveView.ColocatedHook
 
   @doc """
-  Renders a sidebar navigation component.
+  Renders a drawer navigation component.
 
   ## Attributes
 
-  - `id` (required) - Unique identifier for the sidebar (required for hook)
-  - `side` - Which side to position the sidebar ("left" or "right", default: "left")
+  - `id` (required) - Unique identifier for the drawer (required for hook)
+  - `side` - Which side to position the drawer ("left" or "right", default: "left")
   - `open` - Initial open state for desktop (default: false)
   - `mobile_open` - Initial open state for mobile (default: false)
   - `breakpoint` - Pixel width for mobile breakpoint (default: 768)
-  - `label` - ARIA label for navigation (default: "Sidebar navigation")
+  - `label` - ARIA label for navigation (default: "Drawer navigation")
   - `class` - Additional CSS classes for the aside container
 
   ## Slots
 
   - `header` - Optional header content (rendered in nav > header)
   - `footer` - Optional footer content (rendered in nav > footer)
-  - `inner_block` (required) - Main sidebar content (rendered in nav > section)
+  - `inner_block` (required) - Main drawer content (rendered in nav > section)
 
   ## Toggle Button
 
-  Use `sidebar_trigger/1` to create a toggle button for the sidebar:
+  Use `drawer_trigger/1` to create a toggle button for the drawer:
 
-      <.sidebar_trigger for="my-sidebar" />
-      <.sidebar id="my-sidebar">
-        <!-- sidebar content -->
-      </.sidebar>
+      <.drawer_trigger for="my-drawer" />
+      <.drawer id="my-drawer">
+        <!-- drawer content -->
+      </.drawer>
   """
-  attr(:id, :string, required: true, doc: "Unique identifier for the sidebar (required for hook)")
+  attr(:id, :string, required: true, doc: "Unique identifier for the drawer (required for hook)")
 
   attr(:side, :string,
     default: "left",
     values: ["left", "right", "top", "bottom"],
-    doc: "Which side to position the sidebar"
+    doc: "Which side to position the drawer"
   )
 
   attr(:open, :boolean, default: false, doc: "Initial open state for desktop")
   attr(:mobile_open, :boolean, default: false, doc: "Initial open state for mobile")
   attr(:breakpoint, :integer, default: 768, doc: "Pixel width for mobile breakpoint")
-  attr(:label, :string, default: "Sidebar navigation", doc: "ARIA label for navigation")
+  attr(:label, :string, default: "Drawer navigation", doc: "ARIA label for navigation")
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
 
   slot(:header, doc: "Optional header content")
   slot(:footer, doc: "Optional footer content")
-  slot(:inner_block, required: true, doc: "Main sidebar content")
+  slot(:inner_block, required: true, doc: "Main drawer content")
 
-  def sidebar(assigns) do
+  def drawer(assigns) do
     ~H"""
     <div
       id={@id}
-      class={["sidebar", @class]}
+      class={["drawer", @class]}
       data-side={@side}
       aria-hidden={to_string(!@open)}
       data-initial-open={to_string(@open)}
       data-initial-mobile-open={to_string(@mobile_open)}
       data-breakpoint={@breakpoint}
-      phx-hook=".Sidebar"
+      phx-hook=".Drawer"
     >
-      <div class="sidebar-backdrop" aria-hidden="true"></div>
+      <div class="drawer-backdrop" aria-hidden="true"></div>
       <aside inert={!@open}>
         <nav aria-label={@label}>
           <header :if={@header != []}>
@@ -218,10 +218,10 @@ defmodule SutraUI.Sidebar do
       </aside>
     </div>
 
-    <script :type={ColocatedHook} name=".Sidebar" runtime>
+    <script :type={ColocatedHook} name=".Drawer" runtime>
       {
         mounted() {
-          this.initializeSidebar();
+          this.initializeDrawer();
         },
 
         updated() {
@@ -233,11 +233,11 @@ defmodule SutraUI.Sidebar do
           // Clean up event listeners
           window.removeEventListener('popstate', this.updateCurrentPageLinksHandler);
           window.removeEventListener('sutra-ui:locationchange', this.updateCurrentPageLinksHandler);
-          document.removeEventListener('sutra-ui:sidebar', this.sidebarEventHandler);
+          document.removeEventListener('sutra-ui:drawer', this.drawerEventHandler);
           document.removeEventListener('click', this.handleClickOutside);
         },
 
-        initializeSidebar() {
+        initializeDrawer() {
           const initialOpen = this.el.dataset.initialOpen !== 'false';
           const initialMobileOpen = this.el.dataset.initialMobileOpen === 'true';
           const breakpoint = parseInt(this.el.dataset.breakpoint) || 768;
@@ -248,20 +248,20 @@ defmodule SutraUI.Sidebar do
             : initialOpen;
 
           this.breakpoint = breakpoint;
-          this.sidebarId = this.el.id;
-          this.backdrop = this.el.querySelector('.sidebar-backdrop');
+          this.drawerId = this.el.id;
+          this.backdrop = this.el.querySelector('.drawer-backdrop');
           this.aside = this.el.querySelector('aside');
 
           // Bind event handlers
           this.updateCurrentPageLinksHandler = () => this.updateCurrentPageLinks();
-          this.sidebarEventHandler = (event) => this.handleSidebarEvent(event);
+          this.drawerEventHandler = (event) => this.handleDrawerEvent(event);
 
           // Listen for navigation events to update current page links
           window.addEventListener('popstate', this.updateCurrentPageLinksHandler);
           window.addEventListener('sutra-ui:locationchange', this.updateCurrentPageLinksHandler);
 
           // Listen for programmatic control events
-          document.addEventListener('sutra-ui:sidebar', this.sidebarEventHandler);
+          document.addEventListener('sutra-ui:drawer', this.drawerEventHandler);
 
           // Handle clicks on backdrop to close
           if (this.backdrop) {
@@ -271,9 +271,9 @@ defmodule SutraUI.Sidebar do
           // Handle clicks on links to close on mobile
           this.aside.addEventListener('click', (event) => this.handleAsideClick(event));
 
-          // Handle clicks outside sidebar to close (for demo containers)
+          // Handle clicks outside drawer to close (for demo containers)
           this.handleClickOutside = (event) => {
-            if (this.open && !this.aside.contains(event.target) && !event.target.closest('.sidebar-trigger')) {
+            if (this.open && !this.aside.contains(event.target) && !event.target.closest('.drawer-trigger')) {
               this.setState(false);
             }
           };
@@ -284,13 +284,13 @@ defmodule SutraUI.Sidebar do
           this.updateCurrentPageLinks();
 
           // Mark as initialized
-          this.el.dataset.sidebarInitialized = true;
+          this.el.dataset.drawerInitialized = true;
           this.el.dispatchEvent(new CustomEvent('sutra-ui:initialized'));
         },
 
-        handleSidebarEvent(event) {
-          // Ignore events for other sidebars
-          if (event.detail?.id && event.detail.id !== this.sidebarId) return;
+        handleDrawerEvent(event) {
+          // Ignore events for other drawers
+          if (event.detail?.id && event.detail.id !== this.drawerId) return;
 
           switch (event.detail?.action) {
             case 'open':
@@ -309,8 +309,8 @@ defmodule SutraUI.Sidebar do
           const target = event.target;
           const isMobile = window.innerWidth < this.breakpoint;
 
-          // On mobile, close sidebar when clicking links or buttons (unless marked to keep open)
-          if (isMobile && target.closest('a, button') && !target.closest('[data-keep-mobile-sidebar-open]')) {
+          // On mobile, close drawer when clicking links or buttons (unless marked to keep open)
+          if (isMobile && target.closest('a, button') && !target.closest('[data-keep-mobile-drawer-open]')) {
             if (document.activeElement) document.activeElement.blur();
             this.setState(false);
           }
@@ -350,7 +350,7 @@ defmodule SutraUI.Sidebar do
   end
 
   @doc """
-  Renders a sidebar group with an optional label/heading.
+  Renders a drawer group with an optional label/heading.
 
   ## Attributes
 
@@ -359,20 +359,20 @@ defmodule SutraUI.Sidebar do
 
   ## Examples
 
-      <.sidebar_group label="Navigation">
-        <.sidebar_item href="/">Home</.sidebar_item>
-        <.sidebar_item href="/about">About</.sidebar_item>
-      </.sidebar_group>
+      <.drawer_group label="Navigation">
+        <.drawer_item href="/">Home</.drawer_item>
+        <.drawer_item href="/about">About</.drawer_item>
+      </.drawer_group>
 
-      <.sidebar_group>
-        <.sidebar_item href="/settings">Settings</.sidebar_item>
-      </.sidebar_group>
+      <.drawer_group>
+        <.drawer_item href="/settings">Settings</.drawer_item>
+      </.drawer_group>
   """
   attr(:label, :string, default: nil, doc: "Optional heading for the group")
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
   slot(:inner_block, required: true)
 
-  def sidebar_group(assigns) do
+  def drawer_group(assigns) do
     ~H"""
     <div role="group" class={@class}>
       <h3 :if={@label}>{@label}</h3>
@@ -384,7 +384,7 @@ defmodule SutraUI.Sidebar do
   end
 
   @doc """
-  Renders a sidebar navigation item (link).
+  Renders a drawer navigation item (link).
 
   ## Attributes
 
@@ -397,19 +397,19 @@ defmodule SutraUI.Sidebar do
 
   ## Examples
 
-      <.sidebar_item href="/">Home</.sidebar_item>
+      <.drawer_item href="/">Home</.drawer_item>
 
-      <.sidebar_item href="/dashboard" variant="outline">
+      <.drawer_item href="/dashboard" variant="outline">
         Dashboard
-      </.sidebar_item>
+      </.drawer_item>
 
-      <.sidebar_item href="/settings" current>
+      <.drawer_item href="/settings" current>
         Settings
-      </.sidebar_item>
+      </.drawer_item>
 
-      <.sidebar_item href="/profile" size="sm">
+      <.drawer_item href="/profile" size="sm">
         Profile
-      </.sidebar_item>
+      </.drawer_item>
   """
   attr(:href, :string, required: true, doc: "URL for the link")
 
@@ -424,13 +424,13 @@ defmodule SutraUI.Sidebar do
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
 
   attr(:rest, :global,
-    include: ~w(target rel data-ignore-current data-keep-mobile-sidebar-open),
+    include: ~w(target rel data-ignore-current data-keep-mobile-drawer-open),
     doc: "Additional HTML attributes"
   )
 
   slot(:inner_block, required: true)
 
-  def sidebar_item(assigns) do
+  def drawer_item(assigns) do
     ~H"""
     <li>
       <a
@@ -448,7 +448,7 @@ defmodule SutraUI.Sidebar do
   end
 
   @doc """
-  Renders a collapsible sidebar submenu.
+  Renders a collapsible drawer submenu.
 
   ## Attributes
 
@@ -458,15 +458,15 @@ defmodule SutraUI.Sidebar do
 
   ## Examples
 
-      <.sidebar_submenu label="Projects">
-        <.sidebar_item href="/projects/active">Active</.sidebar_item>
-        <.sidebar_item href="/projects/archived">Archived</.sidebar_item>
-      </.sidebar_submenu>
+      <.drawer_submenu label="Projects">
+        <.drawer_item href="/projects/active">Active</.drawer_item>
+        <.drawer_item href="/projects/archived">Archived</.drawer_item>
+      </.drawer_submenu>
 
-      <.sidebar_submenu label="Admin" open>
-        <.sidebar_item href="/admin/users">Users</.sidebar_item>
-        <.sidebar_item href="/admin/settings">Settings</.sidebar_item>
-      </.sidebar_submenu>
+      <.drawer_submenu label="Admin" open>
+        <.drawer_item href="/admin/users">Users</.drawer_item>
+        <.drawer_item href="/admin/settings">Settings</.drawer_item>
+      </.drawer_submenu>
   """
   attr(:label, :string, required: true, doc: "Label for the submenu")
   attr(:open, :boolean, default: false, doc: "Whether the submenu is initially open")
@@ -474,7 +474,7 @@ defmodule SutraUI.Sidebar do
 
   slot(:inner_block, required: true)
 
-  def sidebar_submenu(assigns) do
+  def drawer_submenu(assigns) do
     ~H"""
     <li>
       <details open={@open} class={@class}>
@@ -490,24 +490,24 @@ defmodule SutraUI.Sidebar do
   end
 
   @doc """
-  Renders a separator/divider in the sidebar.
+  Renders a separator/divider in the drawer.
 
   ## Examples
 
-  <.sidebar_separator />
+  <.drawer_separator />
   """
-  def sidebar_separator(assigns) do
+  def drawer_separator(assigns) do
     ~H"""
     <hr role="separator" />
     """
   end
 
   @doc """
-  Renders a button to toggle the sidebar open/closed.
+  Renders a button to toggle the drawer open/closed.
 
   ## Attributes
 
-  - `for` (required) - The ID of the sidebar to toggle
+  - `for` (required) - The ID of the drawer to toggle
   - `variant` - Visual variant. One of `primary`, `secondary`, `destructive`, `outline`, `ghost`, `link`. Defaults to `ghost`.
   - `size` - Size variant. One of `default`, `sm`, `lg`, `icon`. Defaults to `icon`.
   - `class` - Additional CSS classes
@@ -515,17 +515,17 @@ defmodule SutraUI.Sidebar do
   ## Examples
 
   # Default icon button (hamburger menu)
-  <.sidebar_trigger for="main-sidebar" />
+  <.drawer_trigger for="main-drawer" />
 
   # Custom variant and size
-  <.sidebar_trigger for="main-sidebar" variant="outline" size="sm" />
+  <.drawer_trigger for="main-drawer" variant="outline" size="sm" />
 
   # Custom content
-  <.sidebar_trigger for="main-sidebar" variant="primary">
+  <.drawer_trigger for="main-drawer" variant="primary">
     <span>Menu</span>
-  </.sidebar_trigger>
+  </.drawer_trigger>
   """
-  attr(:for, :string, required: true, doc: "ID of the sidebar to toggle")
+  attr(:for, :string, required: true, doc: "ID of the drawer to toggle")
 
   attr(:variant, :string,
     default: "ghost",
@@ -545,14 +545,14 @@ defmodule SutraUI.Sidebar do
 
   slot(:inner_block, doc: "Custom button content (defaults to hamburger icon)")
 
-  def sidebar_trigger(assigns) do
+  def drawer_trigger(assigns) do
     ~H"""
     <button
       type="button"
-      class={["sidebar-trigger", sidebar_trigger_class(@variant, @size), @class]}
+      class={["drawer-trigger", drawer_trigger_class(@variant, @size), @class]}
       data-for={@for}
-      aria-label="Toggle sidebar"
-      phx-click={Phoenix.LiveView.JS.dispatch("sutra-ui:sidebar", detail: %{id: @for})}
+      aria-label="Toggle drawer"
+      phx-click={Phoenix.LiveView.JS.dispatch("sutra-ui:drawer", detail: %{id: @for})}
       {@rest}
     >
       {render_slot(@inner_block) || default_trigger_icon()}
@@ -560,7 +560,7 @@ defmodule SutraUI.Sidebar do
     """
   end
 
-  defp sidebar_trigger_class(variant, size) do
+  defp drawer_trigger_class(variant, size) do
     [base, _extra] = SutraUI.Button.button_class(variant, size, nil)
     base
   end

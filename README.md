@@ -67,18 +67,12 @@ rm lib/my_app_web/components/core_components.ex
 
 In your `my_app_web.ex`, remove the `import MyAppWeb.CoreComponents` line.
 
-### 4. Setup JavaScript Hooks
+### 4. Runtime Hooks (No JS Setup Required)
 
-In your `assets/js/app.js`:
+Sutra UI uses Phoenix 1.8+ runtime colocated hooks.
 
-```javascript
-import { hooks as sutraUiHooks } from "phoenix-colocated/sutra_ui";
-
-const liveSocket = new LiveSocket("/live", Socket, {
-    params: { _csrf_token: csrfToken },
-    hooks: { ...sutraUiHooks },
-});
-```
+You do **not** need to import or register Sutra UI hooks in `assets/js/app.js`.
+Just render components and their hooks load automatically.
 
 ### 5. Deployment Setup
 
@@ -231,7 +225,6 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `slider` - Range slider
 - `range_slider` - Dual-handle range slider
 - `live_select` - Async searchable select with tags
-- `field` - Form field wrapper with label/error
 - `simple_form` - Form with auto-styling
 - `input_group` - Input with prefix/suffix
 - `filter_bar` - Filter controls layout
@@ -241,7 +234,7 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `header` - Page header with title/actions
 - `table` - Data table
 - `item` - List item component
-- `sidebar` - Collapsible sidebar navigation
+- `drawer` - Collapsible drawer navigation
 
 ### Feedback
 - `alert` - Alert messages

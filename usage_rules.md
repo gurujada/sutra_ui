@@ -219,7 +219,7 @@ end
 
 ### Navigation
 - `nav_pills/1` - Responsive navigation pills
-- `sidebar/1` - Collapsible sidebar navigation
+- `drawer/1` - Collapsible drawer navigation
 - `tab_nav/1` - Server-side routed tab navigation
 - `theme_switcher/1` - Light/dark theme toggle
 
@@ -389,27 +389,20 @@ end
 ### Form with Validation Errors
 
 ```heex
-<.simple_form for={@form} phx-change="validate" phx-submit="save">
-  <.field field={@form[:name]} label="Name" required>
-    <.input field={@form[:name]} />
-  </.field>
-  
-  <.field field={@form[:email]} label="Email" required>
-    <.input field={@form[:email]} type="email" />
-  </.field>
-  
-  <.field field={@form[:role]} label="Role">
-    <.select id="role-select" name={@form[:role].name} value={@form[:role].value}>
-      <.select_option value="admin" label="Administrator" />
-      <.select_option value="user" label="Standard User" />
-      <.select_option value="viewer" label="Viewer" />
-    </.select>
-  </.field>
-  
-  <:actions>
-    <.button type="submit" loading={@saving}>Save</.button>
-  </:actions>
-</.simple_form>
+<.form for={@form} class="form" phx-change="validate" phx-submit="save">
+  <.input field={@form[:name]} label="Name" required />
+
+  <.input field={@form[:email]} type="email" label="Email" required />
+
+  <.input
+    field={@form[:role]}
+    type="select"
+    label="Role"
+    options={[{"Administrator", "admin"}, {"Standard User", "user"}, {"Viewer", "viewer"}]}
+  />
+
+  <.button type="submit" loading={@saving}>Save</.button>
+</.form>
 ```
 
 ### Confirmation Dialog Pattern
