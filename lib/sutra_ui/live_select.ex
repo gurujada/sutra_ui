@@ -1324,6 +1324,7 @@ defmodule SutraUI.LiveSelect do
 
               this.selection = selection;
               this.pendingSearch = false; // Selection done
+              this.syncHiddenInputs();
 
               if (mode === 'single') {
                 this.input.value = selection.length > 0 ? selection[0].label : '';
@@ -1346,6 +1347,7 @@ defmodule SutraUI.LiveSelect do
               if (id !== this.el.id) return;
 
               this.selection = selection;
+              this.syncHiddenInputs();
 
               if (mode === 'single') {
                 this.input.value = selection.length > 0 ? selection[0].label : '';
@@ -1453,6 +1455,64 @@ defmodule SutraUI.LiveSelect do
               hidden.dispatchEvent(new Event('input', { bubbles: true }));
               hidden.dispatchEvent(new Event('change', { bubbles: true }));
             }
+          },
+
+          syncHiddenInputs() {
+            const currentInputs = Array.from(this.el.querySelectorAll('[data-live-select-input]'));
+            if (currentInputs.length === 0) return;
+
+            const firstName = currentInputs[0]?.name || '';
+
+            currentInputs.forEach((input) => input.remove());
+
+            if (this.mode() === 'single') {
+              const baseName = firstName.endsWith('[value]')
+                ? firstName.slice(0, -'[value]'.length)
+                : firstName;
+
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = `${baseName}[value]`;
+              input.value = this.selection.length > 0
+                ? this.hiddenValue(this.selection[0].value)
+                : '';
+              input.setAttribute('data-live-select-input', '');
+              this.el.appendChild(input);
+              return;
+            }
+
+            const baseName = firstName.endsWith('[id][]')
+              ? firstName.slice(0, -'[id][]'.length)
+              : firstName;
+
+            if (this.selection.length === 0) {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = `${baseName}[id][]`;
+              input.value = '';
+              input.setAttribute('data-live-select-input', '');
+              this.el.appendChild(input);
+              return;
+            }
+
+            this.selection.forEach((option) => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = `${baseName}[id][]`;
+              input.value = this.hiddenValue(option.value);
+              input.setAttribute('data-live-select-input', '');
+              this.el.appendChild(input);
+            });
+          },
+
+          hiddenValue(value) {
+            if (Array.isArray(value)) {
+              if (value.length === 1) return String(value[0]);
+              return JSON.stringify(value);
+            }
+
+            if (value === null || value === undefined) return '';
+            return String(value);
           },
 
           pushSearchEvent(text) {
