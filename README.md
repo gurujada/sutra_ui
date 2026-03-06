@@ -37,7 +37,7 @@ Built for **Phoenix 1.8+**, **Tailwind CSS v4**, and **Phoenix LiveView 1.1+**.
 # mix.exs
 def deps do
   [
-    {:sutra_ui, "~> 0.1"},
+    {:sutra_ui, "~> 0.3.0"},
     {:jason, "~> 1.0"}  # Required for dropdown_menu and live_select
   ]
 end

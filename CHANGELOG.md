@@ -5,6 +5,30 @@ All notable changes to Sutra UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-03-06
+
+### Added
+
+- **drawer**: New `SutraUI.Drawer` component API with `drawer/1`, `drawer_trigger/1`, `drawer_group/1`, `drawer_item/1`, `drawer_submenu/1`, and `drawer_separator/1`
+- **input**: New `description` attribute with automatic `aria-describedby` linking across input types
+- **install**: New `mix sutra_ui.install` task for CSS setup and `use SutraUI` insertion in `html_helpers`
+
+### Changed
+
+- **docs**: Updated installation flow, cheatsheets, and guides to reflect runtime hooks, unified input patterns, and current APIs
+- **live_select**: Updated form integration to structured field payloads (single uses `[value]`, tags use `[id][]`) while preserving backward-compatible decoding
+- **component naming**: Sidebar terminology updated to Drawer across library docs, tests, and references
+
+### Breaking Changes
+
+- **sidebar -> drawer**: `SutraUI.Sidebar` and all `sidebar_*` functions were renamed to `SutraUI.Drawer` and `drawer_*`
+- **field removed**: `SutraUI.Field` was removed; use unified `SutraUI.Input` with `label`, `description`, and `errors` instead
+
+### Fixed
+
+- **install task**: Corrected `html_helpers` injection matching to avoid inserting `use SutraUI` into `verified_routes`
+- **demo/docs parity**: Resolved stale examples for `tab_nav`, form snippets, and LiveSelect event/update patterns
+
 ## [0.2.0] - 2026-01-06
 
 ### Added

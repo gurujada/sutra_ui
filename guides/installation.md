@@ -24,7 +24,7 @@ Add `sutra_ui` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:sutra_ui, "~> 0.1"},
+    {:sutra_ui, "~> 0.3.0"},
     {:jason, "~> 1.0"}  # Required for dropdown_menu and live_select
   ]
 end
