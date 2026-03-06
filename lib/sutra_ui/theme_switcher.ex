@@ -169,8 +169,8 @@ defmodule SutraUI.ThemeSwitcher do
       </span>
     </button>
 
-    <script :type={ColocatedHook} name=".ThemeSwitcher" runtime>
-      {
+    <script :type={ColocatedHook} name=".ThemeSwitcher">
+      export default {
         mounted() {
           // Handle click events to toggle theme
           // Check current theme and toggle to the opposite
