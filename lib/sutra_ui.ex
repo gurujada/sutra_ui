@@ -2,7 +2,7 @@ defmodule SutraUI do
   @moduledoc """
   Sutra UI - We define the rules, so you don't have to.
 
-  A pure Phoenix LiveView UI component library with **46 accessible components**,
+  A pure Phoenix LiveView UI component library with **54 accessible components**,
   CSS-first theming, and colocated JavaScript hooks. Built for Phoenix 1.8+ and
   Tailwind CSS v4.
 
@@ -70,6 +70,8 @@ defmodule SutraUI do
   | `SutraUI.Label` | Form labels |
   | `SutraUI.SimpleForm` | Form with auto-styling |
   | `SutraUI.InputGroup` | Input with prefix/suffix |
+  | `SutraUI.InputOTP` | One-time password inputs (hook) |
+  | `SutraUI.FileUpload` | LiveView upload dropzone |
   | `SutraUI.FilterBar` | Filter controls layout |
 
   ### Layout
@@ -83,6 +85,8 @@ defmodule SutraUI do
   | `SutraUI.Table` | Data tables |
   | `SutraUI.Item` | List items |
   | `SutraUI.Drawer` | Navigation drawer (hook) |
+  | `SutraUI.Stepper` | Multi-step progress indicators |
+  | `SutraUI.TreeView` | Hierarchical navigation trees |
 
   ### Feedback
 
@@ -107,6 +111,8 @@ defmodule SutraUI do
   | `SutraUI.Popover` | Click-triggered popups (hook) |
   | `SutraUI.Tooltip` | Hover tooltips (CSS-only) |
   | `SutraUI.DropdownMenu` | Dropdown menus (hook) |
+  | `SutraUI.ContextMenu` | Right-click action menus (hook) |
+  | `SutraUI.HoverCard` | Hover preview cards (hook) |
   | `SutraUI.Command` | Command palette (hook) |
 
   ### Navigation
@@ -133,6 +139,8 @@ defmodule SutraUI do
   | `SutraUI.ThemeSwitcher` | Light/dark toggle (hook) |
   | `SutraUI.Separator` | Visual content dividers |
   | `SutraUI.Marquee` | Scrolling content banners |
+  | `SutraUI.Calendar` | Monthly calendar grid |
+  | `SutraUI.Timeline` | Chronological event lists |
 
   ## Theming
 
@@ -231,6 +239,8 @@ defmodule SutraUI do
       # Phase 6: Form & Layout Helpers
       import SutraUI.FilterBar
       import SutraUI.InputGroup
+      import SutraUI.InputOTP
+      import SutraUI.FileUpload
       import SutraUI.Item
       import SutraUI.LoadingState
       import SutraUI.SimpleForm
@@ -239,6 +249,8 @@ defmodule SutraUI do
       import SutraUI.NavPills
       import SutraUI.Drawer
       import SutraUI.TabNav
+      import SutraUI.Stepper
+      import SutraUI.TreeView
       import SutraUI.ThemeSwitcher
 
       # Phase 8: Advanced Form Controls
@@ -249,6 +261,10 @@ defmodule SutraUI do
       # Phase 9: New Components
       import SutraUI.Separator
       import SutraUI.Marquee
+      import SutraUI.HoverCard
+      import SutraUI.Calendar
+      import SutraUI.Timeline
+      import SutraUI.ContextMenu
     end
   end
 end

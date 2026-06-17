@@ -174,6 +174,423 @@
     }
 }
 
+/* Stepper */
+@layer components {
+    .stepper {
+        @apply relative flex gap-2;
+    }
+
+    .stepper-horizontal {
+        @apply flex-row;
+
+        .stepper-item {
+            @apply shrink basis-0 flex-1;
+        }
+    }
+
+    .stepper-vertical {
+        @apply flex-col gap-0;
+
+        .stepper-item {
+            @apply grid grid-cols-[auto_1fr] gap-x-4;
+        }
+
+        .stepper-marker-row {
+            @apply flex flex-col items-center;
+        }
+
+        .stepper-connector {
+            @apply mt-2 h-full w-px flex-1;
+        }
+
+        .stepper-content {
+            @apply pb-6;
+        }
+
+        .stepper-item:last-child .stepper-content {
+            @apply pb-0;
+        }
+    }
+
+    .stepper-marker-row {
+        @apply flex min-h-7 min-w-7 items-center text-xs align-middle;
+    }
+
+    .stepper-marker {
+        @apply flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground ring-1 ring-border;
+
+        svg {
+            @apply size-4;
+        }
+    }
+
+    .stepper-connector {
+        @apply ms-2 h-px flex-1 bg-border;
+    }
+
+    .stepper-item:last-child .stepper-connector {
+        @apply hidden;
+    }
+
+    .stepper-content {
+        @apply mt-3 grid gap-1;
+    }
+
+    .stepper-title {
+        @apply block text-sm font-medium text-foreground;
+    }
+
+    .stepper-description {
+        @apply text-sm text-muted-foreground;
+    }
+
+    .stepper-linear.stepper-horizontal {
+        .stepper-item {
+            @apply flex items-center gap-2;
+        }
+
+        .stepper-marker-row {
+            @apply w-auto;
+        }
+
+        .stepper-content {
+            @apply mt-0;
+        }
+    }
+
+    .stepper-item[data-state="complete"] .stepper-marker,
+    .stepper-item[data-state="current"] .stepper-marker {
+        @apply bg-primary text-primary-foreground ring-primary;
+    }
+
+    .stepper-item[data-state="complete"] .stepper-connector {
+        @apply bg-primary;
+    }
+
+    .stepper-item[data-state="error"] .stepper-marker {
+        @apply bg-destructive text-white ring-destructive;
+    }
+
+    .stepper-solid .stepper-marker {
+        @apply bg-secondary text-secondary-foreground ring-transparent;
+    }
+}
+
+/* Timeline */
+@layer components {
+    .timeline {
+        @apply flex flex-col;
+    }
+
+    .timeline-item {
+        @apply relative grid grid-cols-[auto_1fr] gap-x-4;
+    }
+
+    .timeline-marker {
+        @apply flex flex-col items-center;
+
+        &::after {
+            @apply mt-2 h-full w-px flex-1 bg-border content-[''];
+        }
+
+        > span {
+            @apply flex size-7 shrink-0 items-center justify-center rounded-full border bg-background text-muted-foreground;
+        }
+    }
+
+    .timeline-item:last-child .timeline-marker::after {
+        @apply hidden;
+    }
+
+    .timeline-dot {
+        @apply size-2 rounded-full bg-current;
+    }
+
+    .timeline-content {
+        @apply pb-8;
+    }
+
+    .timeline-item:last-child .timeline-content {
+        @apply pb-0;
+    }
+
+    .timeline-header {
+        @apply flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1;
+
+        h3 {
+            @apply text-sm font-medium text-foreground;
+        }
+
+        time {
+            @apply text-xs text-muted-foreground;
+        }
+    }
+
+    .timeline-content > p {
+        @apply mt-1 text-sm leading-relaxed text-muted-foreground;
+    }
+
+    .timeline-item[data-state="current"] .timeline-marker > span,
+    .timeline-item[data-state="complete"] .timeline-marker > span {
+        @apply border-primary bg-primary text-primary-foreground;
+    }
+
+    .timeline-item[data-state="muted"] {
+        @apply opacity-70;
+    }
+}
+
+/* Hover Card */
+@layer components {
+    .hover-card {
+        @apply relative inline-flex;
+    }
+
+    .hover-card-trigger {
+        @apply inline-flex;
+    }
+
+    .hover-card-content {
+        @apply w-72 p-4 text-sm;
+    }
+}
+
+/* Calendar */
+@layer components {
+    .calendar {
+        @apply w-fit rounded-md border bg-card p-3 text-card-foreground shadow-sm;
+    }
+
+    .calendar-header {
+        @apply flex items-center justify-center pb-3;
+
+        h2 {
+            @apply text-sm font-medium;
+        }
+    }
+
+    .calendar-grid {
+        @apply grid gap-1;
+    }
+
+    .calendar-weekdays,
+    .calendar-week {
+        @apply grid grid-cols-7 gap-1;
+    }
+
+    .calendar-weekdays span {
+        @apply flex size-9 items-center justify-center rounded-md text-[0.8rem] font-normal text-muted-foreground;
+    }
+
+    .calendar-day {
+        @apply flex size-9 items-center justify-center rounded-md text-sm font-normal transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40;
+    }
+
+    .calendar-day[data-today="true"] {
+        @apply bg-accent text-accent-foreground;
+    }
+
+    .calendar-day[data-selected="true"] {
+        @apply bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground;
+    }
+
+    .calendar-day[data-outside="true"] {
+        @apply text-muted-foreground opacity-50;
+    }
+}
+
+/* Input OTP */
+@layer components {
+    .input-otp {
+        @apply flex items-center gap-2;
+    }
+
+    .input-otp-group {
+        @apply flex items-center;
+    }
+
+    .input-otp-slot {
+        @apply relative flex size-10 appearance-none items-center justify-center border border-input bg-background text-center text-sm shadow-xs transition-all outline-none first:rounded-l-md last:rounded-r-md focus:z-10 focus:border-ring focus:ring-ring/50 focus:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30;
+    }
+
+    .input-otp-slot + .input-otp-slot {
+        margin-inline-start: -1px;
+    }
+
+    .input-otp-separator {
+        @apply flex items-center justify-center px-1 text-muted-foreground;
+
+        svg {
+            @apply size-4;
+        }
+    }
+}
+
+/* File Upload */
+@layer components {
+    .file-upload {
+        @apply grid gap-3;
+    }
+
+    .file-upload-dropzone {
+        @apply relative flex min-h-36 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-8 text-center transition-colors hover:bg-muted/50 has-[:focus-visible]:border-ring has-[:focus-visible]:ring-ring/50 has-[:focus-visible]:ring-[3px];
+    }
+
+    .file-upload-icon {
+        @apply flex size-10 items-center justify-center rounded-full bg-background text-muted-foreground shadow-xs ring-1 ring-border;
+
+        svg {
+            @apply size-5;
+        }
+    }
+
+    .file-upload-copy {
+        @apply grid gap-1;
+    }
+
+    .file-upload-label {
+        @apply text-sm font-medium text-foreground;
+    }
+
+    .file-upload-description {
+        @apply text-sm text-muted-foreground;
+    }
+
+    .file-upload-input {
+        @apply absolute inset-0 cursor-pointer opacity-0;
+    }
+
+    .file-upload-list {
+        @apply grid gap-2;
+    }
+
+    .file-upload-entry {
+        @apply rounded-md border bg-card p-3 text-card-foreground;
+    }
+
+    .file-upload-entry-header {
+        @apply flex items-center justify-between gap-3 text-sm;
+
+        span:last-child {
+            @apply text-xs text-muted-foreground;
+        }
+    }
+
+    .file-upload-progress {
+        @apply mt-2 h-2 overflow-hidden rounded-full bg-muted;
+
+        span {
+            @apply block h-full rounded-full bg-primary transition-all;
+        }
+    }
+}
+
+/* Context Menu */
+@layer components {
+    .context-menu {
+        @apply contents;
+    }
+
+    .context-menu-trigger {
+        @apply outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px];
+    }
+
+    .context-menu-popover {
+        @apply fixed z-50 min-w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md transition-all;
+
+        &[aria-hidden="true"] {
+            @apply pointer-events-none invisible scale-95 opacity-0;
+        }
+
+        &[aria-hidden="false"] {
+            @apply visible scale-100 opacity-100;
+        }
+    }
+
+    .context-menu-content {
+        @apply outline-none;
+    }
+
+    .context-menu-item {
+        @apply relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground;
+
+        &.active,
+        &:focus-visible {
+            @apply bg-accent text-accent-foreground;
+        }
+    }
+
+    .context-menu-item-content {
+        @apply flex flex-1 items-center gap-2 truncate;
+    }
+
+    .context-menu-item-destructive {
+        @apply text-destructive;
+
+        &.active {
+            @apply bg-destructive/10 text-destructive;
+        }
+    }
+
+    .context-menu-label {
+        @apply px-2 py-1.5 text-xs font-medium text-muted-foreground;
+    }
+
+    .context-menu-separator {
+        @apply -mx-1 my-1 h-px bg-border;
+    }
+
+    .context-menu-shortcut {
+        @apply ms-auto text-xs tracking-widest text-muted-foreground;
+    }
+}
+
+/* Tree View */
+@layer components {
+    .tree-view {
+        @apply grid gap-0.5 text-sm;
+    }
+
+    .tree-item {
+        @apply text-foreground;
+    }
+
+    .tree-item-trigger {
+        @apply flex min-h-8 w-full items-center gap-2 rounded-md px-2 py-1.5 text-left outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px];
+    }
+
+    .tree-item[aria-selected="true"] > .tree-item-trigger,
+    .tree-item[aria-selected="true"] > summary {
+        @apply bg-accent text-accent-foreground;
+    }
+
+    .tree-item[aria-disabled="true"] {
+        @apply pointer-events-none opacity-50;
+    }
+
+    .tree-item-chevron,
+    .tree-item-spacer,
+    .tree-item-icon {
+        @apply flex size-4 shrink-0 items-center justify-center text-muted-foreground;
+    }
+
+    .tree-item-chevron svg {
+        @apply size-4 transition-transform;
+    }
+
+    .tree-item[open] > summary .tree-item-chevron svg {
+        @apply rotate-90;
+    }
+
+    .tree-item-label {
+        @apply truncate;
+    }
+
+    .tree-group {
+        @apply ms-4 border-s ps-2;
+    }
+}
+
 /* Alert */
 @layer components {
     .alert,

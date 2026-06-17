@@ -1,6 +1,6 @@
 # Components Cheatsheet
 
-Quick reference for all 46 Sutra UI components.
+Quick reference for all 54 Sutra UI components.
 
 ## Foundation
 {: .col-2}
@@ -202,6 +202,19 @@ end
 </.input_group>
 ```
 
+### Input OTP
+
+```heex
+<.input_otp id="mfa-code" name="code" groups={[3, 3]} />
+<.input_otp id="pin" name="pin" length={4} pattern="[0-9]" />
+```
+
+### File Upload
+
+```heex
+<.file_upload upload={@uploads.avatar} label="Upload avatar" description="PNG or JPG up to 2 MB" />
+```
+
 ### Form (LiveView)
 
 ```heex
@@ -313,6 +326,27 @@ end
     <.drawer_item href="/active">Active</.drawer_item>
   </.drawer_group>
 </.drawer>
+```
+
+### Stepper
+
+```heex
+<.stepper current={2}>
+  <:step title="Profile" description="Add your details" />
+  <:step title="Workspace" description="Configure defaults" />
+  <:step title="Invite" description="Bring in teammates" />
+</.stepper>
+```
+
+### Tree View
+
+```heex
+<.tree_view label="Project files">
+  <.tree_item label="lib" expanded>
+    <.tree_item label="app.ex" />
+  </.tree_item>
+  <.tree_item label="README.md" href="/readme" />
+</.tree_view>
 ```
 
 ## Feedback
@@ -442,6 +476,20 @@ import SutraUI.Dialog
 </.dropdown_menu>
 ```
 
+### Context Menu
+
+```heex
+<.context_menu id="message-menu">
+  <:trigger>
+    <div class="rounded-lg border p-6">Right click here</div>
+  </:trigger>
+  <.context_menu_item>Reply</.context_menu_item>
+  <.context_menu_item shortcut="⌘K">Copy link</.context_menu_item>
+  <.context_menu_separator />
+  <.context_menu_item variant="destructive">Delete</.context_menu_item>
+</.context_menu>
+```
+
 ### Command
 
 ```heex
@@ -453,6 +501,18 @@ import SutraUI.Dialog
     <:item value="settings">Settings</:item>
   </:group>
 </.command>
+```
+
+### Hover Card
+
+```heex
+<.hover_card id="user-preview">
+  <:trigger><button>@sutra_ui</button></:trigger>
+  <div class="space-y-1">
+    <p class="font-medium">Sutra UI</p>
+    <p class="text-sm text-muted-foreground">Phoenix LiveView components.</p>
+  </div>
+</.hover_card>
 ```
 
 ## Navigation
@@ -553,6 +613,21 @@ import SutraUI.Dialog
     <img src="/image3.jpg" alt="Image 3" />
   </:item>
 </.carousel>
+```
+
+### Calendar
+
+```heex
+<.calendar year={2026} month={6} selected="2026-06-17" select_event="select_date" />
+```
+
+### Timeline
+
+```heex
+<.timeline>
+  <:item title="Created" time="09:00" description="Workspace created" />
+  <:item title="Published" state="current">Live now</:item>
+</.timeline>
 ```
 
 ### Marquee

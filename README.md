@@ -16,18 +16,18 @@ Built for **Phoenix 1.8+**, **Tailwind CSS v4**, and **Phoenix LiveView 1.1+**.
 - **CSS-first theming** - Customize colors with CSS variables. No build step, no config files.
 - **Copy-paste friendly** - Like shadcn/ui, components are meant to be understood and modified.
 - **Server-driven** - All state lives on the server. No client-side state sync headaches.
-- **Production-ready** - 891 tests, full accessibility support, dark mode included.
+- **Production-ready** - 906 tests, full accessibility support, dark mode included.
 - **LLM-friendly** - Includes `usage_rules.md` with guidelines for AI assistants working with this codebase.
 
 ## Features
 
-- **46 Components** - Buttons, forms, dialogs, tables, and more
+- **54 Components** - Buttons, forms, dialogs, tables, calendars, upload fields, and more
 - **Pure LiveView** - No external JavaScript frameworks
 - **Colocated Hooks** - JS hooks live with their components (Phoenix 1.8+)
 - **CSS Variables** - Override any color in one line
 - **Accessible** - WCAG 2.1 AA compliant, keyboard navigable
 - **Dark Mode** - Built-in light/dark theme support
-- **Lightweight** - ~2500 lines of CSS, minimal JS hooks
+- **Lightweight** - CSS-first styling with minimal colocated JS hooks
 
 ## Installation
 
@@ -227,6 +227,8 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `live_select` - Async searchable select with tags
 - `simple_form` - Form with auto-styling
 - `input_group` - Input with prefix/suffix
+- `input_otp` - One-time password and PIN input
+- `file_upload` - LiveView upload dropzone
 - `filter_bar` - Filter controls layout
 
 ### Layout
@@ -235,6 +237,8 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `table` - Data table
 - `item` - List item component
 - `drawer` - Collapsible drawer navigation
+- `stepper` - Multi-step progress indicator
+- `tree_view` - Hierarchical tree navigation
 
 ### Feedback
 - `alert` - Alert messages
@@ -250,7 +254,9 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `dialog` - Modal dialogs
 - `popover` - Click-triggered popups
 - `tooltip` - Hover tooltips
+- `hover_card` - Rich hover previews
 - `dropdown_menu` - Dropdown menus
+- `context_menu` - Right-click action menus
 - `command` - Command palette with search
 
 ### Navigation
@@ -268,6 +274,8 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `label` - Form labels
 - `marquee` - Scrolling content banner
 - `separator` - Visual or semantic divider
+- `calendar` - Monthly calendar grid
+- `timeline` - Chronological event list
 - `theme_switcher` - Light/dark mode toggle
 
 ## For AI Assistants
@@ -316,7 +324,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 - **[Theming Guide](https://hexdocs.pm/sutra_ui/theming.html)** - CSS variables, OKLCH colors, shadcn themes
 - **[Accessibility Guide](https://hexdocs.pm/sutra_ui/accessibility.html)** - ARIA patterns, keyboard navigation
 - **[JavaScript Hooks](https://hexdocs.pm/sutra_ui/colocated-hooks.html)** - Colocated hooks, custom events
-- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 46 components
+- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 54 components
 - **[Forms Cheatsheet](https://hexdocs.pm/sutra_ui/forms.html)** - Form patterns and validation
 
 ## Links

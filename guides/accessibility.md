@@ -144,6 +144,33 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 <!-- Duplicated content is hidden from screen readers and motion stops for reduced-motion users -->
 ```
 
+### Input OTP
+
+```heex
+<.input_otp id="mfa-code" name="code" groups={[3, 3]} />
+```
+
+<!-- Each slot has an accessible digit label and the hidden input carries the submitted value -->
+
+### Calendar
+
+```heex
+<.calendar selected={@date} today={Date.utc_today()} />
+```
+
+<!-- Uses grid roles, aria-selected, and aria-current="date" for the active day -->
+
+### Context Menu
+
+```heex
+<.context_menu id="message-menu">
+  <:trigger>Right click</:trigger>
+  <.context_menu_item>Reply</.context_menu_item>
+</.context_menu>
+```
+
+<!-- Opens with right click, Shift+F10, or the Context Menu key -->
+
 ## Focus Management
 
 ### Focus Trapping

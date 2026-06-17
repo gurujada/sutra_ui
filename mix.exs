@@ -16,7 +16,7 @@ defmodule SutraUI.MixProject do
 
       # Hex
       description:
-        "Sutra UI - We define the rules, so you don't have to. A Phoenix LiveView component library with 46 accessible components and CSS-first theming.",
+        "Sutra UI - We define the rules, so you don't have to. A Phoenix LiveView component library with 54 accessible components and CSS-first theming.",
       package: package(),
 
       # Docs
@@ -97,6 +97,8 @@ defmodule SutraUI.MixProject do
           SutraUI.Slider,
           SutraUI.RangeSlider,
           SutraUI.LiveSelect,
+          SutraUI.InputOTP,
+          SutraUI.FileUpload,
           SutraUI.SimpleForm,
           SutraUI.InputGroup,
           SutraUI.FilterBar
@@ -106,7 +108,9 @@ defmodule SutraUI.MixProject do
           SutraUI.Header,
           SutraUI.Table,
           SutraUI.Item,
-          SutraUI.Drawer
+          SutraUI.Drawer,
+          SutraUI.Stepper,
+          SutraUI.TreeView
         ],
         Feedback: [
           SutraUI.Alert,
@@ -120,7 +124,9 @@ defmodule SutraUI.MixProject do
           SutraUI.Dialog,
           SutraUI.Popover,
           SutraUI.Tooltip,
+          SutraUI.HoverCard,
           SutraUI.DropdownMenu,
+          SutraUI.ContextMenu,
           SutraUI.Command
         ],
         Navigation: [
@@ -134,6 +140,8 @@ defmodule SutraUI.MixProject do
         Display: [
           SutraUI.Avatar,
           SutraUI.Carousel,
+          SutraUI.Calendar,
+          SutraUI.Timeline,
           SutraUI.Marquee,
           SutraUI.Separator,
           SutraUI.ThemeSwitcher

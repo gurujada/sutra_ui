@@ -184,6 +184,8 @@ end
 - `slider/1` - Range slider (JS hook)
 - `range_slider/1` - Dual-handle range slider (JS hook)
 - `live_select/1` - Async searchable select (JS hook)
+- `input_otp/1` - One-time password input (JS hook)
+- `file_upload/1` - LiveView upload dropzone
 
 ### Layout & Data Display
 - `card/1` - Card container with header/content/footer slots
@@ -193,6 +195,9 @@ end
 - `empty/1` - Empty state display
 - `alert/1` - Alert/callout messages
 - `progress/1` - Progress bar
+- `stepper/1` - Multi-step progress indicator
+- `timeline/1` - Chronological event list
+- `tree_view/1`, `tree_item/1` - Hierarchical tree navigation
 
 ### Navigation & Interactive
 - `breadcrumb/1` - Breadcrumb navigation
@@ -200,15 +205,18 @@ end
 - `accordion/1` - Collapsible content sections
 - `tabs/1` - Tab panels (JS hook)
 - `dropdown_menu/1` - Dropdown menu (JS hook)
+- `context_menu/1` - Right-click menu (JS hook)
 - `toast/1`, `toaster/1` - Toast notifications (JS hook)
 
 ### Advanced UI
 - `avatar/1` - User avatars with fallback
 - `tooltip/1` - CSS-only hover tooltips
+- `hover_card/1` - Rich hover preview (JS hook)
 - `dialog/1` - Modal dialogs
 - `popover/1` - Click-triggered popups
 - `command/1` - Command palette with search (JS hook)
 - `carousel/1` - CSS scroll-snap carousel
+- `calendar/1` - Monthly calendar grid
 - `marquee/1` - CSS-only scrolling content banner
 - `separator/1` - Visual or semantic divider
 
