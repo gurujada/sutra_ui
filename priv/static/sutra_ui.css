@@ -177,7 +177,7 @@
 /* Stepper */
 @layer components {
     .stepper {
-        @apply relative flex gap-2;
+        @apply relative flex gap-4;
     }
 
     .stepper-horizontal {
@@ -192,7 +192,7 @@
         @apply flex-col gap-0;
 
         .stepper-item {
-            @apply grid grid-cols-[auto_1fr] gap-x-4;
+            @apply flex gap-x-4;
         }
 
         .stepper-marker-row {
@@ -200,11 +200,12 @@
         }
 
         .stepper-connector {
-            @apply mt-2 h-full w-px flex-1;
+            @apply mt-2 w-px flex-1 min-h-4 bg-border;
         }
 
         .stepper-content {
-            @apply pb-6;
+            margin-top: -0.45rem;
+            @apply pb-6 grow;
         }
 
         .stepper-item:last-child .stepper-content {
@@ -233,28 +234,38 @@
     }
 
     .stepper-content {
-        @apply mt-3 grid gap-1;
-    }
+        @apply mt-3;
 
-    .stepper-title {
-        @apply block text-sm font-medium text-foreground;
-    }
-
-    .stepper-description {
-        @apply text-sm text-muted-foreground;
-    }
-
-    .stepper-linear.stepper-horizontal {
-        .stepper-item {
-            @apply flex items-center gap-2;
+        h2, h3, h4, h5 {
+            @apply text-sm font-medium text-foreground;
         }
 
-        .stepper-marker-row {
-            @apply w-auto;
+        p {
+            @apply text-sm text-muted-foreground;
+        }
+    }
+
+    .stepper-check,
+    .stepper-error-icon {
+        @apply size-4;
+    }
+
+    .stepper-error-text {
+        @apply text-xs text-destructive mt-1;
+    }
+
+    .stepper-white {
+        .stepper-marker {
+            @apply bg-background ring-2 ring-border text-muted-foreground;
         }
 
-        .stepper-content {
-            @apply mt-0;
+        .stepper-item[data-state="complete"] .stepper-marker,
+        .stepper-item[data-state="current"] .stepper-marker {
+            @apply bg-background ring-2 ring-primary text-primary;
+        }
+
+        .stepper-item[data-state="error"] .stepper-marker {
+            @apply bg-background ring-2 ring-destructive text-destructive;
         }
     }
 
@@ -271,8 +282,28 @@
         @apply bg-destructive text-white ring-destructive;
     }
 
-    .stepper-solid .stepper-marker {
-        @apply bg-secondary text-secondary-foreground ring-transparent;
+    .stepper-responsive {
+        @apply flex-col sm:flex-row gap-2;
+
+        .stepper-item {
+            @apply flex gap-x-4 sm:block;
+        }
+
+        .stepper-marker-row {
+            @apply flex-col sm:flex-row items-center;
+        }
+
+        .stepper-connector {
+            @apply mt-2 ms-0 sm:mt-0 sm:ms-2 w-px h-full sm:w-full sm:h-px;
+        }
+
+        .stepper-content {
+            @apply grow sm:grow-0 sm:mt-3 pb-4 sm:pb-0;
+        }
+
+        .stepper-item:last-child .stepper-connector {
+            @apply hidden;
+        }
     }
 }
 
@@ -283,55 +314,58 @@
     }
 
     .timeline-item {
-        @apply relative grid grid-cols-[auto_1fr] gap-x-4;
+        @apply relative grid grid-cols-[1.75rem_1fr] grid-rows-[auto_1fr] gap-x-4;
     }
 
     .timeline-marker {
-        @apply flex flex-col items-center;
-
-        &::after {
-            @apply mt-2 h-full w-px flex-1 bg-border content-[''];
-        }
-
-        > span {
-            @apply flex size-7 shrink-0 items-center justify-center rounded-full border bg-background text-muted-foreground;
-        }
+        @apply col-start-1 row-start-1 flex min-h-7 items-center justify-center;
     }
 
-    .timeline-item:last-child .timeline-marker::after {
-        @apply hidden;
+    .timeline-marker-icon {
+        @apply flex size-7 shrink-0 items-center justify-center rounded-full border bg-background text-xs;
     }
 
     .timeline-dot {
-        @apply size-2 rounded-full bg-current;
+        @apply size-2.5 rounded-full border-2 border-border bg-background;
+    }
+
+    .timeline-time {
+        @apply mb-1 block text-xs text-muted-foreground;
+    }
+
+    .timeline-line {
+        @apply col-start-1 row-start-2 w-px justify-self-center bg-border;
+    }
+
+    .timeline-item:last-child .timeline-line {
+        @apply hidden;
     }
 
     .timeline-content {
-        @apply pb-8;
+        @apply col-start-2 row-start-1 row-span-2 pb-8;
+
+        h2,
+        h3,
+        h4 {
+            @apply text-sm font-medium text-foreground;
+        }
+
+        p {
+            @apply text-sm leading-relaxed text-muted-foreground;
+        }
     }
 
     .timeline-item:last-child .timeline-content {
         @apply pb-0;
     }
 
-    .timeline-header {
-        @apply flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1;
-
-        h3 {
-            @apply text-sm font-medium text-foreground;
-        }
-
-        time {
-            @apply text-xs text-muted-foreground;
-        }
+    .timeline-item[data-state="current"] .timeline-dot,
+    .timeline-item[data-state="complete"] .timeline-dot {
+        @apply border-primary bg-primary;
     }
 
-    .timeline-content > p {
-        @apply mt-1 text-sm leading-relaxed text-muted-foreground;
-    }
-
-    .timeline-item[data-state="current"] .timeline-marker > span,
-    .timeline-item[data-state="complete"] .timeline-marker > span {
+    .timeline-item[data-state="current"] .timeline-marker-icon,
+    .timeline-item[data-state="complete"] .timeline-marker-icon {
         @apply border-primary bg-primary text-primary-foreground;
     }
 
@@ -362,11 +396,19 @@
     }
 
     .calendar-header {
-        @apply flex items-center justify-center pb-3;
+        @apply flex items-center justify-between pb-3;
 
         h2 {
             @apply text-sm font-medium;
         }
+    }
+
+    .calendar-nav-btn {
+        @apply flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-50 transition-opacity hover:opacity-100 hover:bg-accent hover:text-accent-foreground;
+    }
+
+    .calendar-title {
+        @apply text-sm font-medium;
     }
 
     .calendar-grid {
@@ -378,24 +420,32 @@
         @apply grid grid-cols-7 gap-1;
     }
 
-    .calendar-weekdays span {
+    .calendar-weekday {
         @apply flex size-9 items-center justify-center rounded-md text-[0.8rem] font-normal text-muted-foreground;
     }
 
     .calendar-day {
-        @apply flex size-9 items-center justify-center rounded-md text-sm font-normal transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40;
+        @apply flex size-9 items-center justify-center rounded-md text-sm font-normal transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40 relative;
     }
 
-    .calendar-day[data-today="true"] {
+    .calendar-day-outside {
+        @apply text-muted-foreground opacity-50;
+    }
+
+    .calendar-day-today {
         @apply bg-accent text-accent-foreground;
     }
 
-    .calendar-day[data-selected="true"] {
+    .calendar-day-selected {
         @apply bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground;
     }
 
-    .calendar-day[data-outside="true"] {
-        @apply text-muted-foreground opacity-50;
+    .calendar-day-in-range {
+        @apply bg-accent rounded-none;
+    }
+
+    .calendar-day-disabled {
+        @apply text-muted-foreground opacity-30;
     }
 }
 
@@ -436,6 +486,15 @@
         @apply relative flex min-h-36 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-8 text-center transition-colors hover:bg-muted/50 has-[:focus-visible]:border-ring has-[:focus-visible]:ring-ring/50 has-[:focus-visible]:ring-[3px];
     }
 
+    .file-upload-drag-over {
+        @apply border-primary bg-primary/5;
+    }
+
+    .file-upload-default,
+    .file-upload-custom {
+        @apply flex flex-col items-center gap-3;
+    }
+
     .file-upload-icon {
         @apply flex size-10 items-center justify-center rounded-full bg-background text-muted-foreground shadow-xs ring-1 ring-border;
 
@@ -460,28 +519,44 @@
         @apply absolute inset-0 cursor-pointer opacity-0;
     }
 
-    .file-upload-list {
+    .file-upload-preview {
         @apply grid gap-2;
     }
 
     .file-upload-entry {
-        @apply rounded-md border bg-card p-3 text-card-foreground;
+        @apply relative rounded-md border bg-card p-3;
     }
 
-    .file-upload-entry-header {
-        @apply flex items-center justify-between gap-3 text-sm;
-
-        span:last-child {
-            @apply text-xs text-muted-foreground;
-        }
+    .file-upload-entry-info {
+        @apply flex items-center gap-2 text-sm mb-2;
     }
 
-    .file-upload-progress {
-        @apply mt-2 h-2 overflow-hidden rounded-full bg-muted;
+    .file-upload-entry-icon svg {
+        @apply size-4 text-muted-foreground;
+    }
 
-        span {
-            @apply block h-full rounded-full bg-primary transition-all;
-        }
+    .file-upload-entry-name {
+        @apply flex-1 truncate text-sm font-medium;
+    }
+
+    .file-upload-entry-size {
+        @apply text-xs text-muted-foreground shrink-0;
+    }
+
+    .file-upload-entry-progress {
+        @apply h-1.5 w-full rounded-full bg-muted overflow-hidden;
+    }
+
+    .file-upload-entry-progress span {
+        @apply block h-full rounded-full bg-primary transition-[width] duration-300;
+    }
+
+    .file-upload-entry-remove {
+        @apply absolute top-3 right-3 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors;
+    }
+
+    .file-upload-entry-error {
+        @apply mt-1 text-xs text-destructive;
     }
 }
 
@@ -496,15 +571,11 @@
     }
 
     .context-menu-popover {
-        @apply fixed z-50 min-w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md transition-all;
+        @apply fixed z-50 w-max min-w-48 max-w-64 rounded-md border bg-popover p-1 text-popover-foreground shadow-md;
+    }
 
-        &[aria-hidden="true"] {
-            @apply pointer-events-none invisible scale-95 opacity-0;
-        }
-
-        &[aria-hidden="false"] {
-            @apply visible scale-100 opacity-100;
-        }
+    .context-menu-popover[aria-hidden="true"] {
+        @apply hidden;
     }
 
     .context-menu-content {
@@ -512,82 +583,124 @@
     }
 
     .context-menu-item {
-        @apply relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground;
-
-        &.active,
-        &:focus-visible {
-            @apply bg-accent text-accent-foreground;
-        }
+        @apply relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground aria-disabled:pointer-events-none aria-disabled:opacity-50;
     }
 
-    .context-menu-item-content {
-        @apply flex flex-1 items-center gap-2 truncate;
+    .context-menu-item.active {
+        @apply bg-accent text-accent-foreground;
     }
 
     .context-menu-item-destructive {
-        @apply text-destructive;
+        @apply text-destructive focus:bg-destructive focus:text-white;
+    }
 
-        &.active {
-            @apply bg-destructive/10 text-destructive;
-        }
+    .context-menu-item-content {
+        @apply flex-1;
+    }
+
+    .context-menu-item-indicator {
+        @apply flex size-4 items-center justify-center;
+    }
+
+    .context-menu-radio-dot {
+        @apply size-1.5 rounded-full bg-current;
+    }
+
+    .context-menu-item[data-state="checked"] .context-menu-item-indicator {
+        @apply text-primary;
+    }
+
+    .context-menu-shortcut {
+        @apply ml-auto text-xs tracking-widest text-muted-foreground;
     }
 
     .context-menu-label {
-        @apply px-2 py-1.5 text-xs font-medium text-muted-foreground;
+        @apply px-2 py-1.5 text-xs font-semibold text-muted-foreground;
     }
 
     .context-menu-separator {
         @apply -mx-1 my-1 h-px bg-border;
     }
 
-    .context-menu-shortcut {
-        @apply ms-auto text-xs tracking-widest text-muted-foreground;
+    .context-menu-sub {
+        @apply relative;
+    }
+
+    .context-menu-sub-trigger {
+        @apply justify-between;
+    }
+
+    .context-menu-sub-chevron {
+        @apply ml-auto;
+    }
+
+    .context-menu-sub-content {
+        @apply absolute left-full top-0 z-50 ml-1 min-w-56 rounded-md border bg-popover p-1 text-popover-foreground shadow-md;
+    }
+
+    .context-menu-sub-content[aria-hidden="true"] {
+        @apply hidden;
+    }
+
+    .context-menu-sub:hover .context-menu-sub-content,
+    .context-menu-sub:focus-within .context-menu-sub-content {
+        @apply block;
     }
 }
 
 /* Tree View */
 @layer components {
     .tree-view {
-        @apply grid gap-0.5 text-sm;
+        @apply text-sm;
     }
 
     .tree-item {
         @apply text-foreground;
+
+        &[open] > .tree-item-trigger .tree-item-chevron svg {
+            @apply rotate-90;
+        }
     }
 
     .tree-item-trigger {
-        @apply flex min-h-8 w-full items-center gap-2 rounded-md px-2 py-1.5 text-left outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px];
+        @apply flex min-h-8 items-center gap-1.5 rounded-md px-2 py-1.5 cursor-pointer select-none outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring;
     }
 
     .tree-item[aria-selected="true"] > .tree-item-trigger,
-    .tree-item[aria-selected="true"] > summary {
+    .tree-item[aria-selected="true"] > a.tree-item-trigger {
         @apply bg-accent text-accent-foreground;
     }
 
     .tree-item[aria-disabled="true"] {
-        @apply pointer-events-none opacity-50;
+        @apply opacity-50 pointer-events-none;
     }
 
-    .tree-item-chevron,
-    .tree-item-spacer,
+    .tree-item-chevron {
+        @apply flex size-5 shrink-0 items-center justify-center text-muted-foreground;
+
+        svg {
+            @apply size-4 transition-transform;
+        }
+    }
+
     .tree-item-icon {
-        @apply flex size-4 shrink-0 items-center justify-center text-muted-foreground;
-    }
-
-    .tree-item-chevron svg {
-        @apply size-4 transition-transform;
-    }
-
-    .tree-item[open] > summary .tree-item-chevron svg {
-        @apply rotate-90;
+        @apply shrink-0 text-muted-foreground;
     }
 
     .tree-item-label {
         @apply truncate;
     }
 
+    .tree-item-spacer {
+        @apply w-5 shrink-0;
+    }
+
     .tree-group {
-        @apply ms-4 border-s ps-2;
+        @apply relative ml-3 pl-3 border-l border-border;
+    }
+
+    .tree-item-leaf {
+        @apply relative;
     }
 }
 

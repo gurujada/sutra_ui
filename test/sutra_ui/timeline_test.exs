@@ -1,27 +1,77 @@
 defmodule SutraUI.TimelineTest do
   use ExUnit.Case, async: true
-
-  import Phoenix.Component
   import Phoenix.LiveViewTest
-
+  import Phoenix.Component
   alias SutraUI.Timeline
 
-  test "renders timeline items" do
-    assigns = %{}
+  describe "timeline/1" do
+    test "renders as ordered list" do
+      assigns = %{}
+      html = rendered_to_string(~H|<Timeline.timeline>
+  <:item>Event 1</:item>
+</Timeline.timeline>|)
+      assert html =~ "<ol"
+      assert html =~ "timeline"
+    end
 
-    html =
-      rendered_to_string(~H"""
-      <Timeline.timeline>
-        <:item title="Created" time="09:00" description="Workspace created" />
-        <:item title="Published" state="current">Live now</:item>
-      </Timeline.timeline>
-      """)
+    test "renders items with content" do
+      assigns = %{}
+      html = rendered_to_string(~H|<Timeline.timeline>
+  <:item>
+    <p>Deployed v2.4</p>
+  </:item>
+  <:item><span>Merged PR</span></:item>
+</Timeline.timeline>|)
+      assert html =~ "Deployed v2.4"
+      assert html =~ "Merged PR"
+    end
 
-    assert html =~ ~s(class="timeline )
-    assert html =~ "Created"
-    assert html =~ "09:00"
-    assert html =~ "Workspace created"
-    assert html =~ ~s(data-state="current")
-    assert html =~ "Live now"
+    test "renders items with custom content" do
+      assigns = %{}
+      html = rendered_to_string(~H|<Timeline.timeline>
+  <:item>
+    <div class="custom"><img src="/a.png" />Jane completed a task</div>
+  </:item>
+</Timeline.timeline>|)
+      assert html =~ "custom"
+      assert html =~ "Jane completed a task"
+    end
+
+    test "renders marker dot" do
+      assigns = %{}
+      html = rendered_to_string(~H|<Timeline.timeline>
+  <:item>Test</:item>
+</Timeline.timeline>|)
+      assert html =~ "timeline-dot"
+    end
+
+    test "renders state classes" do
+      assigns = %{}
+      html = rendered_to_string(~H|<Timeline.timeline>
+  <:item state="complete">Done</:item>
+  <:item state="current">Active</:item>
+</Timeline.timeline>|)
+      assert html =~ ~s(data-state="complete")
+      assert html =~ ~s(data-state="current")
+    end
+
+    test "renders time label" do
+      assigns = %{}
+      html = rendered_to_string(~H|<Timeline.timeline>
+  <:item time="2h ago">Event</:item>
+</Timeline.timeline>|)
+      assert html =~ "2h ago"
+      assert html =~ "timeline-time"
+      assert html =~ "timeline-dot"
+    end
+
+    test "renders custom icon in marker" do
+      assigns = %{}
+      html = rendered_to_string(~H|<Timeline.timeline>
+  <:item icon="✓">Completed</:item>
+</Timeline.timeline>|)
+      assert html =~ "✓"
+      assert html =~ "timeline-marker-icon"
+    end
   end
 end

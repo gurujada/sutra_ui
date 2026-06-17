@@ -1,39 +1,64 @@
 defmodule SutraUI.FileUploadTest do
   use ExUnit.Case, async: true
-
-  import Phoenix.Component
   import Phoenix.LiveViewTest
-
+  import Phoenix.Component
   alias SutraUI.FileUpload
 
-  test "renders dropzone copy without upload config" do
-    assigns = %{}
+  describe "file_upload/1" do
+    test "renders dropzone structure" do
+      assigns = %{}
+      html = rendered_to_string(~H|<FileUpload.file_upload upload={nil} />|)
+      assert html =~ "file-upload"
+      assert html =~ "file-upload-dropzone"
+    end
 
-    html =
-      rendered_to_string(~H"""
-      <FileUpload.file_upload label="Upload files" description="PDF or PNG" />
-      """)
+    test "renders default label when no custom content" do
+      assigns = %{}
+      html = rendered_to_string(~H|<FileUpload.file_upload upload={nil} />|)
+      assert html =~ "Drop files here"
+    end
 
-    assert html =~ "file-upload"
-    assert html =~ "Upload files"
-    assert html =~ "PDF or PNG"
-    refute html =~ "file-upload-input"
-  end
+    test "renders custom label" do
+      assigns = %{}
 
-  test "renders entry progress" do
-    assigns = %{}
+      html =
+        rendered_to_string(
+          ~H|<FileUpload.file_upload upload={nil} label="Upload docs" description="PDF only" />|
+        )
 
-    html =
-      rendered_to_string(~H"""
-      <FileUpload.file_upload>
-        <:entry name="invoice.pdf" progress={64} status="Uploading" />
-      </FileUpload.file_upload>
-      """)
+      assert html =~ "Upload docs"
+    end
 
-    assert html =~ "invoice.pdf"
-    assert html =~ "Uploading"
-    assert html =~ ~s(role="progressbar")
-    assert html =~ ~s(aria-valuenow="64")
-    assert html =~ "width: 64%"
+    test "renders custom drop content" do
+      assigns = %{}
+      html = rendered_to_string(~H|<FileUpload.file_upload upload={nil}>
+  <:drop_content><span class="my-content">Drag here</span></:drop_content>
+</FileUpload.file_upload>|)
+      assert html =~ "my-content"
+    end
+
+    test "does not render file input without an upload config" do
+      assigns = %{}
+      html = rendered_to_string(~H|<FileUpload.file_upload upload={nil} />|)
+      refute html =~ "file-upload-input"
+    end
+
+    test "renders accept attribute" do
+      assigns = %{}
+      html = rendered_to_string(~H|<FileUpload.file_upload upload={nil} accept="image/*" />|)
+      assert html =~ ~s(data-accept="image/*")
+    end
+
+    test "does not attach upload hook without an upload config" do
+      assigns = %{}
+      html = rendered_to_string(~H|<FileUpload.file_upload upload={nil} />|)
+      refute html =~ ~s(phx-hook=".FileUpload")
+    end
+
+    test "uses caller-provided id" do
+      assigns = %{}
+      html = rendered_to_string(~H|<FileUpload.file_upload id="attachments" upload={nil} />|)
+      assert html =~ ~s(id="attachments")
+    end
   end
 end

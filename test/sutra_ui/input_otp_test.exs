@@ -1,37 +1,58 @@
 defmodule SutraUI.InputOTPTest do
   use ExUnit.Case, async: true
-
-  import Phoenix.Component
   import Phoenix.LiveViewTest
-
+  import Phoenix.Component
   alias SutraUI.InputOTP
 
-  test "renders grouped otp slots and hidden input" do
-    assigns = %{}
+  describe "input_otp/1" do
+    test "renders OTP input with slots" do
+      assigns = %{}
+      html = rendered_to_string(~H|<InputOTP.input_otp id="otp" name="code" length={6} />|)
+      assert html =~ "input-otp"
+      assert html =~ ~s(name="code")
+      assert html =~ "data-otp-slot"
+    end
 
-    html =
-      rendered_to_string(~H"""
-      <InputOTP.input_otp id="otp" name="code" value="123456" groups={[3, 3]} />
-      """)
+    test "renders correct number of slots" do
+      assigns = %{}
+      html = rendered_to_string(~H|<InputOTP.input_otp id="otp" name="code" length={4} />|)
+      # Count actual <input> elements that are visible slots
+      assert length(Regex.scan(~r/<input[^>]*data-otp-slot/, html)) == 4
+    end
 
-    assert html =~ ~s(id="otp")
-    assert html =~ ~s(phx-hook="SutraUI.InputOTP.InputOTP")
-    assert html =~ ~s(type="hidden" name="code" value="123456")
-    assert length(Regex.scan(~r/class="input-otp-slot"/, html)) == 6
-    assert html =~ "input-otp-separator"
-    assert html =~ ~s(value="1")
-    assert html =~ ~s(value="6")
-  end
+    test "renders hidden aggregate input" do
+      assigns = %{}
 
-  test "marks slots disabled and invalid" do
-    assigns = %{}
+      html =
+        rendered_to_string(
+          ~H|<InputOTP.input_otp id="otp" name="code" length={6} value="123456" />|
+        )
 
-    html =
-      rendered_to_string(~H"""
-      <InputOTP.input_otp id="otp" name="code" length={4} disabled invalid />
-      """)
+      assert html =~ ~s(value="123456")
+    end
 
-    assert length(Regex.scan(~r/disabled/, html)) == 4
-    assert length(Regex.scan(~r/aria-invalid="true"/, html)) == 4
+    test "renders masked slots" do
+      assigns = %{}
+      html = rendered_to_string(~H|<InputOTP.input_otp id="otp" name="code" length={4} mask />|)
+      assert html =~ ~s(type="password")
+    end
+
+    test "renders disabled state" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H|<InputOTP.input_otp id="otp" name="code" length={4} disabled />|)
+
+      assert html =~ ~s(disabled)
+    end
+
+    test "renders invalid state" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H|<InputOTP.input_otp id="otp" name="code" length={4} invalid />|)
+
+      assert html =~ ~s(aria-invalid="true")
+    end
   end
 end

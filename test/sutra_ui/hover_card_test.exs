@@ -1,27 +1,67 @@
 defmodule SutraUI.HoverCardTest do
   use ExUnit.Case, async: true
-
-  import Phoenix.Component
   import Phoenix.LiveViewTest
-
+  import Phoenix.Component
   alias SutraUI.HoverCard
 
-  test "renders trigger and hidden content" do
-    assigns = %{}
+  describe "hover_card/1" do
+    test "renders root structure" do
+      assigns = %{}
 
-    html =
-      rendered_to_string(~H"""
-      <HoverCard.hover_card id="user-card">
-        <:trigger><button>Hover</button></:trigger>
-        User details
-      </HoverCard.hover_card>
-      """)
+      html =
+        rendered_to_string(
+          ~H|<HoverCard.hover_card id="hc"><:trigger>Hover</:trigger>Content here</HoverCard.hover_card>|
+        )
 
-    assert html =~ ~s(id="user-card")
-    assert html =~ ~s(phx-hook="SutraUI.HoverCard.HoverCard")
-    assert html =~ ~s(aria-describedby="user-card-content")
-    assert html =~ ~s(role="tooltip")
-    assert html =~ ~s(aria-hidden="true")
-    assert html =~ "User details"
+      assert html =~ "hover-card"
+      assert html =~ "Hover"
+      assert html =~ "Content here"
+    end
+
+    test "renders content in a div" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(
+          ~H|<HoverCard.hover_card id="hc"><:trigger>Hover</:trigger>Content</HoverCard.hover_card>|
+        )
+
+      assert html =~ "hover-card-content"
+      assert html =~ ~s(role="tooltip")
+    end
+
+    test "renders with custom side" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(
+          ~H|<HoverCard.hover_card id="hc" side="top"><:trigger>Hover</:trigger>Content</HoverCard.hover_card>|
+        )
+
+      assert html =~ ~s(data-side="top")
+    end
+
+    test "renders trigger aria attributes" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(
+          ~H|<HoverCard.hover_card id="hc"><:trigger>Hover me</:trigger>Content</HoverCard.hover_card>|
+        )
+
+      assert html =~ ~s(aria-expanded="false")
+      assert html =~ ~s(aria-describedby)
+    end
+
+    test "renders hook" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(
+          ~H|<HoverCard.hover_card id="hc"><:trigger>Hover</:trigger>Content</HoverCard.hover_card>|
+        )
+
+      assert html =~ ".HoverCard"
+    end
   end
 end

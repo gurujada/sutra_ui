@@ -332,9 +332,18 @@ end
 
 ```heex
 <.stepper current={2}>
-  <:step title="Profile" description="Add your details" />
-  <:step title="Workspace" description="Configure defaults" />
-  <:step title="Invite" description="Bring in teammates" />
+  <:step>
+    <h4>Profile</h4>
+    <p>Add your details</p>
+  </:step>
+  <:step>
+    <h4>Workspace</h4>
+    <p>Configure defaults</p>
+  </:step>
+  <:step>
+    <h4>Invite</h4>
+    <p>Bring in teammates</p>
+  </:step>
 </.stepper>
 ```
 
@@ -627,6 +636,15 @@ import SutraUI.Dialog
 <.timeline>
   <:item title="Created" time="09:00" description="Workspace created" />
   <:item title="Published" state="current">Live now</:item>
+</.timeline>
+
+<.timeline>
+  <.timeline_item state="complete">
+    <:marker><.icon name="lucide-check" /></:marker>
+    <:title><.link navigate="/releases/1">v0.3.0 shipped</.link></:title>
+    <:time><time datetime="2026-06-17">Today</time></:time>
+    <p>Release notes and migration details.</p>
+  </.timeline_item>
 </.timeline>
 ```
 

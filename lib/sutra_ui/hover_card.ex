@@ -1,11 +1,25 @@
 defmodule SutraUI.HoverCard do
   @moduledoc """
-  A rich preview card that appears when hovering or focusing a trigger.
+  A rich preview card that appears on hover or focus.
 
-  Hover Card mirrors shadcn/ui's trigger/content composition and uses a small
-  colocated hook for hover/focus delays and accessibility state. It is intended
-  for non-critical contextual previews; content should remain reachable
-  elsewhere for touch and assistive technology users.
+  Composes a trigger with a floating content card. Shows on hover after
+  a configurable delay, hides after a close delay. Useful for user profiles,
+  item previews, or any contextual detail that shouldn't require a click.
+
+  ## Examples
+
+      <.hover_card id="user-card">
+        <:trigger>
+          <.button variant="link">@jane</.button>
+        </:trigger>
+        <div class="flex items-center gap-3">
+          <.avatar src="/jane.jpg" fallback="JC" />
+          <div>
+            <p class="font-medium">Jane Cooper</p>
+            <p class="text-sm text-muted-foreground">@jane · Designer</p>
+          </div>
+        </div>
+      </.hover_card>
   """
 
   use Phoenix.Component
@@ -26,17 +40,19 @@ defmodule SutraUI.HoverCard do
     doc: "Alignment relative to the trigger"
   )
 
+  attr(:side_offset, :integer, default: 4, doc: "Pixel offset from the trigger side")
+  attr(:align_offset, :integer, default: 0, doc: "Pixel offset along the trigger axis")
   attr(:open_delay, :integer, default: 150, doc: "Open delay in milliseconds")
   attr(:close_delay, :integer, default: 100, doc: "Close delay in milliseconds")
-  attr(:class, :any, default: nil, doc: "Additional CSS classes for the content")
+  attr(:class, :any, default: nil, doc: "Additional CSS classes for the content card")
   attr(:rest, :global, doc: "Additional HTML attributes")
 
-  slot(:trigger, required: true, doc: "Trigger content")
+  slot(:trigger, required: true, doc: "Trigger content (hover target)")
   slot(:inner_block, required: true, doc: "Hover card content")
 
   def hover_card(assigns) do
     ~H"""
-    <span
+    <div
       id={@id}
       class="hover-card"
       data-open-delay={@open_delay}
@@ -52,18 +68,20 @@ defmodule SutraUI.HoverCard do
       >
         {render_slot(@trigger)}
       </span>
-      <span
+      <div
         id={"#{@id}-content"}
         class={["hover-card-content", @class]}
         data-popover
         data-side={@side}
         data-align={@align}
+        data-side-offset={@side_offset}
+        data-align-offset={@align_offset}
         role="tooltip"
         aria-hidden="true"
       >
         {render_slot(@inner_block)}
-      </span>
-    </span>
+      </div>
+    </div>
 
     <script :type={ColocatedHook} name=".HoverCard" runtime>
       {
