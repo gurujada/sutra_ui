@@ -16,12 +16,12 @@ Built for **Phoenix 1.8+**, **Tailwind CSS v4**, and **Phoenix LiveView 1.1+**.
 - **CSS-first theming** - Customize colors with CSS variables. No build step, no config files.
 - **Copy-paste friendly** - Like shadcn/ui, components are meant to be understood and modified.
 - **Server-driven** - All state lives on the server. No client-side state sync headaches.
-- **Production-ready** - 776 tests, full accessibility support, dark mode included.
+- **Production-ready** - 891 tests, full accessibility support, dark mode included.
 - **LLM-friendly** - Includes `usage_rules.md` with guidelines for AI assistants working with this codebase.
 
 ## Features
 
-- **44 Components** - Buttons, forms, dialogs, tables, and more
+- **46 Components** - Buttons, forms, dialogs, tables, and more
 - **Pure LiveView** - No external JavaScript frameworks
 - **Colocated Hooks** - JS hooks live with their components (Phoenix 1.8+)
 - **CSS Variables** - Override any color in one line
@@ -266,6 +266,8 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `carousel` - Image/content carousel
 - `kbd` - Keyboard shortcut display
 - `label` - Form labels
+- `marquee` - Scrolling content banner
+- `separator` - Visual or semantic divider
 - `theme_switcher` - Light/dark mode toggle
 
 ## For AI Assistants
@@ -314,7 +316,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 - **[Theming Guide](https://hexdocs.pm/sutra_ui/theming.html)** - CSS variables, OKLCH colors, shadcn themes
 - **[Accessibility Guide](https://hexdocs.pm/sutra_ui/accessibility.html)** - ARIA patterns, keyboard navigation
 - **[JavaScript Hooks](https://hexdocs.pm/sutra_ui/colocated-hooks.html)** - Colocated hooks, custom events
-- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 44 components
+- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 46 components
 - **[Forms Cheatsheet](https://hexdocs.pm/sutra_ui/forms.html)** - Form patterns and validation
 
 ## Links

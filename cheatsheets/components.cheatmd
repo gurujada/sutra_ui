@@ -1,6 +1,6 @@
 # Components Cheatsheet
 
-Quick reference for all 44 Sutra UI components.
+Quick reference for all 46 Sutra UI components.
 
 ## Foundation
 {: .col-2}
@@ -553,6 +553,29 @@ import SutraUI.Dialog
     <img src="/image3.jpg" alt="Image 3" />
   </:item>
 </.carousel>
+```
+
+### Marquee
+
+```heex
+<.marquee>
+  <:item>Free shipping on all orders</:item>
+  <:item>New components released weekly</:item>
+  <:item>24/7 support available</:item>
+</.marquee>
+
+<.marquee speed="slow" gap="lg" direction="right">
+  <:item><img src="/logo-1.svg" alt="Company 1" /></:item>
+  <:item><img src="/logo-2.svg" alt="Company 2" /></:item>
+</.marquee>
+```
+
+### Separator
+
+```heex
+<.separator />
+<.separator decorative={false} />
+<.separator orientation="vertical" />
 ```
 
 ### Theme Switcher

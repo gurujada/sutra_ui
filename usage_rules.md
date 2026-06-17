@@ -209,6 +209,8 @@ end
 - `popover/1` - Click-triggered popups
 - `command/1` - Command palette with search (JS hook)
 - `carousel/1` - CSS scroll-snap carousel
+- `marquee/1` - CSS-only scrolling content banner
+- `separator/1` - Visual or semantic divider
 
 ### Layout Helpers
 - `filter_bar/1` - Filter bar for index pages

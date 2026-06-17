@@ -2,7 +2,7 @@ defmodule SutraUI do
   @moduledoc """
   Sutra UI - We define the rules, so you don't have to.
 
-  A pure Phoenix LiveView UI component library with **44 accessible components**,
+  A pure Phoenix LiveView UI component library with **46 accessible components**,
   CSS-first theming, and colocated JavaScript hooks. Built for Phoenix 1.8+ and
   Tailwind CSS v4.
 
@@ -131,6 +131,8 @@ defmodule SutraUI do
   | `SutraUI.Avatar` | User avatars |
   | `SutraUI.Carousel` | Image carousels (hook) |
   | `SutraUI.ThemeSwitcher` | Light/dark toggle (hook) |
+  | `SutraUI.Separator` | Visual content dividers |
+  | `SutraUI.Marquee` | Scrolling content banners |
 
   ## Theming
 
@@ -243,6 +245,10 @@ defmodule SutraUI do
       import SutraUI.RangeSlider
       # LiveSelect is a LiveComponent - only import helper functions, not lifecycle callbacks
       import SutraUI.LiveSelect, only: [decode: 1, normalize_options: 1]
+
+      # Phase 9: New Components
+      import SutraUI.Separator
+      import SutraUI.Marquee
     end
   end
 end

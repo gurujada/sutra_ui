@@ -2610,3 +2610,103 @@
         @apply hover:opacity-70;
     }
 }
+
+/* Separator */
+@layer components {
+    .separator {
+        @apply m-0 h-px w-full shrink-0 border-0 bg-border;
+    }
+
+    .separator[data-orientation="vertical"] {
+        @apply h-full w-px self-stretch;
+    }
+}
+
+/* Marquee */
+@layer components {
+    .marquee {
+        --marquee-duration: 15s;
+        --marquee-gap: 1rem;
+        --marquee-half-gap: 0.5rem;
+        --marquee-fade-size: 3rem;
+        @apply relative flex w-full overflow-hidden;
+        contain: inline-size;
+    }
+
+    .marquee-fade {
+        mask-image: linear-gradient(
+            to right,
+            transparent 0%,
+            black var(--marquee-fade-size),
+            black calc(100% - var(--marquee-fade-size)),
+            transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+            to right,
+            transparent 0%,
+            black var(--marquee-fade-size),
+            black calc(100% - var(--marquee-fade-size)),
+            transparent 100%
+        );
+    }
+
+    .marquee-track {
+        @apply flex min-w-full;
+        gap: var(--marquee-gap, 1rem);
+        animation: marquee-x var(--marquee-duration) linear infinite;
+        width: max-content;
+    }
+
+    .marquee-reverse {
+        animation-name: marquee-x-reverse;
+    }
+
+    .marquee-slow {
+        --marquee-duration: 27s;
+    }
+
+    .marquee-fast {
+        --marquee-duration: 8s;
+    }
+
+    .marquee-pause-on-hover:hover .marquee-track {
+        animation-play-state: paused;
+    }
+
+    .marquee-gap-sm {
+        --marquee-gap: 0.5rem;
+        --marquee-half-gap: 0.25rem;
+    }
+
+    .marquee-gap-lg {
+        --marquee-gap: 2rem;
+        --marquee-half-gap: 1rem;
+    }
+
+    .marquee-content {
+        @apply flex min-w-full shrink-0 items-center justify-around;
+        gap: var(--marquee-gap, 1rem);
+        width: max-content;
+    }
+
+    .marquee-item {
+        @apply shrink-0;
+    }
+
+    @keyframes marquee-x {
+        from { transform: translateX(0); }
+        to { transform: translateX(calc(-50% - var(--marquee-half-gap, 0.5rem))); }
+    }
+
+    @keyframes marquee-x-reverse {
+        from { transform: translateX(calc(-50% - var(--marquee-half-gap, 0.5rem))); }
+        to { transform: translateX(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .marquee-track {
+            animation: none;
+            transform: none;
+        }
+    }
+}

@@ -124,6 +124,26 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 <!-- Full tablist/tab/tabpanel ARIA pattern -->
 ```
 
+### Separator
+
+```heex
+<.separator />
+<!-- Decorative by default and hidden from assistive technology -->
+
+<.separator decorative={false} aria-label="Account settings" />
+<!-- Use semantic mode when the divider communicates document structure -->
+```
+
+### Marquee
+
+```heex
+<.marquee>
+  <:item>New components released weekly</:item>
+  <:item>24/7 support available</:item>
+</.marquee>
+<!-- Duplicated content is hidden from screen readers and motion stops for reduced-motion users -->
+```
+
 ## Focus Management
 
 ### Focus Trapping
