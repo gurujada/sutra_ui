@@ -254,7 +254,7 @@
         @apply text-xs text-destructive mt-1;
     }
 
-    .stepper-white {
+    .stepper-outline {
         .stepper-marker {
             @apply bg-background ring-2 ring-border text-muted-foreground;
         }
@@ -267,6 +267,10 @@
         .stepper-item[data-state="error"] .stepper-marker {
             @apply bg-background ring-2 ring-destructive text-destructive;
         }
+    }
+
+    .stepper-marker-button {
+        @apply cursor-pointer transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
     }
 
     .stepper-item[data-state="complete"] .stepper-marker,
@@ -353,35 +357,35 @@
     }
 
     .timeline-item {
-        @apply relative grid grid-cols-[1.75rem_1fr] grid-rows-[auto_1fr] gap-x-4;
+        @apply relative flex gap-4;
     }
 
     .timeline-marker {
-        @apply col-start-1 row-start-1 flex min-h-7 items-center justify-center;
-    }
-
-    .timeline-dot {
-        @apply size-2.5 rounded-full border-2 border-border bg-background;
+        @apply flex flex-col items-center shrink-0;
     }
 
     .timeline-marker-icon {
         @apply flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs;
     }
 
-    .timeline-time {
-        @apply mb-1 block text-xs text-muted-foreground;
+    .timeline-dot {
+        @apply size-2.5 rounded-full border-2 border-border bg-background;
     }
 
     .timeline-line {
-        @apply col-start-1 row-start-2 w-px justify-self-center bg-border;
+        @apply w-px flex-1 bg-border mt-2;
     }
 
     .timeline-item:last-child .timeline-line {
         @apply hidden;
     }
 
+    .timeline-time {
+        @apply mb-1 block text-xs text-muted-foreground;
+    }
+
     .timeline-content {
-        @apply col-start-2 row-start-1 row-span-2 -mt-5 mb-5 pb-8;
+        @apply flex-1 pb-8;
 
         h2,
         h3,
@@ -395,7 +399,7 @@
     }
 
     .timeline-item:last-child .timeline-content {
-        @apply mb-0 pb-0;
+        @apply pb-0;
     }
 }
 

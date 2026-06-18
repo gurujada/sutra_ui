@@ -8,13 +8,74 @@ defmodule SutraUI.Calendar do
 
   ## Examples
 
+      # Static calendar (current month)
       <.calendar />
 
-      <.calendar selected={~D[2026-06-15]} />
+      # Interactive — emit events on date click and month navigation
+      <.calendar
+        year={@year}
+        month={@month}
+        selected={@selected}
+        select_event="select_date"
+        nav_event="nav_month"
+      />
 
-      <.calendar year={2025} month={3} select_event="calendar_select" />
+      # Range selection
+      <.calendar
+        mode="range"
+        selected={@range_start}
+        range_end={@range_end}
+        select_event="select_range"
+        nav_event="nav_month"
+      />
 
-      <.calendar mode="range" selected={~D[2026-06-10]} range_end={~D[2026-06-20]} />
+      # Monday-start week, with disabled dates
+      <.calendar
+        week_start={1}
+        disabled_dates={@holidays}
+        selected={@selected}
+        select_event="select_date"
+      />
+
+  ## Attributes
+
+  * `year` - Displayed year. Defaults to current year.
+  * `month` - Displayed month (1-12). Defaults to current month.
+  * `selected` - Selected `Date` struct or ISO string.
+  * `range_end` - Range end date (only used in `mode="range"`).
+  * `mode` - Selection mode: `single` or `range`. Defaults to `single`.
+  * `disabled_dates` - List of `Date` structs or ISO strings to disable.
+  * `week_start` - `0` for Sunday, `1` for Monday. Defaults to `0`.
+  * `select_event` - LiveView event emitted on date click with `phx-value-date`.
+  * `nav_event` - LiveView event emitted on prev/next with `phx-value-year` and
+    `phx-value-month`. Falls back to `select_event` if not set.
+  * `class` - Additional CSS classes.
+
+  ## Event Handling
+
+  The calendar emits two distinct events:
+
+  ```elixir
+  # Date selection — fires with the clicked date
+  def handle_event("select_date", %{"date" => date}, socket) do
+    d = Date.from_iso8601!(date)
+    {:noreply, assign(socket, selected: d, year: d.year, month: d.month)}
+  end
+
+  # Month navigation — fires with the new year/month
+  def handle_event("nav_month", %{"year" => year, "month" => month}, socket) do
+    {:noreply, assign(socket, year: String.to_integer(year), month: String.to_integer(month))}
+  end
+  ```
+
+  ## Accessibility
+
+  - Uses `role="grid"` with `role="row"` and `role="gridcell"` for the calendar grid.
+  - Each day is a `<button>` — natively keyboard-focusable and operable.
+  - `aria-selected` marks the selected date.
+  - `aria-current="date"` marks today.
+  - Disabled dates use the native `disabled` attribute.
+  - Navigation buttons have descriptive `aria-label`s.
   """
 
   use Phoenix.Component
@@ -29,7 +90,17 @@ defmodule SutraUI.Calendar do
   attr(:disabled_dates, :list, default: [], doc: "List of disabled Date structs or ISO strings")
   attr(:week_start, :integer, default: 0, values: [0, 1], doc: "0 = Sunday, 1 = Monday")
 
-  attr(:select_event, :string, default: nil, doc: "LiveView event to emit on date click")
+  attr(:select_event, :string,
+    default: nil,
+    doc: "LiveView event emitted on date click with phx-value-date"
+  )
+
+  attr(:nav_event, :string,
+    default: nil,
+    doc:
+      "LiveView event emitted on prev/next with phx-value-year and phx-value-month. Falls back to select_event."
+  )
+
   attr(:class, :any, default: nil, doc: "Additional CSS classes")
   attr(:rest, :global, include: ~w(id aria-label), doc: "Additional HTML attributes")
 
@@ -51,6 +122,8 @@ defmodule SutraUI.Calendar do
       Date.add(Date.new!(year, month, Date.days_in_month(current)), 1)
       |> then(fn d -> %{year: d.year, month: d.month} end)
 
+    nav_event = assigns.nav_event || assigns.select_event
+
     assigns =
       assigns
       |> assign(:display_date, current)
@@ -62,6 +135,7 @@ defmodule SutraUI.Calendar do
       |> assign(:month_label, Enum.at(@month_names, month - 1))
       |> assign(:prev, prev)
       |> assign(:next, next)
+      |> assign(:nav_event, nav_event)
       |> assign(:disabled_set, MapSet.new(disabled, fn d -> Date.to_iso8601(d) end))
 
     ~H"""
@@ -71,7 +145,7 @@ defmodule SutraUI.Calendar do
           type="button"
           class="calendar-nav-btn"
           aria-label="Previous month"
-          phx-click={@select_event}
+          phx-click={@nav_event}
           phx-value-year={@prev.year}
           phx-value-month={@prev.month}
         >
@@ -94,7 +168,7 @@ defmodule SutraUI.Calendar do
           type="button"
           class="calendar-nav-btn"
           aria-label="Next month"
-          phx-click={@select_event}
+          phx-click={@nav_event}
           phx-value-year={@next.year}
           phx-value-month={@next.month}
         >
@@ -142,7 +216,6 @@ defmodule SutraUI.Calendar do
             phx-click={@select_event}
             phx-value-date={Date.to_iso8601(day)}
             role="gridcell"
-            tabindex={same_date?(day, @selected_date) && 0}
           >
             {day.day}
           </button>

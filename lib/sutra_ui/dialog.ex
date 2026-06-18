@@ -111,26 +111,28 @@ defmodule SutraUI.Dialog do
   @doc """
   Renders a modal dialog component.
   """
-  attr :id, :string, required: true, doc: "Unique identifier for the dialog"
-  attr :show, :boolean, default: false, doc: "Whether the dialog is visible"
-  attr :class, :string, default: nil, doc: "Additional CSS classes for the dialog panel"
+  attr(:id, :string, required: true, doc: "Unique identifier for the dialog")
+  attr(:show, :boolean, default: false, doc: "Whether the dialog is visible")
+  attr(:class, :string, default: nil, doc: "Additional CSS classes for the dialog panel")
 
-  attr :on_cancel, :any,
+  attr(:on_cancel, :any,
     default: nil,
     doc: "Event name (string) or JS commands to execute when dialog is closed"
+  )
 
-  attr :close_on_escape, :boolean, default: true, doc: "Whether ESC key closes the dialog"
+  attr(:close_on_escape, :boolean, default: true, doc: "Whether ESC key closes the dialog")
 
-  attr :close_on_backdrop, :boolean,
+  attr(:close_on_backdrop, :boolean,
     default: true,
     doc: "Whether clicking the backdrop closes the dialog"
+  )
 
-  attr :rest, :global, doc: "Additional HTML attributes"
+  attr(:rest, :global, doc: "Additional HTML attributes")
 
-  slot :inner_block, required: true, doc: "The main dialog content"
-  slot :title, doc: "The dialog title"
-  slot :description, doc: "The dialog description"
-  slot :footer, doc: "Footer content, typically action buttons"
+  slot(:inner_block, required: true, doc: "The main dialog content")
+  slot(:title, doc: "The dialog title")
+  slot(:description, doc: "The dialog description")
+  slot(:footer, doc: "Footer content, typically action buttons")
 
   def dialog(assigns) do
     ~H"""
@@ -147,7 +149,12 @@ defmodule SutraUI.Dialog do
         phx-window-keydown={@close_on_escape && close_action(@on_cancel, @id)}
         phx-key="escape"
       >
-        <div class="dialog-backdrop" aria-hidden="true" phx-click={@close_on_backdrop && close_action(@on_cancel, @id)}></div>
+        <div
+          class="dialog-backdrop"
+          aria-hidden="true"
+          phx-click={@close_on_backdrop && close_action(@on_cancel, @id)}
+        >
+        </div>
 
         <div
           id={"#{@id}-panel"}

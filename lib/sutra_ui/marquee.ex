@@ -1,31 +1,51 @@
 defmodule SutraUI.Marquee do
   @moduledoc """
-  A scrolling content banner that displays items in a continuous loop.
+  A CSS-only scrolling banner for announcements, logo strips, and repeating
+  inline content.
 
-  Useful for announcements, testimonial strips, logo displays, or any
-  horizontally scrolling content that needs to repeat seamlessly without
-  JavaScript.
+  Content is duplicated internally so the loop stays seamless — no JavaScript
+  required. Respects `prefers-reduced-motion` (animation stops automatically).
 
   ## Examples
 
-      # Text announcement ticker
+      # Announcement ticker
       <.marquee>
         <:item>Free shipping on all orders</:item>
         <:item>New collection available</:item>
         <:item>Sign up for 10% off</:item>
       </.marquee>
 
-      # Logo strip
+      # Logo strip — slow, larger gaps
       <.marquee speed="slow" gap="lg">
         <:item><img src="/logo1.svg" alt="Company 1" /></:item>
         <:item><img src="/logo2.svg" alt="Company 2" /></:item>
       </.marquee>
 
+      # Reverse direction, no edge fade
+      <.marquee direction="right" fade_edges={false}>
+        <:item>Right-scrolling content</:item>
+      </.marquee>
+
+  ## Attributes
+
+  * `direction` - Scroll direction. One of `left`, `right`. Defaults to `left`.
+  * `speed` - Animation speed. One of `slow`, `default`, `fast`. Defaults to `default`.
+  * `pause_on_hover` - Pause animation on mouse hover. Defaults to `true`.
+  * `fade_edges` - Gradient mask at the left/right edges. Defaults to `true`.
+  * `gap` - Gap between items. One of `sm`, `default`, `lg`. Defaults to `default`.
+  * `class` - Additional CSS classes.
+
+  ## Slots
+
+  * `item` - Required repeating slot for marquee items.
+
   ## Accessibility
 
-  - Content duplicates use `aria-hidden="true"` to avoid screen reader repetition
-  - Respects `prefers-reduced-motion` - animation stops when user preference is set
-  - Always ensure individual items have accessible labels where applicable
+  - The duplicated content track sets `aria-hidden="true"` to avoid screen
+    reader repetition.
+  - Respects `prefers-reduced-motion` — the CSS animation halts when the user
+    has expressed a motion preference.
+  - Ensure each item has its own accessible label (e.g. `alt` text on images).
   """
 
   use Phoenix.Component
@@ -33,18 +53,12 @@ defmodule SutraUI.Marquee do
   @doc """
   Renders a marquee scrolling banner.
 
-  ## Attributes
+  ## Examples
 
-  * `direction` - Scroll direction. One of `left`, `right`. Defaults to `left`.
-  * `speed` - Animation speed. One of `slow`, `default`, `fast`. Defaults to `default`.
-  * `pause_on_hover` - Whether to pause animation on hover. Defaults to `true`.
-  * `fade_edges` - Whether to show gradient fade at edges. Defaults to `true`.
-  * `gap` - Gap between items. One of `sm`, `default`, `lg`. Defaults to `default`.
-  * `class` - Additional CSS classes.
-
-  ## Slots
-
-  * `item` - Required repeating slot for marquee items.
+      <.marquee>
+        <:item>Free shipping on all orders</:item>
+        <:item>New collection available</:item>
+      </.marquee>
   """
   attr(:direction, :string,
     default: "left",
@@ -87,14 +101,21 @@ defmodule SutraUI.Marquee do
   slot(:item, required: true, doc: "Items to scroll")
 
   def marquee(assigns) do
-    assigns =
-      assigns
-      |> assign(:wrapper_classes, marquee_wrapper_classes(assigns))
-      |> assign(:track_classes, marquee_track_classes(assigns))
-
     ~H"""
-    <div class={@wrapper_classes} {@rest}>
-      <div class={@track_classes}>
+    <div
+      class={[
+        "marquee",
+        @fade_edges && "marquee-fade",
+        @pause_on_hover && "marquee-pause-on-hover",
+        @speed == "slow" && "marquee-slow",
+        @speed == "fast" && "marquee-fast",
+        @gap == "sm" && "marquee-gap-sm",
+        @gap == "lg" && "marquee-gap-lg",
+        @class
+      ]}
+      {@rest}
+    >
+      <div class={["marquee-track", @direction == "right" && "marquee-reverse"]}>
         <div class="marquee-content">
           <%= for item <- @item do %>
             <div class="marquee-item">
@@ -112,37 +133,5 @@ defmodule SutraUI.Marquee do
       </div>
     </div>
     """
-  end
-
-  defp marquee_wrapper_classes(assigns) do
-    classes = ["marquee"]
-
-    classes =
-      if assigns.fade_edges, do: classes ++ ["marquee-fade"], else: classes
-
-    classes =
-      if assigns.pause_on_hover, do: classes ++ ["marquee-pause-on-hover"], else: classes
-
-    speed =
-      case assigns.speed do
-        "slow" -> "marquee-slow"
-        "fast" -> "marquee-fast"
-        _ -> nil
-      end
-
-    gap =
-      case assigns.gap do
-        "sm" -> "marquee-gap-sm"
-        "lg" -> "marquee-gap-lg"
-        _ -> nil
-      end
-
-    classes = classes ++ Enum.reject([speed, gap], &is_nil/1)
-
-    [classes, assigns.class]
-  end
-
-  defp marquee_track_classes(assigns) do
-    ["marquee-track", assigns.direction == "right" && "marquee-reverse"]
   end
 end
