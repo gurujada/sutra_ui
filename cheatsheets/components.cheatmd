@@ -373,7 +373,7 @@ end
 ### Tree View
 
 ```heex
-<.tree_view label="Project files">
+<.tree_view id="project-files" label="Project files">
   <.tree_item label="lib" expanded>
     <.tree_item label="app.ex" />
   </.tree_item>

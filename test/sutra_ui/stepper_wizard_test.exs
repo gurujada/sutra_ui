@@ -117,6 +117,19 @@ defmodule SutraUI.StepperWizardTest do
       assert html =~ "Continue"
     end
 
+    test "passes outline variant to the underlying stepper" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <StepperWizard.stepper_wizard id="checkout" variant="outline">
+          <:step id="shipping" label="Shipping">Shipping form</:step>
+        </StepperWizard.stepper_wizard>
+        """)
+
+      assert html =~ "stepper-outline"
+    end
+
     test "falls back to the first step when current does not match a step" do
       assigns = %{}
 

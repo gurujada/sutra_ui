@@ -553,23 +553,39 @@
     }
 
     .file-upload-entry {
-        @apply relative rounded-md border bg-card p-3;
+        @apply rounded-md border bg-card p-3;
+    }
+
+    .file-upload-entry-row {
+        @apply flex items-center gap-2 mb-2;
+    }
+
+    .file-upload-entry-thumb {
+        @apply size-10 shrink-0 overflow-hidden rounded-md bg-muted;
+
+        img {
+            @apply size-full object-cover;
+        }
+    }
+
+    .file-upload-entry-icon {
+        @apply flex size-8 shrink-0 items-center justify-center text-muted-foreground;
+
+        svg {
+            @apply size-4;
+        }
     }
 
     .file-upload-entry-info {
-        @apply flex items-center gap-2 text-sm mb-2;
-    }
-
-    .file-upload-entry-icon svg {
-        @apply size-4 text-muted-foreground;
+        @apply flex-1 min-w-0;
     }
 
     .file-upload-entry-name {
-        @apply flex-1 truncate text-sm font-medium;
+        @apply block truncate text-sm font-medium text-foreground;
     }
 
     .file-upload-entry-size {
-        @apply text-xs text-muted-foreground shrink-0;
+        @apply block text-xs text-muted-foreground;
     }
 
     .file-upload-entry-progress {
@@ -581,7 +597,7 @@
     }
 
     .file-upload-entry-remove {
-        @apply absolute top-3 right-3 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors;
+        @apply shrink-0 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors;
     }
 
     .file-upload-entry-error {
@@ -670,11 +686,6 @@
     .context-menu-sub-content[aria-hidden="true"] {
         @apply hidden;
     }
-
-    .context-menu-sub:hover .context-menu-sub-content,
-    .context-menu-sub:focus-within .context-menu-sub-content {
-        @apply block;
-    }
 }
 
 /* Tree View */
@@ -686,16 +697,30 @@
     .tree-item {
         @apply text-foreground;
 
-        &[open] > .tree-item-trigger .tree-item-chevron svg {
+        &[open] > summary .tree-item-chevron svg,
+        &[aria-expanded="true"] > summary .tree-item-chevron svg {
             @apply rotate-90;
+        }
+
+        summary {
+            @apply list-none;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
         }
     }
 
     .tree-item-trigger {
-        @apply flex min-h-8 items-center gap-1.5 rounded-md px-2 py-1.5 cursor-pointer select-none outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring;
+        @apply flex min-h-8 w-full items-center gap-1.5 rounded-md px-2 py-1.5 cursor-pointer select-none outline-none text-left hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring;
+    }
+
+    .tree-item-leaf > button.tree-item-trigger {
+        @apply bg-transparent border-0;
     }
 
     .tree-item[aria-selected="true"] > .tree-item-trigger,
+    .tree-item[aria-selected="true"] > summary.tree-item-trigger,
     .tree-item[aria-selected="true"] > a.tree-item-trigger {
         @apply bg-accent text-accent-foreground;
     }

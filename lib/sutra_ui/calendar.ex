@@ -39,8 +39,8 @@ defmodule SutraUI.Calendar do
 
   ## Attributes
 
-  * `year` - Displayed year. Defaults to current year.
-  * `month` - Displayed month (1-12). Defaults to current month.
+  * `year` - Displayed year. Defaults to the selected date's year, then current year.
+  * `month` - Displayed month (1-12). Defaults to the selected date's month, then current month.
   * `selected` - Selected `Date` struct or ISO string.
   * `range_end` - Range end date (only used in `mode="range"`).
   * `mode` - Selection mode: `single` or `range`. Defaults to `single`.
@@ -82,8 +82,16 @@ defmodule SutraUI.Calendar do
 
   @month_names ~w(January February March April May June July August September October November December)
 
-  attr(:year, :integer, default: nil, doc: "Displayed year. Defaults to current year")
-  attr(:month, :integer, default: nil, doc: "Displayed month (1-12). Defaults to current month")
+  attr(:year, :integer,
+    default: nil,
+    doc: "Displayed year. Defaults to selected year, then current year"
+  )
+
+  attr(:month, :integer,
+    default: nil,
+    doc: "Displayed month (1-12). Defaults to selected month, then current month"
+  )
+
   attr(:selected, :any, default: nil, doc: "Selected Date struct or ISO string")
   attr(:range_end, :any, default: nil, doc: "Range end Date struct or ISO string")
   attr(:mode, :string, default: "single", values: ~w(single range), doc: "Selection mode")
@@ -106,11 +114,11 @@ defmodule SutraUI.Calendar do
 
   def calendar(assigns) do
     today = Date.utc_today()
-    year = assigns.year || today.year
-    month = assigns.month || today.month
-    current = Date.new!(year, month, 1)
     selected = normalize_date(assigns.selected)
     range_end = normalize_date(assigns.range_end)
+    year = assigns.year || (selected && selected.year) || today.year
+    month = assigns.month || (selected && selected.month) || today.month
+    current = Date.new!(year, month, 1)
     disabled = Enum.map(assigns.disabled_dates, &normalize_date/1) |> Enum.reject(&is_nil/1)
 
     weeks = calendar_weeks(current, assigns.week_start)
@@ -256,7 +264,20 @@ defmodule SutraUI.Calendar do
 
   defp in_range?(_, nil, _, _), do: false
   defp in_range?(_, _, nil, _), do: false
-  defp in_range?(d, s, e, "range"), do: Date.compare(d, s) != :lt && Date.compare(d, e) != :gt
+
+  defp in_range?(d, s, e, "range") do
+    {start_date, end_date} = ordered_range(s, e)
+    Date.compare(d, start_date) != :lt && Date.compare(d, end_date) != :gt
+  end
+
+  defp in_range?(_, _, _, _), do: false
+
+  defp ordered_range(start_date, end_date) do
+    case Date.compare(start_date, end_date) do
+      :gt -> {end_date, start_date}
+      _ -> {start_date, end_date}
+    end
+  end
 
   defp day_disabled?(day, current, disabled) do
     day.month != current.month || MapSet.member?(disabled, Date.to_iso8601(day))

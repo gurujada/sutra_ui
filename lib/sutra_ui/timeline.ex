@@ -18,23 +18,12 @@ defmodule SutraUI.Timeline do
         </:item>
       </.timeline>
 
-      # Colored markers — use marker_class to style individual markers
-      <.timeline>
-        <:item time="12 min ago" icon="A" marker_class="bg-primary text-primary-foreground">
-          <p><strong>Alex</strong> created a new project</p>
-        </:item>
-        <:item time="1 hour ago" icon="S" marker_class="bg-secondary text-secondary-foreground">
-          <p><strong>Sarah</strong> left a comment</p>
-        </:item>
-      </.timeline>
-
   ## Slot Attributes
 
   The `:item` slot accepts:
 
   * `time` - Timestamp shown above the item content.
   * `icon` - Text or emoji shown in the marker. Falls back to a dot.
-  * `marker_class` - CSS classes for the marker element (e.g. to color it).
   * `class` - Additional CSS classes for this item.
 
   ## Accessibility
@@ -52,7 +41,6 @@ defmodule SutraUI.Timeline do
   slot :item, required: true do
     attr(:time, :string, doc: "Timestamp shown above the item content")
     attr(:icon, :string, doc: "Text or emoji shown in the marker")
-    attr(:marker_class, :any, doc: "CSS classes for the marker element")
     attr(:class, :any, doc: "Additional CSS classes for this item")
   end
 
@@ -63,7 +51,6 @@ defmodule SutraUI.Timeline do
         :for={item <- @item}
         time={item[:time]}
         icon={item[:icon]}
-        marker_class={item[:marker_class]}
         class={item[:class]}
       >
         {render_slot(item)}
@@ -74,7 +61,6 @@ defmodule SutraUI.Timeline do
 
   attr(:time, :string, default: nil, doc: "Timestamp shown above the item content")
   attr(:icon, :string, default: nil, doc: "Text or emoji shown in the marker")
-  attr(:marker_class, :any, default: nil, doc: "CSS classes for the marker element")
   attr(:class, :any, default: nil, doc: "Additional CSS classes for this item")
   attr(:rest, :global, include: ~w(id), doc: "Additional HTML attributes")
 
@@ -84,7 +70,7 @@ defmodule SutraUI.Timeline do
     ~H"""
     <li class={["timeline-item", @class]} {@rest}>
       <div class="timeline-marker" aria-hidden="true">
-        <span class={["timeline-marker-icon", @marker_class]}>
+        <span class="timeline-marker-icon">
           <span :if={@icon}>{@icon}</span>
           <span :if={!@icon} class="timeline-dot"></span>
         </span>

@@ -185,7 +185,7 @@ end
 - `range_slider/1` - Dual-handle range slider (JS hook)
 - `live_select/1` - Async searchable select (JS hook)
 - `input_otp/1` - One-time password input (JS hook)
-- `file_upload/1` - LiveView upload dropzone
+- `file_upload/1` - LiveView upload dropzone configured with `allow_upload/3`
 
 ### Layout & Data Display
 - `card/1` - Card container with header/content/footer slots
@@ -198,7 +198,7 @@ end
 - `stepper/1` - Multi-step progress indicator
 - `stepper_wizard/1` - Multi-step wizard shell for large forms and flows
 - `timeline/1` - Chronological event list with item slots
-- `tree_view/1`, `tree_item/1` - Hierarchical tree navigation
+- `tree_view/1`, `tree_item/1` - Hierarchical tree navigation (`id` enables keyboard hook)
 
 ### Navigation & Interactive
 - `breadcrumb/1` - Breadcrumb navigation

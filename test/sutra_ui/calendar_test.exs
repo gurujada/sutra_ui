@@ -41,8 +41,8 @@ defmodule SutraUI.CalendarTest do
     end
 
     test "marks today" do
-      assigns = %{}
-      html = rendered_to_string(~H|<Calendar.calendar year={2026} month={6} />|)
+      assigns = %{today: Date.utc_today()}
+      html = rendered_to_string(~H|<Calendar.calendar year={@today.year} month={@today.month} />|)
       assert html =~ ~s(data-today="true")
     end
 
@@ -60,6 +60,32 @@ defmodule SutraUI.CalendarTest do
         rendered_to_string(~H|<Calendar.calendar year={2026} month={6} selected="2026-06-20" />|)
 
       assert html =~ ~s(data-selected="true")
+    end
+
+    test "defaults to selected date month when year and month are omitted" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H|<Calendar.calendar selected={~D[2026-11-20]} />|)
+
+      assert html =~ "November"
+      assert html =~ "2026"
+      assert html =~ ~s(data-selected="true")
+    end
+
+    test "highlights reversed date ranges" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H|<Calendar.calendar
+  year={2026}
+  month={6}
+  mode="range"
+  selected={~D[2026-06-20]}
+  range_end={~D[2026-06-10]}
+/>|)
+
+      assert html =~ ~s(data-in-range="true")
     end
   end
 end

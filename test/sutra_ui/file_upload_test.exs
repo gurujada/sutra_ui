@@ -43,10 +43,11 @@ defmodule SutraUI.FileUploadTest do
       refute html =~ "file-upload-input"
     end
 
-    test "renders accept attribute" do
+    test "does not duplicate allow_upload options as root attributes" do
       assigns = %{}
       html = rendered_to_string(~H|<FileUpload.file_upload upload={nil} accept="image/*" />|)
-      assert html =~ ~s(data-accept="image/*")
+      refute html =~ ~s(accept="image/*")
+      refute html =~ ~s(data-accept="image/*")
     end
 
     test "does not attach upload hook without an upload config" do

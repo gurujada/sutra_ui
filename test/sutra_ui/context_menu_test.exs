@@ -83,6 +83,19 @@ defmodule SutraUI.ContextMenuTest do
       assert html =~ ~s(aria-checked="true")
       assert html =~ ~s(data-state="checked")
     end
+
+    test "renders unchecked checkbox menuitem" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H|<ContextMenu.context_menu_checkbox_item>
+  Auto-save
+</ContextMenu.context_menu_checkbox_item>|)
+
+      assert html =~ ~s(role="menuitemcheckbox")
+      assert html =~ ~s(aria-checked="false")
+      refute html =~ ~s(data-state="checked")
+    end
   end
 
   describe "context_menu_radio_item/1" do

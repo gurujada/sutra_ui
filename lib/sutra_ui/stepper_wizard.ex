@@ -52,7 +52,7 @@ defmodule SutraUI.StepperWizard do
 
   attr(:variant, :string,
     default: "default",
-    values: ~w(default white),
+    values: ~w(default outline),
     doc: "Stepper visual variant"
   )
 

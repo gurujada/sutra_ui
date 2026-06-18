@@ -95,11 +95,12 @@ defmodule SutraUI.Separator do
         :aria_orientation,
         if(assigns.orientation == "vertical" and not assigns.decorative, do: "vertical")
       )
+      |> assign(:classes, if(assigns.class, do: ["separator", assigns.class], else: "separator"))
 
     ~H"""
     <hr
       id={@id}
-      class={["separator", @class]}
+      class={@classes}
       data-orientation={@orientation}
       role={@role}
       aria-orientation={@aria_orientation}

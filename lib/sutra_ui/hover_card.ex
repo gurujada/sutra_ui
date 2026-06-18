@@ -1,10 +1,13 @@
 defmodule SutraUI.HoverCard do
   @moduledoc """
-  A rich preview card that appears on hover or focus.
+  A rich preview card that appears on hover or keyboard focus.
 
-  Composes a trigger with a floating content card. Shows on hover after
-  a configurable delay, hides after a close delay. Useful for user profiles,
+  Composes a trigger with a floating content card. Shows on hover after a
+  configurable delay, hides after a close delay. Useful for user profiles,
   item previews, or any contextual detail that shouldn't require a click.
+
+  Reuses the shared `[data-popover]` positioning system — same `data-side` and
+  `data-align` semantics as `Popover` and `Tooltip`.
 
   ## Examples
 
@@ -20,6 +23,39 @@ defmodule SutraUI.HoverCard do
           </div>
         </div>
       </.hover_card>
+
+      <.hover_card id="release-card" side="top" align="start">
+        <:trigger>Release notes</:trigger>
+        <div>
+          <p class="font-medium">v0.3.0</p>
+          <p class="text-sm text-muted-foreground">New display primitives.</p>
+        </div>
+      </.hover_card>
+
+  ## Attributes
+
+  * `id` - Required. Unique identifier.
+  * `side` - Side to place the card: `top`, `bottom`, `left`, `right`, or `auto`
+    (dynamic viewport-aware placement). Defaults to `bottom`.
+  * `align` - Alignment relative to the trigger: `start`, `center`, `end`.
+    Defaults to `center`.
+  * `open_delay` - Open delay in milliseconds. Defaults to `150`.
+  * `close_delay` - Close delay in milliseconds. Defaults to `100`.
+  * `class` - Additional CSS classes for the content card.
+
+  ## Slots
+
+  * `:trigger` - Required. The hover/focus target.
+  * `:inner_block` - Required. The hover card content.
+
+  ## Accessibility
+
+  - The trigger sets `aria-expanded` and `aria-describedby` linking to the card.
+  - The card uses `role="tooltip"` (per WAI-ARIA hovercard pattern) and toggles
+    `aria-hidden`.
+  - Opens on both `mouseenter` and `focusin` — keyboard users get the same
+    preview as mouse users.
+  - Escape key closes the card.
   """
 
   use Phoenix.Component
@@ -30,8 +66,8 @@ defmodule SutraUI.HoverCard do
 
   attr(:side, :string,
     default: "bottom",
-    values: ~w(top bottom left right),
-    doc: "Side to place the card"
+    values: ~w(top bottom left right auto),
+    doc: "Side to place the card — `auto` enables viewport-aware placement"
   )
 
   attr(:align, :string,
@@ -40,14 +76,12 @@ defmodule SutraUI.HoverCard do
     doc: "Alignment relative to the trigger"
   )
 
-  attr(:side_offset, :integer, default: 4, doc: "Pixel offset from the trigger side")
-  attr(:align_offset, :integer, default: 0, doc: "Pixel offset along the trigger axis")
   attr(:open_delay, :integer, default: 150, doc: "Open delay in milliseconds")
   attr(:close_delay, :integer, default: 100, doc: "Close delay in milliseconds")
   attr(:class, :any, default: nil, doc: "Additional CSS classes for the content card")
   attr(:rest, :global, doc: "Additional HTML attributes")
 
-  slot(:trigger, required: true, doc: "Trigger content (hover target)")
+  slot(:trigger, required: true, doc: "Trigger content (hover/focus target)")
   slot(:inner_block, required: true, doc: "Hover card content")
 
   def hover_card(assigns) do
@@ -74,8 +108,6 @@ defmodule SutraUI.HoverCard do
         data-popover
         data-side={@side}
         data-align={@align}
-        data-side-offset={@side_offset}
-        data-align-offset={@align_offset}
         role="tooltip"
         aria-hidden="true"
       >
@@ -90,10 +122,15 @@ defmodule SutraUI.HoverCard do
           this.content = this.el.querySelector('.hover-card-content');
           this.openDelay = Number(this.el.dataset.openDelay || 150);
           this.closeDelay = Number(this.el.dataset.closeDelay || 100);
+          this.focusableSelector = 'a,button,input,select,textarea,[tabindex]:not([tabindex="-1"])';
+          if (!this.trigger.querySelector(this.focusableSelector)) {
+            this.trigger.setAttribute('tabindex', '0');
+          }
 
           this.open = () => {
             clearTimeout(this.closeTimer);
             this.openTimer = setTimeout(() => {
+              if (this.content.dataset.side === 'auto') this.calculatePosition();
               this.trigger.setAttribute('aria-expanded', 'true');
               this.content.setAttribute('aria-hidden', 'false');
             }, this.openDelay);
@@ -107,10 +144,17 @@ defmodule SutraUI.HoverCard do
             }, this.closeDelay);
           };
 
+          this.handleEscape = (e) => {
+            if (e.key === 'Escape' && this.content.getAttribute('aria-hidden') === 'false') {
+              this.close();
+            }
+          };
+
           this.el.addEventListener('mouseenter', this.open);
           this.el.addEventListener('mouseleave', this.close);
           this.el.addEventListener('focusin', this.open);
           this.el.addEventListener('focusout', this.close);
+          this.el.addEventListener('keydown', this.handleEscape);
         },
 
         destroyed() {
@@ -120,6 +164,33 @@ defmodule SutraUI.HoverCard do
           this.el.removeEventListener('mouseleave', this.close);
           this.el.removeEventListener('focusin', this.open);
           this.el.removeEventListener('focusout', this.close);
+          this.el.removeEventListener('keydown', this.handleEscape);
+        },
+
+        calculatePosition() {
+          const rect = this.trigger.getBoundingClientRect();
+          const contentHeight = this.content.offsetHeight;
+          const contentWidth = this.content.offsetWidth;
+          const padding = 8;
+
+          const spaceTop = rect.top;
+          const spaceBottom = window.innerHeight - rect.bottom;
+          const spaceLeft = rect.left;
+          const spaceRight = window.innerWidth - rect.right;
+
+          let side = 'bottom';
+
+          if (spaceBottom >= contentHeight + padding) {
+            side = 'bottom';
+          } else if (spaceTop >= contentHeight + padding) {
+            side = 'top';
+          } else if (spaceRight >= contentWidth + padding) {
+            side = 'right';
+          } else if (spaceLeft >= contentWidth + padding) {
+            side = 'left';
+          }
+
+          this.content.setAttribute('data-side', side);
         }
       }
     </script>

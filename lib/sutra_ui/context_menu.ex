@@ -2,25 +2,43 @@ defmodule SutraUI.ContextMenu do
   @moduledoc """
   A right-click or long-press context menu.
 
-  Renders a trigger that opens a positioned menu on right-click.
-  Supports nested submenus, checkboxes, radio groups, shortcuts,
-  groups with labels, and separators — following shadcn/ui's composition model.
+  Renders a trigger that opens a positioned menu on right-click. Supports
+  nested submenus, checkboxes, radio groups, shortcuts, labels, and
+  separators — following the shadcn/ui composition model.
 
   ## Examples
 
       <.context_menu id="file-menu">
         <:trigger>
-          <.button>Right-click here</.button>
+          <div class="rounded-lg border p-4">Right-click here</div>
         </:trigger>
-        <.context_menu_item>New File</.context_menu_item>
+        <.context_menu_item phx-click="new-file">New File</.context_menu_item>
         <.context_menu_separator />
-        <.context_menu_checkbox_item checked={true}>Auto-save</.context_menu_checkbox_item>
+        <.context_menu_checkbox_item checked={@auto_save} phx-click="toggle-autosave">
+          Auto-save
+        </.context_menu_checkbox_item>
         <.context_menu_sub>
           <:trigger>Share</:trigger>
-          <.context_menu_item>Copy link</.context_menu_item>
-          <.context_menu_item>Email</.context_menu_item>
+          <.context_menu_item phx-click="copy-link">Copy link</.context_menu_item>
+          <.context_menu_item phx-click="email">Email</.context_menu_item>
         </.context_menu_sub>
       </.context_menu>
+
+  ## Sub-menus
+
+  `context_menu_sub` renders a submenu with its own `:trigger` slot and item
+  content. Submenus open on hover (mouse) and on Right-arrow (keyboard), and
+  close on Left-arrow or Escape.
+
+  ## Accessibility
+
+  - Trigger has `aria-haspopup="menu"` and `aria-expanded`.
+  - Menu uses `role="menu"`, items use `role="menuitem"`.
+  - Full keyboard navigation: ArrowUp/Down, Home/End, Enter/Space, Escape.
+  - Submenu: Right arrow opens, Left arrow / Escape closes.
+  - Checkbox items use `role="menuitemcheckbox"` with `aria-checked`.
+  - Radio items use `role="menuitemradio"` with `aria-checked`.
+  - Disabled items have `aria-disabled="true"`.
   """
 
   use Phoenix.Component
@@ -48,7 +66,13 @@ defmodule SutraUI.ContextMenu do
       >
         {render_slot(@trigger)}
       </div>
-      <div id={"#{@id}-popover"} class="context-menu-popover" data-popover aria-hidden="true">
+      <div
+        id={"#{@id}-popover"}
+        class="context-menu-popover"
+        data-popover
+        data-context-menu
+        aria-hidden="true"
+      >
         <div
           id={"#{@id}-menu"}
           class={["context-menu-content", @menu_class]}
@@ -65,11 +89,20 @@ defmodule SutraUI.ContextMenu do
       {
         mounted() {
           this.trigger = this.el.querySelector('.context-menu-trigger');
-          this.popover = this.el.querySelector('.context-menu-popover');
+          this.popover = this.el.querySelector('[data-context-menu]');
           this.menu = this.el.querySelector('[role="menu"]');
           this.activeIndex = -1;
-          this.documentClickHandler = (e) => { if (!this.el.contains(e.target)) this.close(false); };
-          this.documentKeyHandler = (e) => { if (e.key === 'Escape') this.close(); };
+          this.openSubmenu = null;
+
+          this.documentClickHandler = (e) => {
+            if (!this.el.contains(e.target)) this.close(false);
+          };
+          this.documentKeyHandler = (e) => {
+            if (e.key === 'Escape') {
+              if (this.openSubmenu) { this.closeSubmenu(); return; }
+              this.close();
+            }
+          };
 
           this.trigger.addEventListener('contextmenu', (e) => this.openAtEvent(e));
           this.trigger.addEventListener('keydown', (e) => this.handleTriggerKey(e));
@@ -78,7 +111,20 @@ defmodule SutraUI.ContextMenu do
           this.menu.addEventListener('keydown', (e) => this.handleMenuKey(e));
           this.menu.addEventListener('mousemove', (e) => this.handleMouseMove(e));
           this.menu.addEventListener('click', (e) => {
-            if (e.target.closest('[role^="menuitem"]')) this.close();
+            if (e.target.closest('[role^="menuitem"]') && !e.target.closest('.context-menu-sub-trigger')) {
+              this.close();
+            }
+          });
+
+          // Submenu hover handling
+          this.el.querySelectorAll('.context-menu-sub').forEach(sub => {
+            const subTrigger = sub.querySelector('.context-menu-sub-trigger');
+            const subContent = sub.querySelector('.context-menu-sub-content');
+            if (!subTrigger || !subContent) return;
+
+            subTrigger.addEventListener('mouseenter', () => this.openSubmenuEl(sub));
+            sub.addEventListener('mouseleave', () => this.closeSubmenuEl(sub));
+            subContent.addEventListener('keydown', (e) => this.handleSubmenuKey(e, sub));
           });
         },
 
@@ -87,9 +133,23 @@ defmodule SutraUI.ContextMenu do
           document.removeEventListener('keydown', this.documentKeyHandler);
         },
 
-        items() { return Array.from(this.menu.querySelectorAll('[role^="menuitem"]')) .filter(i => i.getAttribute('aria-disabled') !== 'true' && i.closest('[role="menu"]') === this.menu); },
+        items(menu) {
+          const m = menu || this.menu;
+          return Array.from(m.children).flatMap((child) => {
+            if (child.matches('[role^="menuitem"]')) return [child];
+            if (child.classList.contains('context-menu-sub')) {
+              const trigger = child.querySelector(':scope > .context-menu-sub-trigger');
+              return trigger ? [trigger] : [];
+            }
+            return [];
+          })
+            .filter(i => i.getAttribute('aria-disabled') !== 'true');
+        },
 
-        openAtEvent(event) { event.preventDefault(); this.open(event.clientX, event.clientY); },
+        openAtEvent(event) {
+          event.preventDefault();
+          this.open(event.clientX, event.clientY);
+        },
 
         open(x, y) {
           this.trigger.setAttribute('aria-expanded', 'true');
@@ -103,6 +163,7 @@ defmodule SutraUI.ContextMenu do
 
         close(focusTrigger = true) {
           if (this.popover.getAttribute('aria-hidden') === 'true') return;
+          this.closeSubmenu();
           this.trigger.setAttribute('aria-expanded', 'false');
           this.popover.setAttribute('aria-hidden', 'true');
           this.setActive(-1);
@@ -134,17 +195,96 @@ defmodule SutraUI.ContextMenu do
         handleMenuKey(e) {
           const items = this.items();
           if (!items.length) return;
+
+          if (e.key === 'ArrowRight' && this.activeIndex > -1) {
+            const sub = items[this.activeIndex].closest('.context-menu-sub');
+            if (sub) { e.preventDefault(); this.openSubmenuEl(sub); return; }
+          }
+
           if (e.key === 'ArrowDown') { e.preventDefault(); this.setActive(Math.min(this.activeIndex + 1, items.length - 1)); }
           else if (e.key === 'ArrowUp') { e.preventDefault(); this.setActive(Math.max(this.activeIndex - 1, 0)); }
           else if (e.key === 'Home') { e.preventDefault(); this.setActive(0); }
           else if (e.key === 'End') { e.preventDefault(); this.setActive(items.length - 1); }
-          else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const el = items[this.activeIndex]?.querySelector('a,button') || items[this.activeIndex]; el?.click(); this.close(); }
+          else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (items[this.activeIndex]?.classList.contains('context-menu-sub-trigger')) {
+              const sub = items[this.activeIndex].closest('.context-menu-sub');
+              if (sub) { this.openSubmenuEl(sub); return; }
+            }
+            const el = items[this.activeIndex]?.querySelector('a,button') || items[this.activeIndex];
+            el?.click();
+            if (!items[this.activeIndex]?.closest('.context-menu-sub')) this.close();
+          }
         },
 
         handleMouseMove(e) {
-          const item = e.target.closest('[role^="menuitem"]');
+          const item = this.items().find(i => i === e.target || i.contains(e.target));
+          if (!item) return;
           const idx = this.items().indexOf(item);
           if (idx > -1) this.setActive(idx);
+        },
+
+        openSubmenuEl(sub) {
+          this.closeSubmenu();
+          this.openSubmenu = sub;
+          const content = sub.querySelector('.context-menu-sub-content');
+          const trigger = sub.querySelector('.context-menu-sub-trigger');
+          if (content) { content.setAttribute('aria-hidden', 'false'); content.classList.add('open'); }
+          if (trigger) trigger.setAttribute('aria-expanded', 'true');
+
+          const subMenu = content?.querySelector('[role="menu"]');
+          if (subMenu) {
+            const subItems = Array.from(subMenu.querySelectorAll(':scope > [role^="menuitem"]'))
+              .filter(i => i.getAttribute('aria-disabled') !== 'true');
+            subItems.forEach(i => i.classList.remove('active'));
+            if (subItems[0]) subItems[0].classList.add('active');
+            subMenu.focus();
+          }
+        },
+
+        closeSubmenuEl(sub) {
+          const content = sub.querySelector('.context-menu-sub-content');
+          const trigger = sub.querySelector('.context-menu-sub-trigger');
+          if (content) { content.setAttribute('aria-hidden', 'true'); content.classList.remove('open'); }
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+          if (this.openSubmenu === sub) this.openSubmenu = null;
+        },
+
+        closeSubmenu() {
+          if (this.openSubmenu) { this.closeSubmenuEl(this.openSubmenu); this.menu.focus(); }
+        },
+
+        handleSubmenuKey(e, sub) {
+          const content = sub.querySelector('.context-menu-sub-content');
+          const subMenu = content?.querySelector('[role="menu"]');
+          if (!subMenu) return;
+          const subItems = Array.from(subMenu.querySelectorAll(':scope > [role^="menuitem"]'))
+            .filter(i => i.getAttribute('aria-disabled') !== 'true');
+          if (!subItems.length) return;
+
+          let activeIdx = subItems.findIndex(i => i.classList.contains('active'));
+
+          if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.closeSubmenuEl(sub);
+            this.menu.focus();
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIdx = Math.min(activeIdx + 1, subItems.length - 1);
+            subItems.forEach(i => i.classList.remove('active'));
+            subItems[activeIdx]?.classList.add('active');
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIdx = Math.max(activeIdx - 1, 0);
+            subItems.forEach(i => i.classList.remove('active'));
+            subItems[activeIdx]?.classList.add('active');
+          } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const el = subItems[activeIdx]?.querySelector('a,button') || subItems[activeIdx];
+            el?.click();
+            this.close();
+          }
         }
       }
     </script>
@@ -158,8 +298,13 @@ defmodule SutraUI.ContextMenu do
   attr(:shortcut, :string, default: nil)
   attr(:class, :any, default: nil)
   attr(:rest, :global)
+
   slot(:inner_block, required: true)
 
+  @doc """
+  Renders a context menu item. Pass LiveView events via `phx-click` on the item
+  or render a link/button inside the slot.
+  """
   def context_menu_item(assigns) do
     ~H"""
     <div
@@ -172,7 +317,9 @@ defmodule SutraUI.ContextMenu do
       aria-disabled={@disabled && "true"}
       {@rest}
     >
-      <span class="context-menu-item-content">{render_slot(@inner_block)}</span>
+      <span class="context-menu-item-content">
+        {render_slot(@inner_block)}
+      </span>
       <kbd :if={@shortcut} class="context-menu-shortcut">{@shortcut}</kbd>
     </div>
     """
@@ -184,14 +331,18 @@ defmodule SutraUI.ContextMenu do
   attr(:disabled, :boolean, default: false)
   attr(:class, :any, default: nil)
   attr(:rest, :global)
+
   slot(:inner_block, required: true)
 
+  @doc """
+  Renders a checkbox menu item with `role="menuitemcheckbox"`.
+  """
   def context_menu_checkbox_item(assigns) do
     ~H"""
     <div
       role="menuitemcheckbox"
       class={["context-menu-item", @class]}
-      aria-checked={to_attr(@checked)}
+      aria-checked={to_string(@checked)}
       aria-disabled={@disabled && "true"}
       data-state={@checked && "checked"}
       {@rest}
@@ -212,7 +363,9 @@ defmodule SutraUI.ContextMenu do
           <path d="M20 6 9 17l-5-5" />
         </svg>
       </span>
-      {render_slot(@inner_block)}
+      <span class="context-menu-item-content">
+        {render_slot(@inner_block)}
+      </span>
     </div>
     """
   end
@@ -224,14 +377,18 @@ defmodule SutraUI.ContextMenu do
   attr(:disabled, :boolean, default: false)
   attr(:class, :any, default: nil)
   attr(:rest, :global)
+
   slot(:inner_block, required: true)
 
+  @doc """
+  Renders a radio menu item with `role="menuitemradio"`.
+  """
   def context_menu_radio_item(assigns) do
     ~H"""
     <div
       role="menuitemradio"
       class={["context-menu-item", @class]}
-      aria-checked={to_attr(@checked)}
+      aria-checked={to_string(@checked)}
       aria-disabled={@disabled && "true"}
       data-state={@checked && "checked"}
       data-value={@value}
@@ -240,7 +397,9 @@ defmodule SutraUI.ContextMenu do
       <span class="context-menu-item-indicator">
         <span :if={@checked} class="context-menu-radio-dot"></span>
       </span>
-      {render_slot(@inner_block)}
+      <span class="context-menu-item-content">
+        {render_slot(@inner_block)}
+      </span>
     </div>
     """
   end
@@ -251,6 +410,9 @@ defmodule SutraUI.ContextMenu do
   slot(:trigger, required: true)
   slot(:inner_block, required: true)
 
+  @doc """
+  Renders a submenu with a trigger and nested items.
+  """
   def context_menu_sub(assigns) do
     ~H"""
     <div class={["context-menu-sub", @class]}>
@@ -260,7 +422,9 @@ defmodule SutraUI.ContextMenu do
         aria-haspopup="menu"
         aria-expanded="false"
       >
-        {render_slot(@trigger)}
+        <span class="context-menu-item-content">
+          {render_slot(@trigger)}
+        </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -276,7 +440,7 @@ defmodule SutraUI.ContextMenu do
         </svg>
       </div>
       <div class="context-menu-sub-content" data-popover aria-hidden="true">
-        <div role="menu">
+        <div role="menu" tabindex="-1">
           {render_slot(@inner_block)}
         </div>
       </div>
@@ -289,6 +453,9 @@ defmodule SutraUI.ContextMenu do
   attr(:class, :any, default: nil)
   slot(:inner_block, required: true)
 
+  @doc """
+  Renders a non-interactive label for a group of items.
+  """
   def context_menu_label(assigns) do
     ~H"""
     <div class={["context-menu-label", @class]} role="presentation">
@@ -301,12 +468,12 @@ defmodule SutraUI.ContextMenu do
 
   attr(:class, :any, default: nil)
 
+  @doc """
+  Renders a separator between menu items.
+  """
   def context_menu_separator(assigns) do
     ~H"""
     <div role="separator" class={["context-menu-separator", @class]}></div>
     """
   end
-
-  defp to_attr(true), do: "true"
-  defp to_attr(false), do: "false"
 end

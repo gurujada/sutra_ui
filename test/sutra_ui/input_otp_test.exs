@@ -20,6 +20,21 @@ defmodule SutraUI.InputOTPTest do
       assert length(Regex.scan(~r/<input[^>]*data-otp-slot/, html)) == 4
     end
 
+    test "renders generated groups" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <InputOTP.input_otp id="otp" name="code" length={4} groups={[2, 2]}>
+          <:separator>-</:separator>
+        </InputOTP.input_otp>
+        """)
+
+      assert length(Regex.scan(~r/<input[^>]*data-otp-slot/, html)) == 4
+      assert length(Regex.scan(~r/class="input-otp-group"/, html)) == 2
+      assert html =~ "input-otp-separator"
+    end
+
     test "renders hidden aggregate input" do
       assigns = %{}
 

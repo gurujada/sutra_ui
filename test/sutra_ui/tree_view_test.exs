@@ -16,6 +16,29 @@ defmodule SutraUI.TreeViewTest do
       assert html =~ ~s(role="tree")
       assert html =~ "tree-view"
     end
+
+    test "does not attach hook without id" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(
+          ~H|<TreeView.tree_view><TreeView.tree_item label="root" /></TreeView.tree_view>|
+        )
+
+      refute html =~ ~s(phx-hook=".TreeView")
+    end
+
+    test "attaches hook when id is provided" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(
+          ~H|<TreeView.tree_view id="files"><TreeView.tree_item label="root" /></TreeView.tree_view>|
+        )
+
+      assert html =~ ~s(id="files")
+      assert html =~ ~s(phx-hook=".TreeView")
+    end
   end
 
   describe "tree_item/1" do
