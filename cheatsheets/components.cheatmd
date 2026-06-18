@@ -347,6 +347,29 @@ end
 </.stepper>
 ```
 
+### Stepper Wizard
+
+```heex
+<.form for={@form} phx-change="validate" phx-submit="submit_wizard">
+  <.stepper_wizard id="checkout" current={@step} errors={@step_errors}>
+    <:step id="shipping" label="Shipping">
+      <.shipping_fields form={@form} />
+    </:step>
+    <:step id="payment" label="Payment">
+      <.payment_fields form={@form} />
+    </:step>
+    <:step id="confirm" label="Confirm">
+      <.order_review order={@order} />
+    </:step>
+
+    <:actions>
+      <.button type="button" phx-click="previous">Back</.button>
+      <.button type="submit">Continue</.button>
+    </:actions>
+  </.stepper_wizard>
+</.form>
+```
+
 ### Tree View
 
 ```heex

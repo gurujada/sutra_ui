@@ -177,7 +177,7 @@
 /* Stepper */
 @layer components {
     .stepper {
-        @apply relative flex gap-4;
+        @apply relative flex w-full gap-4;
     }
 
     .stepper-horizontal {
@@ -189,10 +189,10 @@
     }
 
     .stepper-vertical {
-        @apply flex-col gap-0;
+        @apply flex-col gap-0 self-stretch;
 
         .stepper-item {
-            @apply flex gap-x-4;
+            @apply flex gap-x-4 flex-1 min-h-0;
         }
 
         .stepper-marker-row {
@@ -205,7 +205,7 @@
 
         .stepper-content {
             margin-top: -0.45rem;
-            @apply pb-6 grow;
+            @apply pb-8 grow;
         }
 
         .stepper-item:last-child .stepper-content {
@@ -286,7 +286,7 @@
         @apply flex-col sm:flex-row gap-2;
 
         .stepper-item {
-            @apply flex gap-x-4 sm:block;
+            @apply flex gap-x-4 sm:shrink sm:basis-0 sm:flex-1 sm:block;
         }
 
         .stepper-marker-row {
@@ -304,6 +304,45 @@
         .stepper-item:last-child .stepper-connector {
             @apply hidden;
         }
+    }
+}
+
+/* Stepper Wizard */
+@layer components {
+    .stepper-wizard {
+        @apply grid gap-6;
+    }
+
+    .stepper-wizard-nav {
+        @apply w-full;
+    }
+
+    .stepper-wizard-trigger {
+        @apply block w-full rounded-md text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+    }
+
+    button.stepper-wizard-trigger {
+        @apply cursor-pointer;
+    }
+
+    .stepper-wizard-trigger[aria-disabled="true"] {
+        @apply cursor-default opacity-60;
+    }
+
+    .stepper-wizard-label {
+        @apply block text-sm font-medium text-foreground;
+    }
+
+    .stepper-wizard-description {
+        @apply mt-0.5 block text-sm text-muted-foreground;
+    }
+
+    .stepper-wizard-panel {
+        @apply rounded-lg border bg-card p-4 text-card-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring;
+    }
+
+    .stepper-wizard-actions {
+        @apply flex items-center justify-end gap-2;
     }
 }
 

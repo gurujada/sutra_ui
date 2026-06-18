@@ -2,7 +2,7 @@ defmodule SutraUI do
   @moduledoc """
   Sutra UI - We define the rules, so you don't have to.
 
-  A pure Phoenix LiveView UI component library with **54 accessible components**,
+  A pure Phoenix LiveView UI component library with **55 accessible components**,
   CSS-first theming, and colocated JavaScript hooks. Built for Phoenix 1.8+ and
   Tailwind CSS v4.
 
@@ -86,6 +86,7 @@ defmodule SutraUI do
   | `SutraUI.Item` | List items |
   | `SutraUI.Drawer` | Navigation drawer (hook) |
   | `SutraUI.Stepper` | Multi-step progress indicators |
+  | `SutraUI.StepperWizard` | Multi-step wizard shell |
   | `SutraUI.TreeView` | Hierarchical navigation trees |
 
   ### Feedback
@@ -250,6 +251,7 @@ defmodule SutraUI do
       import SutraUI.Drawer
       import SutraUI.TabNav
       import SutraUI.Stepper
+      import SutraUI.StepperWizard
       import SutraUI.TreeView
       import SutraUI.ThemeSwitcher
 

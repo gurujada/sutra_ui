@@ -16,12 +16,12 @@ Built for **Phoenix 1.8+**, **Tailwind CSS v4**, and **Phoenix LiveView 1.1+**.
 - **CSS-first theming** - Customize colors with CSS variables. No build step, no config files.
 - **Copy-paste friendly** - Like shadcn/ui, components are meant to be understood and modified.
 - **Server-driven** - All state lives on the server. No client-side state sync headaches.
-- **Production-ready** - 906 tests, full accessibility support, dark mode included.
+- **Production-ready** - 962 tests, full accessibility support, dark mode included.
 - **LLM-friendly** - Includes `usage_rules.md` with guidelines for AI assistants working with this codebase.
 
 ## Features
 
-- **54 Components** - Buttons, forms, dialogs, tables, calendars, upload fields, and more
+- **55 Components** - Buttons, forms, dialogs, tables, calendars, upload fields, and more
 - **Pure LiveView** - No external JavaScript frameworks
 - **Colocated Hooks** - JS hooks live with their components (Phoenix 1.8+)
 - **CSS Variables** - Override any color in one line
@@ -238,6 +238,7 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `item` - List item component
 - `drawer` - Collapsible drawer navigation
 - `stepper` - Multi-step progress indicator
+- `stepper_wizard` - Multi-step wizard shell
 - `tree_view` - Hierarchical tree navigation
 
 ### Feedback

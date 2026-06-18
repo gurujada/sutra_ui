@@ -196,6 +196,7 @@ end
 - `alert/1` - Alert/callout messages
 - `progress/1` - Progress bar
 - `stepper/1` - Multi-step progress indicator
+- `stepper_wizard/1` - Multi-step wizard shell for large forms and flows
 - `timeline/1`, `timeline_item/1` - Chronological event list
 - `tree_view/1`, `tree_item/1` - Hierarchical tree navigation
 
