@@ -657,17 +657,21 @@ import SutraUI.Dialog
 
 ```heex
 <.timeline>
-  <:item title="Created" time="09:00" description="Workspace created" />
-  <:item title="Published" state="current">Live now</:item>
+  <:item time="09:00">
+    <h3>Created</h3>
+    <p>Workspace created</p>
+  </:item>
+  <:item time="10:30" icon="✓">
+    <h3>Published</h3>
+    <p>Live now</p>
+  </:item>
 </.timeline>
 
 <.timeline>
-  <.timeline_item state="complete">
-    <:marker><.icon name="lucide-check" /></:marker>
-    <:title><.link navigate="/releases/1">v0.3.0 shipped</.link></:title>
-    <:time><time datetime="2026-06-17">Today</time></:time>
+  <:item time="Today" icon="✓">
+    <.link navigate="/releases/1">v0.3.0 shipped</.link>
     <p>Release notes and migration details.</p>
-  </.timeline_item>
+  </:item>
 </.timeline>
 ```
 

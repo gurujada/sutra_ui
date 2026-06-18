@@ -1,77 +1,119 @@
 defmodule SutraUI.TimelineTest do
   use ExUnit.Case, async: true
-  import Phoenix.LiveViewTest
+
   import Phoenix.Component
+  import Phoenix.LiveViewTest
+
   alias SutraUI.Timeline
 
   describe "timeline/1" do
-    test "renders as ordered list" do
+    test "renders items from the item slot" do
       assigns = %{}
-      html = rendered_to_string(~H|<Timeline.timeline>
-  <:item>Event 1</:item>
-</Timeline.timeline>|)
+
+      html =
+        rendered_to_string(~H"""
+        <Timeline.timeline>
+          <:item time="2h ago">
+            <h3>Deployed</h3>
+            <p>All checks passed.</p>
+          </:item>
+        </Timeline.timeline>
+        """)
+
       assert html =~ "<ol"
       assert html =~ "timeline"
-    end
-
-    test "renders items with content" do
-      assigns = %{}
-      html = rendered_to_string(~H|<Timeline.timeline>
-  <:item>
-    <p>Deployed v2.4</p>
-  </:item>
-  <:item><span>Merged PR</span></:item>
-</Timeline.timeline>|)
-      assert html =~ "Deployed v2.4"
-      assert html =~ "Merged PR"
-    end
-
-    test "renders items with custom content" do
-      assigns = %{}
-      html = rendered_to_string(~H|<Timeline.timeline>
-  <:item>
-    <div class="custom"><img src="/a.png" />Jane completed a task</div>
-  </:item>
-</Timeline.timeline>|)
-      assert html =~ "custom"
-      assert html =~ "Jane completed a task"
-    end
-
-    test "renders marker dot" do
-      assigns = %{}
-      html = rendered_to_string(~H|<Timeline.timeline>
-  <:item>Test</:item>
-</Timeline.timeline>|)
-      assert html =~ "timeline-dot"
-    end
-
-    test "renders state classes" do
-      assigns = %{}
-      html = rendered_to_string(~H|<Timeline.timeline>
-  <:item state="complete">Done</:item>
-  <:item state="current">Active</:item>
-</Timeline.timeline>|)
-      assert html =~ ~s(data-state="complete")
-      assert html =~ ~s(data-state="current")
-    end
-
-    test "renders time label" do
-      assigns = %{}
-      html = rendered_to_string(~H|<Timeline.timeline>
-  <:item time="2h ago">Event</:item>
-</Timeline.timeline>|)
+      assert html =~ "timeline-item"
       assert html =~ "2h ago"
-      assert html =~ "timeline-time"
-      assert html =~ "timeline-dot"
+      assert html =~ "<h3>Deployed</h3>"
+      assert html =~ "<p>All checks passed.</p>"
     end
 
-    test "renders custom icon in marker" do
+    test "renders a dot and connector by default" do
       assigns = %{}
-      html = rendered_to_string(~H|<Timeline.timeline>
-  <:item icon="✓">Completed</:item>
-</Timeline.timeline>|)
+
+      html =
+        rendered_to_string(~H"""
+        <Timeline.timeline>
+          <:item>Event</:item>
+        </Timeline.timeline>
+        """)
+
+      assert html =~ "timeline-dot"
+      assert html =~ "timeline-line"
+      assert html =~ "Event"
+    end
+
+    test "renders an icon marker" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Timeline.timeline>
+          <:item icon="✓">Completed</:item>
+        </Timeline.timeline>
+        """)
+
       assert html =~ "✓"
       assert html =~ "timeline-marker-icon"
+      refute html =~ "timeline-dot"
+    end
+
+    test "renders multiple items" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Timeline.timeline>
+          <:item>Created</:item>
+          <:item>Published</:item>
+        </Timeline.timeline>
+        """)
+
+      assert html =~ "Created"
+      assert html =~ "Published"
+    end
+
+    test "omits time element when time is not provided" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Timeline.timeline>
+          <:item>Event</:item>
+        </Timeline.timeline>
+        """)
+
+      refute html =~ "<time"
+    end
+
+    test "passes root attributes through" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Timeline.timeline id="activity" aria-label="Activity">
+          <:item>Event</:item>
+        </Timeline.timeline>
+        """)
+
+      assert html =~ ~s(id="activity")
+      assert html =~ ~s(aria-label="Activity")
+    end
+
+    test "applies custom root and item classes" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Timeline.timeline class="my-timeline">
+          <:item class="my-item">
+            Event
+          </:item>
+        </Timeline.timeline>
+        """)
+
+      assert html =~ "my-timeline"
+      assert html =~ "my-item"
     end
   end
 end
