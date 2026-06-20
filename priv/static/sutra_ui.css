@@ -3235,7 +3235,7 @@
     }
 
     .marquee-track {
-        @apply flex min-w-full;
+        @apply flex;
         gap: var(--marquee-gap, 1rem);
         animation: marquee-x var(--marquee-duration) linear infinite;
         width: max-content;
@@ -3268,7 +3268,7 @@
     }
 
     .marquee-content {
-        @apply flex min-w-full shrink-0 items-center justify-around;
+        @apply flex items-center;
         gap: var(--marquee-gap, 1rem);
         width: max-content;
     }
