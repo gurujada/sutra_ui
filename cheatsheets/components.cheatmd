@@ -525,13 +525,12 @@ import SutraUI.Dialog
 ### Command
 
 ```heex
-<.command id="command-palette">
-  <:input placeholder="Type a command..." />
-  <:group heading="Suggestions">
-    <:item value="calendar">Calendar</:item>
-    <:item value="search">Search</:item>
-    <:item value="settings">Settings</:item>
-  </:group>
+<.command id="command-palette" placeholder="Type a command...">
+  <.command_group heading="Suggestions">
+    <.command_item id="calendar">Calendar</.command_item>
+    <.command_item id="search">Search</.command_item>
+    <.command_item id="settings">Settings</.command_item>
+  </.command_group>
 </.command>
 ```
 
@@ -701,5 +700,5 @@ import SutraUI.Dialog
 ### Theme Switcher
 
 ```heex
-<.theme_switcher />
+<.theme_switcher id="theme-toggle" />
 ```

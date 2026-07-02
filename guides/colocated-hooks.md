@@ -1,10 +1,10 @@
 # JavaScript Hooks
 
-Sutra UI uses **colocated hooks**, a Phoenix 1.8+ feature that allows JavaScript hooks to be defined alongside their components. No separate `hooks.js` file needed.
+Sutra UI uses **runtime colocated hooks**, a Phoenix 1.8+ feature that allows JavaScript hooks to be defined alongside their components. No separate `hooks.js` file or `app.js` registration is needed.
 
 ## What Are Colocated Hooks?
 
-Colocated hooks are JavaScript hooks defined directly within component files using a special `<script>` tag:
+Colocated hooks are JavaScript hooks defined directly within component files using a special `<script>` tag. Sutra UI uses the runtime form by default:
 
 ```elixir
 def my_component(assigns) do
@@ -13,8 +13,8 @@ def my_component(assigns) do
     Content here
   </div>
 
-  <script :type={Phoenix.LiveView.ColocatedHook} name=".MyHook">
-    export default {
+  <script :type={Phoenix.LiveView.ColocatedHook} name=".MyHook" runtime>
+    {
       mounted() {
         console.log("Hook mounted!", this.el)
       }
@@ -26,26 +26,28 @@ end
 
 > #### Phoenix 1.8+ Required {: .warning}
 >
-> Colocated hooks require Phoenix 1.8 or later. The hooks are extracted at compile time and bundled automatically.
+> Runtime colocated hooks require Phoenix 1.8 or later. They are rendered by the component and do not need to be imported in `assets/js/app.js`.
 
 ## How Sutra UI Uses Colocated Hooks
 
 Several Sutra UI components use colocated hooks for interactivity:
 
-| Component | Hook | Purpose |
-|-----------|------|---------|
-| `dialog` | `.Dialog` | Show/hide modal (div-based for screen share compatibility) |
-| `tabs` | `.Tabs` | Keyboard navigation |
-| `select` | `.Select` | Dropdown behavior, search |
-| `dropdown_menu` | `.DropdownMenu` | Menu positioning, keyboard nav |
-| `command` | `.Command` | Command palette behavior |
-| `toast` | `.Toast` | Auto-dismiss, animations |
-| `accordion` | `.Accordion` | Collapse animations |
-| `slider` | `.Slider` | Range input behavior |
-| `range_slider` | `.RangeSlider` | Dual-handle slider |
-| `live_select` | `.LiveSelect` | Async search, tags |
-| `carousel` | `.Carousel` | Scroll snap, navigation |
-| `theme_switcher` | `.ThemeSwitcher` | Theme persistence |
+| Component | Hook | Mode | Purpose |
+|-----------|------|------|---------|
+| `dialog` | `.Dialog` | Extracted | Show/hide modal (div-based for screen share compatibility) |
+| `tabs` | `.Tabs` | Runtime | Keyboard navigation |
+| `select` | `.Select` | Runtime | Dropdown behavior, search |
+| `dropdown_menu` | `.DropdownMenu` | Runtime | Menu positioning, keyboard nav |
+| `command` | `.Command` | Runtime | Command palette behavior |
+| `toast` | `.ToastContainer` | Runtime | Auto-dismiss, animations |
+| `slider` | `.Slider` | Runtime | Range input behavior |
+| `range_slider` | `.RangeSlider` | Runtime | Dual-handle slider |
+| `live_select` | `.LiveSelect` | Runtime | Async search, tags |
+| `carousel` | `.Carousel` | Runtime | Scroll snap, navigation |
+| `theme_switcher` | `.ThemeSwitcher` | Runtime | Theme persistence |
+
+Extracted hooks without `runtime` are exceptions; most Sutra UI hooks load with
+the rendered component.
 
 ## The Hook Name Convention
 
@@ -151,8 +153,8 @@ defmodule MyAppWeb.Components.TrackedDialog do
       </.dialog>
     </div>
 
-    <script :type={ColocatedHook} name=".TrackedDialog">
-      export default {
+    <script :type={ColocatedHook} name=".TrackedDialog" runtime>
+      {
         mounted() {
           const dialogId = this.el.dataset.dialogId
           const dialog = document.getElementById(dialogId)
@@ -173,14 +175,14 @@ end
 
 ### Compilation Order
 
-Colocated hooks are extracted when the component is compiled. Ensure `mix compile` runs before asset bundling:
+Runtime hooks are compiled with the component. Ensure `mix compile` runs before asset bundling:
 
 ```elixir
 # mix.exs - custom release alias
 defp aliases do
   [
     "assets.deploy": [
-      "compile",  # Compile first to extract hooks
+      "compile",  # Compile first
       "esbuild default --minify",
       "phx.digest"
     ]
@@ -190,11 +192,11 @@ end
 
 ### Development Mode
 
-In development, hooks are automatically extracted and hot-reloaded when you change component files.
+In development, runtime hooks are compiled and reloaded when you change component files.
 
 ### Production Builds
 
-The hooks are bundled into your JavaScript assets automatically. No additional configuration needed.
+Runtime hooks are rendered by their components. No additional JavaScript configuration is needed.
 
 ## Troubleshooting
 
@@ -217,7 +219,7 @@ The hooks are bundled into your JavaScript assets automatically. No additional c
 
 **Symptoms:** Console error about missing hook.
 
-**Cause:** Component not compiled or hook name mismatch.
+**Cause:** Component not compiled, runtime hook script not rendered, or hook name mismatch.
 
 **Fix:**
 ```bash
@@ -239,23 +241,23 @@ JS.dispatch("phx:show-dialog", to: "#dialog")
 this.el.addEventListener("phx:show-dialog", ...)
 ```
 
-## Runtime Hooks (Advanced)
+## Extracted Hooks
 
-For special cases like LiveDashboard integration, you can use runtime hooks that aren't extracted at compile time:
+For special cases, Phoenix also supports extracted colocated hooks without the
+`runtime` attribute:
 
 ```heex
-<script :type={ColocatedHook} name=".RuntimeHook" runtime>
-  {
+<script :type={ColocatedHook} name=".ExtractedHook">
+  export default {
     mounted() {
-      // Note: no "export default" for runtime hooks
+      // Bundled into app JavaScript by Phoenix
     }
   }
 </script>
 ```
 
-Runtime hooks have limitations:
-- No bundler processing (ES6+ features may not work in older browsers)
-- CSP considerations (may need nonce)
+Use extracted hooks only when bundler processing is required. Sutra UI's default
+is runtime hooks.
 
 ## Next Steps
 

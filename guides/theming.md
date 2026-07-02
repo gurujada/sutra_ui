@@ -157,7 +157,7 @@ Sutra UI includes full dark mode support. Dark mode is activated by adding the `
 The easiest way to add dark mode is with the built-in theme switcher:
 
 ```heex
-<.theme_switcher />
+<.theme_switcher id="theme-toggle" />
 ```
 
 This renders a button that toggles between light, dark, and system themes.

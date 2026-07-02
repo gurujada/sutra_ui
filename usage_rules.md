@@ -4,11 +4,11 @@ This document provides guidelines for AI assistants when working with the Sutra 
 
 ## Overview
 
-Sutra UI is a pure Phoenix LiveView UI component library with no external dependencies. Components use colocated JavaScript hooks where interactivity is needed.
+Sutra UI is a pure Phoenix LiveView UI component library with no external dependencies. Components use runtime colocated JavaScript hooks where interactivity is needed.
 
 **Requirements:**
 - Phoenix 1.8+ (for colocated hooks)
-- Phoenix LiveView 1.1+ (ColocatedHook support)
+- Phoenix LiveView 1.1+ (runtime ColocatedHook support)
 - Tailwind CSS v4 (CSS-first configuration)
 
 ## Core Principles
@@ -72,7 +72,26 @@ Use appropriate attribute types:
 | `value` | `:string` or `:any` | Depends on component needs |
 | `errors` | `:list` | List of error messages |
 
-### 5. Slot Conventions
+### 5. Global Attributes
+
+Use `:global` for attributes passed through to rendered HTML. Phoenix already
+accepts all `phx-*`, `data-*`, and `aria-*` attributes on `:global`; the
+`include:` option only adds extra allowed attributes.
+
+```elixir
+attr(:rest, :global, include: ~w(form type name value), doc: "Additional HTML attributes")
+```
+
+```heex
+<.button phx-click="select_page" phx-value-page="2" data-testid="next-page">
+  Next
+</.button>
+```
+
+Do not treat examples like `phx-value-id` as a whitelist. Any `phx-value-*`
+payload supported by Phoenix LiveView can be passed through component globals.
+
+### 6. Slot Conventions
 
 Slots should follow consistent patterns:
 
@@ -146,8 +165,8 @@ defmodule SutraUI.InteractiveComponent do
       {render_slot(@inner_block)}
     </div>
 
-    <script :type={ColocatedHook} name=".ComponentHook">
-      export default {
+    <script :type={ColocatedHook} name=".ComponentHook" runtime>
+      {
         mounted() {
           // Initialize component
         },
@@ -163,6 +182,11 @@ defmodule SutraUI.InteractiveComponent do
   end
 end
 ```
+
+Most Sutra UI hooks are runtime colocated hooks. Do not ask users to import
+`phoenix-colocated/sutra_ui` in `assets/js/app.js`; rendering the component is
+enough. Components that intentionally use extracted hooks should document that
+exception in their module docs.
 
 ## Available Components
 
@@ -543,23 +567,19 @@ end
    {:phoenix, "~> 1.8"}
    ```
 
-2. **Verify hook import** - Ensure colocated hooks are imported in `app.js`:
-   ```javascript
-   // app.js
-   import { hooks as sutraUiHooks } from "phoenix-colocated/sutra_ui";
-   
-   let liveSocket = new LiveSocket("/live", Socket, {
-     hooks: { ...sutraUiHooks }
-   })
-   ```
-
-3. **Check component ID** - Hook-based components require unique IDs:
+2. **Check component ID** - Hook-based components require unique IDs:
    ```heex
    <%# Wrong - missing ID %>
    <.select name="country">
    
    <%# Correct %>
    <.select id="country-select" name="country">
+   ```
+
+3. **Check rendered hook markup** - Runtime hooks are emitted with the
+   component. If the hook script is missing, recompile the app:
+   ```bash
+   mix compile --force
    ```
 
 ### CSS styles not applied
@@ -703,8 +723,8 @@ end
 ### From Phoenix 1.7 to 1.8+
 
 1. Update dependencies in `mix.exs`
-2. Update `app.js` to import colocated hooks from `phoenix-colocated/sutra_ui`
-3. Remove any manual hook registrations from old `hooks.js` files - colocated hooks are now extracted automatically
+2. Remove stale `app.js` imports from `phoenix-colocated/sutra_ui`
+3. Remove manual hook registrations from old `hooks.js` files - Sutra UI runtime hooks load with their components
 
 ### From Tailwind v3 to v4
 

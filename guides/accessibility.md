@@ -155,7 +155,7 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 ### Calendar
 
 ```heex
-<.calendar selected={@date} today={Date.utc_today()} />
+<.calendar selected={@date} />
 ```
 
 <!-- Uses grid roles, aria-selected, and aria-current="date" for the active day -->
