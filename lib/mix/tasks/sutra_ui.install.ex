@@ -16,11 +16,10 @@ defmodule Mix.Tasks.SutraUi.Install do
   1. Delete `lib/my_app_web/components/core_components.ex`
   2. Remove the `import MyAppWeb.CoreComponents` line from your web module
 
-  ## Runtime Hooks
+  ## Colocated Hooks
 
-  Sutra UI uses Phoenix 1.8+ runtime colocated hooks. No JavaScript configuration
-  is required - hooks are automatically injected at runtime. Just use the components
-  and they work out of the box!
+  Sutra UI uses Phoenix 1.8+ colocated hooks. Most hooks load at runtime.
+  Extracted hooks use the generated `phoenix-colocated/sutra_ui` bundle.
 
   ## Options
 

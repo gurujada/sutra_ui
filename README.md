@@ -16,12 +16,12 @@ Built for **Phoenix 1.8+**, **Tailwind CSS v4**, and **Phoenix LiveView 1.1+**.
 - **CSS-first theming** - Customize colors with CSS variables. No build step, no config files.
 - **Copy-paste friendly** - Like shadcn/ui, components are meant to be understood and modified.
 - **Server-driven** - All state lives on the server. No client-side state sync headaches.
-- **Production-ready** - 962 tests, full accessibility support, dark mode included.
+- **Production-ready** - Full test coverage, accessibility support, dark mode included.
 - **LLM-friendly** - Includes `usage_rules.md` with guidelines for AI assistants working with this codebase.
 
 ## Features
 
-- **55 Components** - Buttons, forms, dialogs, tables, calendars, upload fields, and more
+- **57 Components** - Buttons, forms, dialogs, tables, calendars, upload fields, AI primitives, and more
 - **Pure LiveView** - No external JavaScript frameworks
 - **Colocated Hooks** - JS hooks live with their components (Phoenix 1.8+)
 - **CSS Variables** - Override any color in one line
@@ -67,12 +67,20 @@ rm lib/my_app_web/components/core_components.ex
 
 In your `my_app_web.ex`, remove the `import MyAppWeb.CoreComponents` line.
 
-### 4. Runtime Hooks (No JS Setup Required)
+### 4. Colocated Hooks
 
-Sutra UI uses Phoenix 1.8+ runtime colocated hooks.
+Sutra UI uses Phoenix 1.8+ colocated hooks.
 
-You do **not** need to import or register Sutra UI hooks in `assets/js/app.js`.
-Just render components and their hooks load automatically.
+Most hooks load at runtime. If your app uses extracted hooks, merge the
+generated Sutra UI hooks into your LiveSocket:
+
+```js
+import {hooks as sutraUiHooks} from "phoenix-colocated/sutra_ui"
+
+const liveSocket = new LiveSocket("/live", Socket, {
+  hooks: {...sutraUiHooks}
+})
+```
 
 ### 5. Deployment Setup
 
@@ -279,6 +287,10 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `timeline` - Chronological event list
 - `theme_switcher` - Light/dark mode toggle
 
+### AI
+- `response` - Plain text or streamed Markdown responses with reveal styles
+- `activity` - Safe user-facing agent progress with slot-owned rows
+
 ## For AI Assistants
 
 This library includes `usage_rules.md` with detailed guidelines for AI assistants (LLMs) working with this codebase. The file covers:
@@ -325,7 +337,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 - **[Theming Guide](https://hexdocs.pm/sutra_ui/theming.html)** - CSS variables, OKLCH colors, shadcn themes
 - **[Accessibility Guide](https://hexdocs.pm/sutra_ui/accessibility.html)** - ARIA patterns, keyboard navigation
 - **[JavaScript Hooks](https://hexdocs.pm/sutra_ui/colocated-hooks.html)** - Colocated hooks, custom events
-- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 54 components
+- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 57 components
 - **[Forms Cheatsheet](https://hexdocs.pm/sutra_ui/forms.html)** - Form patterns and validation
 
 ## Links

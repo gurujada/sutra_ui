@@ -16,7 +16,7 @@ defmodule SutraUI.MixProject do
 
       # Hex
       description:
-        "Sutra UI - We define the rules, so you don't have to. A Phoenix LiveView component library with 54 accessible components and CSS-first theming.",
+        "Sutra UI - We define the rules, so you don't have to. A Phoenix LiveView component library with 57 accessible components and CSS-first theming.",
       package: package(),
 
       # Docs
@@ -39,6 +39,7 @@ defmodule SutraUI.MixProject do
     [
       {:phoenix_live_view, "~> 1.2"},
       {:phoenix_html, "~> 4.0"},
+      {:mdex, "~> 0.13"},
       # Dev/Test
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:lazy_html, "~> 0.1", only: :test},
@@ -145,6 +146,10 @@ defmodule SutraUI.MixProject do
           SutraUI.Marquee,
           SutraUI.Separator,
           SutraUI.ThemeSwitcher
+        ],
+        AI: [
+          SutraUI.Response,
+          SutraUI.Activity
         ]
       ],
       nest_modules_by_prefix: [SutraUI]

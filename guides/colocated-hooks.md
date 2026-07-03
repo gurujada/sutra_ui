@@ -1,6 +1,6 @@
 # JavaScript Hooks
 
-Sutra UI uses **runtime colocated hooks**, a Phoenix 1.8+ feature that allows JavaScript hooks to be defined alongside their components. No separate `hooks.js` file or `app.js` registration is needed.
+Sutra UI uses **colocated hooks**, a Phoenix 1.8+ feature that allows JavaScript hooks to be defined alongside their components. Most hooks use the runtime form and do not need a separate `hooks.js` file.
 
 ## What Are Colocated Hooks?
 
@@ -35,6 +35,7 @@ Several Sutra UI components use colocated hooks for interactivity:
 | Component | Hook | Mode | Purpose |
 |-----------|------|------|---------|
 | `dialog` | `.Dialog` | Extracted | Show/hide modal (div-based for screen share compatibility) |
+| `response` | `SutraUI.Response.Response` | Extracted | Smooth text reveal |
 | `tabs` | `.Tabs` | Runtime | Keyboard navigation |
 | `select` | `.Select` | Runtime | Dropdown behavior, search |
 | `dropdown_menu` | `.DropdownMenu` | Runtime | Menu positioning, keyboard nav |
@@ -46,8 +47,8 @@ Several Sutra UI components use colocated hooks for interactivity:
 | `carousel` | `.Carousel` | Runtime | Scroll snap, navigation |
 | `theme_switcher` | `.ThemeSwitcher` | Runtime | Theme persistence |
 
-Extracted hooks without `runtime` are exceptions; most Sutra UI hooks load with
-the rendered component.
+Extracted hooks without `runtime` are exceptions. If you use one, merge the
+generated `phoenix-colocated/sutra_ui` hooks into your LiveSocket.
 
 ## The Hook Name Convention
 

@@ -171,6 +171,24 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 
 <!-- Opens with right click, Shift+F10, or the Context Menu key -->
 
+### AI Primitives
+
+```heex
+<.response id="answer" value={@streamed_answer} streaming reveal="word" />
+<.response value={@streamed_markdown} format="markdown" streaming />
+```
+
+<!-- Sets aria-live="polite" and aria-busy="true" while streaming; Markdown is sanitized by default -->
+
+```heex
+<.activity>
+  <:item status="complete">Searched documentation</:item>
+  <:item status="running">Drafting answer</:item>
+</.activity>
+```
+
+<!-- Uses an ordered list with a default aria-label; default status markers are decorative -->
+
 ## Focus Management
 
 ### Focus Trapping

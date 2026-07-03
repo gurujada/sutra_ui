@@ -4,7 +4,7 @@ This document provides guidelines for AI assistants when working with the Sutra 
 
 ## Overview
 
-Sutra UI is a pure Phoenix LiveView UI component library with no external dependencies. Components use runtime colocated JavaScript hooks where interactivity is needed.
+Sutra UI is a pure Phoenix LiveView UI component library with no external JavaScript dependencies. Components use runtime colocated JavaScript hooks where interactivity is needed.
 
 **Requirements:**
 - Phoenix 1.8+ (for colocated hooks)
@@ -183,10 +183,8 @@ defmodule SutraUI.InteractiveComponent do
 end
 ```
 
-Most Sutra UI hooks are runtime colocated hooks. Do not ask users to import
-`phoenix-colocated/sutra_ui` in `assets/js/app.js`; rendering the component is
-enough. Components that intentionally use extracted hooks should document that
-exception in their module docs.
+Most Sutra UI hooks are runtime colocated hooks. Extracted hook exceptions must
+document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 
 ## Available Components
 
@@ -244,6 +242,10 @@ exception in their module docs.
 - `calendar/1` - Monthly calendar grid
 - `marquee/1` - CSS-only scrolling content banner
 - `separator/1` - Visual or semantic divider
+
+### AI Primitives
+- `response/1` - Plain text or streamed Markdown responses with optional reveal styles
+- `activity/1` - Safe user-facing agent progress with slot-owned row content
 
 ### Layout Helpers
 - `filter_bar/1` - Filter bar for index pages
@@ -723,8 +725,8 @@ end
 ### From Phoenix 1.7 to 1.8+
 
 1. Update dependencies in `mix.exs`
-2. Remove stale `app.js` imports from `phoenix-colocated/sutra_ui`
-3. Remove manual hook registrations from old `hooks.js` files - Sutra UI runtime hooks load with their components
+2. Remove manual hook registrations from old `hooks.js` files
+3. Keep generated `phoenix-colocated/sutra_ui` imports when using extracted hooks
 
 ### From Tailwind v3 to v4
 

@@ -2,7 +2,7 @@ defmodule SutraUI do
   @moduledoc """
   Sutra UI - We define the rules, so you don't have to.
 
-  A pure Phoenix LiveView UI component library with **55 accessible components**,
+  A pure Phoenix LiveView UI component library with **57 accessible components**,
   CSS-first theming, and colocated JavaScript hooks. Built for Phoenix 1.8+ and
   Tailwind CSS v4.
 
@@ -143,6 +143,15 @@ defmodule SutraUI do
   | `SutraUI.Calendar` | Monthly calendar grid |
   | `SutraUI.Timeline` | Chronological event lists |
 
+  ### AI
+
+  Composable primitives for AI-assisted interfaces.
+
+  | Component | Description |
+  |-----------|-------------|
+  | `SutraUI.Response` | Plain text or streamed Markdown responses with reveal styles |
+  | `SutraUI.Activity` | Safe user-facing agent progress with slot-owned rows |
+
   ## Theming
 
   Sutra UI uses CSS variables compatible with [shadcn/ui themes](https://ui.shadcn.com/themes).
@@ -267,6 +276,10 @@ defmodule SutraUI do
       import SutraUI.Calendar
       import SutraUI.Timeline
       import SutraUI.ContextMenu
+
+      # Phase 10: AI Primitives
+      import SutraUI.Response
+      import SutraUI.Activity
     end
   end
 end

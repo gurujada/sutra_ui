@@ -2642,6 +2642,198 @@
     }
 }
 
+/* AI Primitives */
+@layer components {
+    .response {
+        @apply min-w-0 text-sm leading-7 text-foreground;
+    }
+
+    .response-text,
+    .response-content {
+        @apply min-w-0 whitespace-pre-wrap break-words;
+    }
+
+    .response-text {
+        @apply inline;
+    }
+
+    .response-markdown {
+        @apply min-w-0 break-words;
+
+        > :first-child {
+            @apply mt-0;
+        }
+
+        > :last-child {
+            @apply mb-0;
+        }
+
+        p {
+            @apply my-3;
+        }
+
+        h1 {
+            @apply mb-4 mt-6 text-2xl font-semibold leading-tight;
+        }
+
+        h2 {
+            @apply mb-3 mt-6 text-xl font-semibold leading-tight;
+        }
+
+        h3 {
+            @apply mb-2 mt-5 text-base font-semibold leading-tight;
+        }
+
+        h4,
+        h5,
+        h6 {
+            @apply mb-2 mt-4 text-sm font-semibold leading-tight;
+        }
+
+        ul,
+        ol {
+            @apply my-3 ps-5;
+        }
+
+        ul {
+            @apply list-disc;
+        }
+
+        ol {
+            @apply list-decimal;
+        }
+
+        li {
+            @apply my-1;
+        }
+
+        a {
+            @apply font-medium text-primary underline underline-offset-4;
+        }
+
+        blockquote {
+            @apply my-4 border-l-2 border-border ps-4 text-muted-foreground;
+        }
+
+        code {
+            @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em];
+        }
+
+        pre {
+            @apply my-4 overflow-x-auto rounded-md border bg-muted/50 p-3;
+
+            code {
+                @apply rounded-none bg-transparent p-0 text-xs leading-6;
+            }
+        }
+
+        table {
+            @apply my-4 w-full border-collapse overflow-hidden text-sm;
+        }
+
+        th,
+        td {
+            @apply border px-3 py-2 text-left align-top;
+        }
+
+        th {
+            @apply bg-muted/60 font-medium;
+        }
+
+        hr {
+            @apply my-6 border-border;
+        }
+    }
+
+    .response-cursor {
+        @apply ms-1 inline-flex h-4 w-1 translate-y-0.5 animate-pulse rounded-full bg-primary align-baseline;
+    }
+
+    .activity {
+        @apply m-0 grid list-none gap-0 p-0;
+    }
+
+    .activity-item {
+        @apply grid grid-cols-[auto_1fr] gap-x-3;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .activity-item {
+            animation: activity-item-in 180ms ease-out both;
+        }
+    }
+
+    @keyframes activity-item-in {
+        from {
+            opacity: 0;
+            transform: translateY(0.25rem);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .activity-marker {
+        @apply relative flex min-w-6 justify-center;
+    }
+
+    .activity-dot {
+        @apply mt-1.5 size-2.5 rounded-full bg-muted-foreground ring-4 ring-background;
+    }
+
+    .activity-line {
+        @apply absolute top-5 bottom-0 w-px bg-border;
+    }
+
+    .activity-item:last-child .activity-line {
+        @apply hidden;
+    }
+
+    .activity-content {
+        @apply min-w-0 pb-5 text-sm leading-6 text-foreground;
+    }
+
+    .activity-header {
+        @apply flex min-w-0 items-center gap-2;
+    }
+
+    .activity-label {
+        @apply min-w-0 flex-1 text-sm font-medium leading-6 text-foreground;
+    }
+
+    .activity-time {
+        @apply shrink-0 text-xs text-muted-foreground;
+    }
+
+    .activity-description {
+        @apply mt-1 text-sm leading-6 text-muted-foreground;
+    }
+
+    .activity-compact {
+        .activity-content {
+            @apply pb-3;
+        }
+
+        .activity-description {
+            @apply mt-0.5 text-xs leading-5;
+        }
+    }
+
+    .activity-item[data-status="running"] .activity-dot {
+        @apply animate-pulse bg-primary ring-primary/15;
+    }
+
+    .activity-item[data-status="complete"] .activity-dot {
+        @apply bg-emerald-500 ring-emerald-500/15;
+    }
+
+    .activity-item[data-status="error"] .activity-dot {
+        @apply bg-destructive ring-destructive/15;
+    }
+}
+
 /* Loading State */
 @layer components {
     .loading-state {

@@ -1,6 +1,6 @@
 # Components Cheatsheet
 
-Quick reference for all 54 Sutra UI components.
+Quick reference for all 57 Sutra UI components.
 
 ## Foundation
 {: .col-2}
@@ -695,6 +695,29 @@ import SutraUI.Dialog
 <.separator />
 <.separator decorative={false} />
 <.separator orientation="vertical" />
+```
+
+## AI
+{: .col-2}
+
+### Response
+
+```heex
+<.response value={@answer} />
+<.response id="answer" value={@answer} streaming reveal="word" />
+<.response value={@streamed_markdown} format="markdown" streaming />
+```
+
+### Activity
+
+```heex
+<.activity>
+  <:item status="complete">Searched documentation</:item>
+  <:item status="running">
+    Checking relevant examples.
+  </:item>
+  <:item status="pending">Preparing summary</:item>
+</.activity>
 ```
 
 ### Theme Switcher
