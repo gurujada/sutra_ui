@@ -8,7 +8,7 @@ defmodule SutraUI.MixProject do
     [
       app: :sutra_ui,
       version: @version,
-      elixir: "~> 1.14",
+      elixir: "~> 1.20",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -37,7 +37,7 @@ defmodule SutraUI.MixProject do
 
   defp deps do
     [
-      {:phoenix_live_view, "~> 1.1"},
+      {:phoenix_live_view, "~> 1.2"},
       {:phoenix_html, "~> 4.0"},
       # Dev/Test
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},

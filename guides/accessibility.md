@@ -141,7 +141,7 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
   <:item>New components released weekly</:item>
   <:item>24/7 support available</:item>
 </.marquee>
-<!-- Duplicated content is hidden from screen readers and motion stops for reduced-motion users -->
+<!-- Duplicated content is hidden from assistive tech and motion stops for reduced-motion users -->
 ```
 
 ### Input OTP
@@ -158,7 +158,7 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 <.calendar selected={@date} />
 ```
 
-<!-- Uses grid roles, aria-selected, and aria-current="date" for the active day -->
+<!-- Uses grid roles, aria-selected, and aria-current="date" for the active day. Compose it with popover and a hidden input when building a date-picker field. -->
 
 ### Context Menu
 

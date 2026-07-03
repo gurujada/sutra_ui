@@ -40,6 +40,23 @@ defmodule SutraUI.FileUpload do
         </:drop_content>
       </.file_upload>
 
+      # Custom preview content
+      <.file_upload upload={@uploads.documents}>
+        <:entry :let={item}>
+          <div class="flex items-center justify-between gap-3">
+            <span class="truncate">{item.entry.client_name}</span>
+            <button
+              type="button"
+              phx-click={item.cancel_event}
+              phx-value-upload={item.upload.name}
+              phx-value-ref={item.entry.ref}
+            >
+              Remove
+            </button>
+          </div>
+        </:entry>
+      </.file_upload>
+
   ## Attributes
 
   * `upload` - Phoenix LiveView upload config from `allow_upload/3`.
@@ -58,6 +75,8 @@ defmodule SutraUI.FileUpload do
 
   * `:drop_content` - Custom content for the dropzone. Falls back to the
     default icon + label/description.
+  * `:entry` - Custom preview for each selected file. Receives a map with
+    `entry`, `upload`, and `cancel_event`.
 
   ## Event Handling
 
@@ -75,8 +94,8 @@ defmodule SutraUI.FileUpload do
     {:noreply, put_flash(socket, :info, "Uploaded \#{length(consumed)} files")}
   end
 
-  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :documents, ref)}
+  def handle_event("cancel-upload", %{"upload" => upload, "ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, String.to_existing_atom(upload), ref)}
   end
   ```
 
@@ -112,6 +131,7 @@ defmodule SutraUI.FileUpload do
   attr(:rest, :global, doc: "Additional HTML attributes")
 
   slot(:drop_content, doc: "Custom content for the dropzone. Falls back to default icon + label.")
+  slot(:entry, doc: "Custom preview for each selected file.")
 
   def file_upload(assigns) do
     ref = (assigns.upload && assigns.upload.ref) || "no-upload"
@@ -121,13 +141,15 @@ defmodule SutraUI.FileUpload do
       assigns
       |> assign(:ref, ref)
       |> assign(:entries, entries)
+      |> assign(:hook, assigns.upload && "SutraUI.FileUpload.FileUpload")
+      |> assign(:upload_errors, if(assigns.upload, do: upload_errors(assigns.upload), else: []))
       |> assign(:dom_id, assigns.id || (assigns.upload && "#{ref}-dropzone"))
 
     ~H"""
     <div
       id={@dom_id}
       class={["file-upload", @class]}
-      phx-hook={@upload && ".FileUpload"}
+      phx-hook={@hook}
       phx-drop-target={@upload && @ref}
       {@rest}
     >
@@ -168,62 +190,70 @@ defmodule SutraUI.FileUpload do
         <% end %>
         <.live_file_input :if={@upload} upload={@upload} class="file-upload-input" />
       </label>
+      <p :for={error <- @upload_errors} class="file-upload-entry-error">
+        {entry_error(error)}
+      </p>
       <div class="file-upload-preview" data-upload-preview>
         <div :for={entry <- @entries} class="file-upload-entry" data-entry-ref={entry.ref}>
-          <div class="file-upload-entry-row">
-            <.entry_thumbnail :if={@thumbnail && image_entry?(entry)} entry={entry} />
-            <span class="file-upload-entry-icon" aria-hidden="true">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+          <%= if @entry != [] do %>
+            {render_slot(@entry, %{entry: entry, upload: @upload, cancel_event: @cancel_event})}
+          <% else %>
+            <div class="file-upload-entry-row">
+              <.entry_thumbnail :if={@thumbnail && image_entry?(entry)} entry={entry} />
+              <span class="file-upload-entry-icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" />
+                </svg>
+              </span>
+              <div class="file-upload-entry-info">
+                <span class="file-upload-entry-name">{entry.client_name}</span>
+                <span class="file-upload-entry-size">{format_bytes(entry.client_size)}</span>
+              </div>
+              <button
+                type="button"
+                class="file-upload-entry-remove"
+                aria-label={"Remove #{entry.client_name}"}
+                phx-click={@cancel_event}
+                phx-value-upload={@upload.name}
+                phx-value-ref={entry.ref}
               >
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" />
-              </svg>
-            </span>
-            <div class="file-upload-entry-info">
-              <span class="file-upload-entry-name">{entry.client_name}</span>
-              <span class="file-upload-entry-size">{format_bytes(entry.client_size)}</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="size-4"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+                </svg>
+              </button>
             </div>
-            <button
-              type="button"
-              class="file-upload-entry-remove"
-              aria-label={"Remove #{entry.client_name}"}
-              phx-click={@cancel_event}
-              phx-value-ref={entry.ref}
+            <div
+              class="file-upload-entry-progress"
+              role="progressbar"
+              aria-valuenow={entry.progress}
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-label={"Uploading #{entry.client_name}"}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="size-4"
-                aria-hidden="true"
-              >
-                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-              </svg>
-            </button>
-          </div>
-          <div
-            class="file-upload-entry-progress"
-            role="progressbar"
-            aria-valuenow={entry.progress}
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-label={"Uploading #{entry.client_name}"}
-          >
-            <span style={"width: #{entry.progress}%"}></span>
-          </div>
-          <p :if={entry.invalid? && entry.errors != []} class="file-upload-entry-error">
-            {entry_error(entry.errors)}
-          </p>
+              <span style={"width: #{entry.progress}%"}></span>
+            </div>
+            <p :for={error <- upload_errors(@upload, entry)} class="file-upload-entry-error">
+              {entry_error(error)}
+            </p>
+          <% end %>
         </div>
       </div>
     </div>
@@ -306,6 +336,20 @@ defmodule SutraUI.FileUpload do
   end
 
   defp format_bytes(_), do: ""
+
+  defp entry_error(:too_large), do: "File exceeds size limit"
+  defp entry_error(:too_many_files), do: "Too many files selected"
+  defp entry_error(:not_accepted), do: "File type not accepted"
+  defp entry_error(:external_client_failure), do: "Upload failed"
+  defp entry_error({:writer_failure, _reason}), do: "Upload failed"
+  defp entry_error(reason) when is_binary(reason), do: reason
+
+  defp entry_error(reason) when is_atom(reason) do
+    reason
+    |> Atom.to_string()
+    |> String.replace("_", " ")
+    |> String.capitalize()
+  end
 
   defp entry_error([%{reason: reason} | _]) when is_binary(reason), do: reason
 

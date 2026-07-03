@@ -26,6 +26,7 @@ defmodule SutraUI.TreeViewTest do
         )
 
       refute html =~ ~s(phx-hook=".TreeView")
+      refute html =~ ~s(phx-hook="SutraUI.TreeView.TreeView")
     end
 
     test "attaches hook when id is provided" do
@@ -37,7 +38,7 @@ defmodule SutraUI.TreeViewTest do
         )
 
       assert html =~ ~s(id="files")
-      assert html =~ ~s(phx-hook=".TreeView")
+      assert html =~ ~s(phx-hook="SutraUI.TreeView.TreeView")
     end
   end
 
@@ -98,10 +99,47 @@ defmodule SutraUI.TreeViewTest do
       assert html =~ "Custom node"
     end
 
+    test "custom trigger without children renders as a leaf node" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H|<TreeView.tree_item>
+  <:trigger>
+    <span class="custom-node">app.ex</span>
+  </:trigger>
+</TreeView.tree_item>|)
+
+      assert html =~ "tree-item-leaf"
+      refute html =~ "<details"
+      refute html =~ "tree-item-chevron"
+    end
+
     test "renders disabled node" do
       assigns = %{}
       html = rendered_to_string(~H|<TreeView.tree_item label="locked" disabled />|)
       assert html =~ ~s(aria-disabled="true")
+    end
+
+    test "disabled collapsible node is removed from roving focus" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H|<TreeView.tree_item label="locked" disabled>
+  <TreeView.tree_item label="child" />
+</TreeView.tree_item>|)
+
+      assert html =~ ~s(aria-disabled="true")
+      assert html =~ ~s(tabindex="-1")
+    end
+
+    test "disabled link node does not render a navigable href" do
+      assigns = %{}
+
+      html = rendered_to_string(~H|<TreeView.tree_item label="locked" href="/secret" disabled />|)
+
+      assert html =~ ~s(aria-disabled="true")
+      refute html =~ ~s(href="/secret")
+      assert html =~ ~s(tabindex="-1")
     end
 
     test "renders chevron for collapsible nodes" do

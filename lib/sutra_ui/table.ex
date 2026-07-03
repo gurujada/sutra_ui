@@ -199,7 +199,7 @@ defmodule SutraUI.Table do
         <tr>
           <th :for={col <- @col} class={col[:class]}>{col.label}</th>
           <th :if={@action != []}>
-            {if @action != [] && hd(@action)[:label], do: hd(@action).label, else: ""}
+            {if hd(@action)[:label], do: hd(@action).label, else: ""}
           </th>
         </tr>
       </thead>

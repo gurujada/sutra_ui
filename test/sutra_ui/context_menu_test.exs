@@ -15,6 +15,20 @@ defmodule SutraUI.ContextMenuTest do
       assert html =~ ~s(aria-haspopup="menu")
     end
 
+    test "uses context-menu specific popover markup" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H|<ContextMenu.context_menu id="menu">
+  <:trigger>Right-click</:trigger>
+  <ContextMenu.context_menu_item>Action</ContextMenu.context_menu_item>
+</ContextMenu.context_menu>|)
+
+      assert html =~ ~s(class="context-menu-popover")
+      assert html =~ ~s(data-context-menu)
+      refute html =~ ~s(data-popover)
+    end
+
     test "renders trigger content" do
       assigns = %{}
       html = rendered_to_string(~H|<ContextMenu.context_menu id="menu">
@@ -22,6 +36,18 @@ defmodule SutraUI.ContextMenuTest do
   <ContextMenu.context_menu_item>Item</ContextMenu.context_menu_item>
 </ContextMenu.context_menu>|)
       assert html =~ "<button>Open</button>"
+    end
+
+    test "accepts custom trigger classes" do
+      assigns = %{}
+
+      html = rendered_to_string(~H|<ContextMenu.context_menu id="menu" trigger_class="w-full">
+  <:trigger>Right-click</:trigger>
+  <ContextMenu.context_menu_item>Item</ContextMenu.context_menu_item>
+</ContextMenu.context_menu>|)
+
+      assert html =~ "context-menu-trigger"
+      assert html =~ "w-full"
     end
   end
 
@@ -59,6 +85,32 @@ defmodule SutraUI.ContextMenuTest do
 
       assert html =~ "⌘K"
       assert html =~ "context-menu-shortcut"
+    end
+
+    test "passes LiveView events through on the item" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H|<ContextMenu.context_menu_item phx-click="copy" phx-value-id="42">
+  Copy
+</ContextMenu.context_menu_item>|)
+
+      assert html =~ ~s(phx-click="copy")
+      assert html =~ ~s(phx-value-id="42")
+    end
+
+    test "passes targeted LiveView events through on the item" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(
+          ~H|<ContextMenu.context_menu_item phx-click="copy" phx-target="#row" phx-value-id="42">
+  Copy
+</ContextMenu.context_menu_item>|
+        )
+
+      assert html =~ ~s(phx-target="#row")
+      assert html =~ ~s(phx-value-id="42")
     end
 
     test "renders disabled state" do
@@ -159,6 +211,7 @@ defmodule SutraUI.ContextMenuTest do
       assert html =~ "context-menu-sub"
       assert html =~ "Share"
       assert html =~ "Copy link"
+      refute html =~ ~s(data-popover)
     end
   end
 end

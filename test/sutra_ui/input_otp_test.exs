@@ -67,6 +67,7 @@ defmodule SutraUI.InputOTPTest do
       html =
         rendered_to_string(~H|<InputOTP.input_otp id="otp" name="code" length={4} invalid />|)
 
+      assert html =~ ~s(data-invalid="true")
       assert html =~ ~s(aria-invalid="true")
     end
   end

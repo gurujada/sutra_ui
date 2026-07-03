@@ -3,8 +3,8 @@ defmodule SutraUI.Calendar do
   A monthly calendar grid for date selection.
 
   Renders a single month with prev/next navigation. Designed to be composed
-  into date pickers or used standalone. Pure server-rendered — all date logic
-  in Elixir, no JavaScript.
+  into date pickers or used standalone. Date state stays in the parent
+  LiveView; the component emits plain LiveView events.
 
   ## Examples
 
@@ -45,10 +45,11 @@ defmodule SutraUI.Calendar do
   * `range_end` - Range end date (only used in `mode="range"`).
   * `mode` - Selection mode: `single` or `range`. Defaults to `single`.
   * `disabled_dates` - List of `Date` structs or ISO strings to disable.
-  * `week_start` - `0` for Sunday, `1` for Monday. Defaults to `0`.
+  * `week_start` - First weekday, where `0` is Sunday and `6` is Saturday.
+    Defaults to `0`.
   * `select_event` - LiveView event emitted on date click with `phx-value-date`.
   * `nav_event` - LiveView event emitted on prev/next with `phx-value-year` and
-    `phx-value-month`. Falls back to `select_event` if not set.
+    `phx-value-month`.
   * `class` - Additional CSS classes.
 
   ## Event Handling
@@ -66,6 +67,7 @@ defmodule SutraUI.Calendar do
   def handle_event("nav_month", %{"year" => year, "month" => month}, socket) do
     {:noreply, assign(socket, year: String.to_integer(year), month: String.to_integer(month))}
   end
+
   ```
 
   ## Accessibility
@@ -96,7 +98,12 @@ defmodule SutraUI.Calendar do
   attr(:range_end, :any, default: nil, doc: "Range end Date struct or ISO string")
   attr(:mode, :string, default: "single", values: ~w(single range), doc: "Selection mode")
   attr(:disabled_dates, :list, default: [], doc: "List of disabled Date structs or ISO strings")
-  attr(:week_start, :integer, default: 0, values: [0, 1], doc: "0 = Sunday, 1 = Monday")
+
+  attr(:week_start, :integer,
+    default: 0,
+    values: [0, 1, 2, 3, 4, 5, 6],
+    doc: "First weekday: 0 = Sunday, 1 = Monday, ... 6 = Saturday"
+  )
 
   attr(:select_event, :string,
     default: nil,
@@ -110,7 +117,8 @@ defmodule SutraUI.Calendar do
   )
 
   attr(:class, :any, default: nil, doc: "Additional CSS classes")
-  attr(:rest, :global, include: ~w(id aria-label), doc: "Additional HTML attributes")
+  attr(:id, :string, default: nil, doc: "DOM id for the calendar root")
+  attr(:rest, :global, include: ~w(aria-label), doc: "Additional HTML attributes")
 
   def calendar(assigns) do
     today = Date.utc_today()
@@ -147,12 +155,17 @@ defmodule SutraUI.Calendar do
       |> assign(:disabled_set, MapSet.new(disabled, fn d -> Date.to_iso8601(d) end))
 
     ~H"""
-    <div class={["calendar", @class]} {@rest}>
+    <div
+      id={@id}
+      class={["calendar", @class]}
+      {@rest}
+    >
       <div class="calendar-header">
         <button
           type="button"
           class="calendar-nav-btn"
           aria-label="Previous month"
+          disabled={is_nil(@nav_event)}
           phx-click={@nav_event}
           phx-value-year={@prev.year}
           phx-value-month={@prev.month}
@@ -176,6 +189,7 @@ defmodule SutraUI.Calendar do
           type="button"
           class="calendar-nav-btn"
           aria-label="Next month"
+          disabled={is_nil(@nav_event)}
           phx-click={@nav_event}
           phx-value-year={@next.year}
           phx-value-month={@next.month}
@@ -203,7 +217,7 @@ defmodule SutraUI.Calendar do
           <button
             :for={day <- week}
             type="button"
-            class={
+            class={[
               calendar_day_class(
                 day,
                 @display_date,
@@ -212,13 +226,16 @@ defmodule SutraUI.Calendar do
                 @today_date,
                 @mode,
                 @disabled_set
-              )
-            }
+              ),
+              is_nil(@select_event) && "calendar-day-static"
+            ]}
             data-outside={to_attr(day.month != @display_date.month)}
             data-today={to_attr(same_date?(day, @today_date))}
-            data-selected={to_attr(same_date?(day, @selected_date))}
+            data-selected={to_attr(selected_day?(day, @selected_date, @range_end_date, @mode))}
             data-in-range={to_attr(in_range?(day, @selected_date, @range_end_date, @mode))}
-            aria-selected={to_attr(same_date?(day, @selected_date))}
+            data-range-start={to_attr(range_start_day?(day, @selected_date, @range_end_date, @mode))}
+            data-range-end={to_attr(range_end_day?(day, @selected_date, @range_end_date, @mode))}
+            aria-selected={to_attr(selected_day?(day, @selected_date, @range_end_date, @mode))}
             aria-current={same_date?(day, @today_date) && "date"}
             disabled={day_disabled?(day, @display_date, @disabled_set)}
             phx-click={@select_event}
@@ -248,7 +265,7 @@ defmodule SutraUI.Calendar do
       Integer.mod(
         first_day
         |> Date.day_of_week()
-        |> then(fn d -> if week_start == 0, do: rem(d + 6, 7), else: d - 1 end),
+        |> then(fn d -> Integer.mod(d, 7) - week_start end),
         7
       )
 
@@ -256,11 +273,19 @@ defmodule SutraUI.Calendar do
     for w <- 0..5, do: for(d <- 0..6, do: Date.add(start, w * 7 + d))
   end
 
-  defp weekday_labels(0), do: ~w(Sun Mon Tue Wed Thu Fri Sat)
-  defp weekday_labels(1), do: ~w(Mon Tue Wed Thu Fri Sat Sun)
+  defp weekday_labels(week_start) do
+    labels = ~w(Sun Mon Tue Wed Thu Fri Sat)
+    {head, tail} = Enum.split(labels, week_start)
+    tail ++ head
+  end
 
   defp same_date?(_, nil), do: false
   defp same_date?(%Date{} = a, %Date{} = b), do: Date.compare(a, b) == :eq
+
+  defp selected_day?(day, selected, range_end, "range"),
+    do: same_date?(day, selected) or same_date?(day, range_end)
+
+  defp selected_day?(day, selected, _range_end, _mode), do: same_date?(day, selected)
 
   defp in_range?(_, nil, _, _), do: false
   defp in_range?(_, _, nil, _), do: false
@@ -271,6 +296,26 @@ defmodule SutraUI.Calendar do
   end
 
   defp in_range?(_, _, _, _), do: false
+
+  defp range_start_day?(_, nil, _, _), do: false
+  defp range_start_day?(_, _, nil, _), do: false
+
+  defp range_start_day?(day, start_date, end_date, "range") do
+    {first_day, _last_day} = ordered_range(start_date, end_date)
+    same_date?(day, first_day)
+  end
+
+  defp range_start_day?(_, _, _, _), do: false
+
+  defp range_end_day?(_, nil, _, _), do: false
+  defp range_end_day?(_, _, nil, _), do: false
+
+  defp range_end_day?(day, start_date, end_date, "range") do
+    {_first_day, last_day} = ordered_range(start_date, end_date)
+    same_date?(day, last_day)
+  end
+
+  defp range_end_day?(_, _, _, _), do: false
 
   defp ordered_range(start_date, end_date) do
     case Date.compare(start_date, end_date) do
@@ -285,7 +330,7 @@ defmodule SutraUI.Calendar do
 
   defp calendar_day_class(day, current, selected, range_end, today, mode, disabled) do
     outside = day.month != current.month
-    sel = selected && same_date?(day, selected)
+    sel = selected_day?(day, selected, range_end, mode)
     range = in_range?(day, selected, range_end, mode)
     today_class = same_date?(day, today)
     disabled_class = day_disabled?(day, current, disabled)
@@ -295,6 +340,8 @@ defmodule SutraUI.Calendar do
       outside && "calendar-day-outside",
       sel && "calendar-day-selected",
       range && !sel && "calendar-day-in-range",
+      range_start_day?(day, selected, range_end, mode) && "calendar-day-range-start",
+      range_end_day?(day, selected, range_end, mode) && "calendar-day-range-end",
       today_class && "calendar-day-today",
       disabled_class && "calendar-day-disabled"
     ]

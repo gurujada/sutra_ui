@@ -21,6 +21,17 @@ screens into Phoenix LiveView with exact visual parity.
   native controls where replacing them would change event contracts or visual
   parity, while moving styling into CSS classes and using Sutra where it already
   fits.
+- Dependency colocated hooks are not consistently generated for all Sutra
+  components used by Shelf. `command` renders `phx-hook="SutraUI.Command.Command"`
+  and `theme_switcher` renders `phx-hook="SutraUI.ThemeSwitcher.ThemeSwitcher"`,
+  but the generated `phoenix-colocated/sutra_ui` bundle only exported the dialog
+  hook during Shelf verification. Current workaround: Shelf registers explicit
+  hook objects for those two exact hook names in `assets/js/app.js`.
+- `SutraUI.Input` wraps `type="color"` in `.fieldset` markup, which cannot be
+  nested invisibly inside Folio's compact swatch + hex + "Change" label without
+  leaving visible browser color-input artifacts. Current workaround: use a
+  native color input only for that hidden control while keeping the surrounding
+  row backend-backed and styled by Folio CSS.
 
 ## Closed
 

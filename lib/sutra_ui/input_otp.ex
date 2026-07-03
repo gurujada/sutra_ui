@@ -104,6 +104,7 @@ defmodule SutraUI.InputOTP do
       data-pattern={@pattern}
       data-length={@length}
       data-on-complete={@on_complete}
+      data-invalid={@invalid && "true"}
       phx-hook=".InputOTP"
       {@rest}
     >

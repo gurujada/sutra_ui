@@ -8,6 +8,12 @@ defmodule SutraUI.Timeline do
   ## Examples
 
       <.timeline>
+        <:marker :let={item}>
+          <span class="timeline-marker-icon">
+            <span class="size-2 rounded-full bg-primary animate-pulse"></span>
+          </span>
+        </:marker>
+
         <:item time="2 hours ago">
           <h4>Deployed v2.4</h4>
           <p>Pushed to production, all checks green.</p>
@@ -25,6 +31,12 @@ defmodule SutraUI.Timeline do
   * `time` - Timestamp shown above the item content.
   * `icon` - Text or emoji shown in the marker. Falls back to a dot.
   * `class` - Additional CSS classes for this item.
+
+  ## Slots
+
+  * `:item` - Timeline entry content.
+  * `:marker` - Optional custom marker. Receives the current `:item` slot attrs
+    as the slot argument.
 
   ## Accessibility
 
@@ -44,6 +56,8 @@ defmodule SutraUI.Timeline do
     attr(:class, :any, doc: "Additional CSS classes for this item")
   end
 
+  slot(:marker, doc: "Custom marker rendered for each item.")
+
   def timeline(assigns) do
     ~H"""
     <ol class={["timeline", @class]} {@rest}>
@@ -52,6 +66,8 @@ defmodule SutraUI.Timeline do
         time={item[:time]}
         icon={item[:icon]}
         class={item[:class]}
+        marker={@marker}
+        item={item}
       >
         {render_slot(item)}
       </.timeline_entry>
@@ -62,6 +78,8 @@ defmodule SutraUI.Timeline do
   attr(:time, :string, default: nil, doc: "Timestamp shown above the item content")
   attr(:icon, :string, default: nil, doc: "Text or emoji shown in the marker")
   attr(:class, :any, default: nil, doc: "Additional CSS classes for this item")
+  attr(:marker, :any, default: [])
+  attr(:item, :any, default: nil)
   attr(:rest, :global, include: ~w(id), doc: "Additional HTML attributes")
 
   slot(:inner_block, required: true, doc: "Timeline item content")
@@ -70,10 +88,14 @@ defmodule SutraUI.Timeline do
     ~H"""
     <li class={["timeline-item", @class]} {@rest}>
       <div class="timeline-marker" aria-hidden="true">
-        <span class="timeline-marker-icon">
-          <span :if={@icon}>{@icon}</span>
-          <span :if={!@icon} class="timeline-dot"></span>
-        </span>
+        <%= if @marker != [] do %>
+          {render_slot(@marker, @item)}
+        <% else %>
+          <span class="timeline-marker-icon">
+            <span :if={@icon}>{@icon}</span>
+            <span :if={!@icon} class="timeline-dot"></span>
+          </span>
+        <% end %>
         <span class="timeline-line"></span>
       </div>
       <div class="timeline-content">

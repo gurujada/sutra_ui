@@ -3,6 +3,7 @@ defmodule SutraUI.FileUploadTest do
   import Phoenix.LiveViewTest
   import Phoenix.Component
   alias SutraUI.FileUpload
+  alias Phoenix.LiveView.{UploadConfig, UploadEntry}
 
   describe "file_upload/1" do
     test "renders dropzone structure" do
@@ -54,12 +55,67 @@ defmodule SutraUI.FileUploadTest do
       assigns = %{}
       html = rendered_to_string(~H|<FileUpload.file_upload upload={nil} />|)
       refute html =~ ~s(phx-hook=".FileUpload")
+      refute html =~ ~s(phx-hook="SutraUI.FileUpload.FileUpload")
     end
 
     test "uses caller-provided id" do
       assigns = %{}
       html = rendered_to_string(~H|<FileUpload.file_upload id="attachments" upload={nil} />|)
       assert html =~ ~s(id="attachments")
+    end
+
+    test "renders live upload entries and cancel metadata" do
+      upload = %UploadConfig{
+        name: :avatar,
+        ref: "phx-avatar",
+        entries: [
+          %UploadEntry{
+            ref: "entry-1",
+            client_name: "avatar.png",
+            client_size: 42_000,
+            client_type: "image/png",
+            progress: 35
+          }
+        ],
+        errors: [{"entry-1", :too_large}]
+      }
+
+      assigns = %{upload: upload}
+
+      html = rendered_to_string(~H|<FileUpload.file_upload upload={@upload} />|)
+
+      assert html =~ "avatar.png"
+      assert html =~ "42.0 KB"
+      assert html =~ ~s(phx-hook="SutraUI.FileUpload.FileUpload")
+      assert html =~ ~s(phx-value-upload="avatar")
+      assert html =~ ~s(phx-value-ref="entry-1")
+      assert html =~ ~s(aria-valuenow="35")
+      assert html =~ "File exceeds size limit"
+    end
+
+    test "renders custom entry preview slot" do
+      upload = %UploadConfig{
+        name: :documents,
+        ref: "phx-docs",
+        entries: [
+          %UploadEntry{ref: "entry-1", client_name: "report.pdf", client_size: 1200, progress: 10}
+        ]
+      }
+
+      assigns = %{upload: upload}
+
+      html =
+        rendered_to_string(~H"""
+        <FileUpload.file_upload upload={@upload}>
+          <:entry :let={item}>
+            <div class="custom-entry">{item.entry.client_name}:{item.cancel_event}</div>
+          </:entry>
+        </FileUpload.file_upload>
+        """)
+
+      assert html =~ "custom-entry"
+      assert html =~ "report.pdf:cancel-upload"
+      refute html =~ "file-upload-entry-progress"
     end
   end
 end

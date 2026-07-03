@@ -130,9 +130,9 @@ defmodule SutraUI.HoverCard do
           this.open = () => {
             clearTimeout(this.closeTimer);
             this.openTimer = setTimeout(() => {
-              if (this.content.dataset.side === 'auto') this.calculatePosition();
               this.trigger.setAttribute('aria-expanded', 'true');
               this.content.setAttribute('aria-hidden', 'false');
+              if (this.content.dataset.side === 'auto') this.calculatePosition();
             }, this.openDelay);
           };
 

@@ -36,6 +36,7 @@ defmodule SutraUI.MarqueeTest do
         """)
 
       assert html =~ ~s(aria-hidden="true")
+      assert html =~ ~s(inert)
       assert length(Regex.scan(~r/Item 1/, html)) == 2
     end
   end

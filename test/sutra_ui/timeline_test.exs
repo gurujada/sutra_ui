@@ -58,6 +58,24 @@ defmodule SutraUI.TimelineTest do
       refute html =~ "timeline-dot"
     end
 
+    test "renders a custom marker slot for each item" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Timeline.timeline>
+          <:marker :let={item}>
+            <span class="custom-marker">{item[:time]}</span>
+          </:marker>
+          <:item time="now">Deployed</:item>
+        </Timeline.timeline>
+        """)
+
+      assert html =~ "custom-marker"
+      assert html =~ "now"
+      refute html =~ "timeline-dot"
+    end
+
     test "renders multiple items" do
       assigns = %{}
 

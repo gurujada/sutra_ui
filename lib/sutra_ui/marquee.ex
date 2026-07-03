@@ -41,8 +41,8 @@ defmodule SutraUI.Marquee do
 
   ## Accessibility
 
-  - The duplicated content track sets `aria-hidden="true"` to avoid screen
-    reader repetition.
+  - The duplicated content track sets `aria-hidden="true"` and `inert` to avoid
+    screen reader and keyboard repetition.
   - Respects `prefers-reduced-motion` — the CSS animation halts when the user
     has expressed a motion preference.
   - Ensure each item has its own accessible label (e.g. `alt` text on images).
@@ -123,7 +123,7 @@ defmodule SutraUI.Marquee do
             </div>
           <% end %>
         </div>
-        <div class="marquee-content" aria-hidden="true">
+        <div class="marquee-content" aria-hidden="true" inert>
           <%= for item <- @item do %>
             <div class="marquee-item">
               {render_slot(item)}

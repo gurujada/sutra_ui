@@ -6,6 +6,10 @@ defmodule SutraUI.ContextMenu do
   nested submenus, checkboxes, radio groups, shortcuts, labels, and
   separators — following the shadcn/ui composition model.
 
+  Menu items accept global attributes, so LiveView actions can be attached
+  directly with `phx-click`, `phx-value-*`, `phx-target`, and the usual
+  Phoenix bindings.
+
   ## Examples
 
       <.context_menu id="file-menu">
@@ -47,6 +51,7 @@ defmodule SutraUI.ContextMenu do
 
   attr(:id, :string, required: true, doc: "Unique identifier for the context menu")
   attr(:class, :any, default: nil, doc: "Additional CSS classes for the root")
+  attr(:trigger_class, :any, default: nil, doc: "Additional CSS classes for the trigger wrapper")
   attr(:menu_class, :any, default: nil, doc: "Additional CSS classes for the menu")
   attr(:rest, :global, doc: "Additional HTML attributes")
 
@@ -58,7 +63,7 @@ defmodule SutraUI.ContextMenu do
     <div id={@id} class={["context-menu", @class]} phx-hook=".ContextMenu" {@rest}>
       <div
         id={"#{@id}-trigger"}
-        class="context-menu-trigger"
+        class={["context-menu-trigger", @trigger_class]}
         aria-haspopup="menu"
         aria-controls={"#{@id}-menu"}
         aria-expanded="false"
@@ -69,7 +74,6 @@ defmodule SutraUI.ContextMenu do
       <div
         id={"#{@id}-popover"}
         class="context-menu-popover"
-        data-popover
         data-context-menu
         aria-hidden="true"
       >
@@ -94,9 +98,13 @@ defmodule SutraUI.ContextMenu do
           this.activeIndex = -1;
           this.openSubmenu = null;
 
-          this.documentClickHandler = (e) => {
+          this.documentPointerHandler = (e) => {
             if (!this.el.contains(e.target)) this.close(false);
           };
+          this.documentContextMenuHandler = (e) => {
+            if (!this.el.contains(e.target)) this.close(false);
+          };
+          this.dismissHandler = () => this.close(false);
           this.documentKeyHandler = (e) => {
             if (e.key === 'Escape') {
               if (this.openSubmenu) { this.closeSubmenu(); return; }
@@ -106,10 +114,15 @@ defmodule SutraUI.ContextMenu do
 
           this.trigger.addEventListener('contextmenu', (e) => this.openAtEvent(e));
           this.trigger.addEventListener('keydown', (e) => this.handleTriggerKey(e));
-          document.addEventListener('click', this.documentClickHandler);
+          document.addEventListener('pointerdown', this.documentPointerHandler);
+          document.addEventListener('contextmenu', this.documentContextMenuHandler);
           document.addEventListener('keydown', this.documentKeyHandler);
+          window.addEventListener('scroll', this.dismissHandler, true);
+          window.addEventListener('resize', this.dismissHandler);
           this.menu.addEventListener('keydown', (e) => this.handleMenuKey(e));
           this.menu.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+          this.menu.addEventListener('pointerover', (e) => this.handleMouseMove(e));
+          this.menu.addEventListener('mouseleave', () => this.setActive(-1));
           this.menu.addEventListener('click', (e) => {
             if (e.target.closest('[role^="menuitem"]') && !e.target.closest('.context-menu-sub-trigger')) {
               this.close();
@@ -122,15 +135,25 @@ defmodule SutraUI.ContextMenu do
             const subContent = sub.querySelector('.context-menu-sub-content');
             if (!subTrigger || !subContent) return;
 
-            subTrigger.addEventListener('mouseenter', () => this.openSubmenuEl(sub));
+            subTrigger.addEventListener('mouseenter', () => {
+              const idx = this.items().indexOf(subTrigger);
+              if (idx > -1) this.setActive(idx);
+              this.openSubmenuEl(sub);
+            });
             sub.addEventListener('mouseleave', () => this.closeSubmenuEl(sub));
             subContent.addEventListener('keydown', (e) => this.handleSubmenuKey(e, sub));
+            subContent.addEventListener('mousemove', (e) => this.handleSubmenuMouseMove(e, sub));
+            subContent.addEventListener('pointerover', (e) => this.handleSubmenuMouseMove(e, sub));
+            subContent.addEventListener('mouseleave', () => this.clearSubmenuActive(sub));
           });
         },
 
         destroyed() {
-          document.removeEventListener('click', this.documentClickHandler);
+          document.removeEventListener('pointerdown', this.documentPointerHandler);
+          document.removeEventListener('contextmenu', this.documentContextMenuHandler);
           document.removeEventListener('keydown', this.documentKeyHandler);
+          window.removeEventListener('scroll', this.dismissHandler, true);
+          window.removeEventListener('resize', this.dismissHandler);
         },
 
         items(menu) {
@@ -157,7 +180,7 @@ defmodule SutraUI.ContextMenu do
           this.popover.style.left = x + 'px';
           this.popover.style.top = y + 'px';
           requestAnimationFrame(() => this.fitViewport());
-          this.setActive(0);
+          this.setActive(-1);
           this.menu.focus();
         },
 
@@ -198,7 +221,7 @@ defmodule SutraUI.ContextMenu do
 
           if (e.key === 'ArrowRight' && this.activeIndex > -1) {
             const sub = items[this.activeIndex].closest('.context-menu-sub');
-            if (sub) { e.preventDefault(); this.openSubmenuEl(sub); return; }
+            if (sub) { e.preventDefault(); this.openSubmenuEl(sub, true); return; }
           }
 
           if (e.key === 'ArrowDown') { e.preventDefault(); this.setActive(Math.min(this.activeIndex + 1, items.length - 1)); }
@@ -209,8 +232,8 @@ defmodule SutraUI.ContextMenu do
             e.preventDefault();
             if (items[this.activeIndex]?.classList.contains('context-menu-sub-trigger')) {
               const sub = items[this.activeIndex].closest('.context-menu-sub');
-              if (sub) { this.openSubmenuEl(sub); return; }
-            }
+            if (sub) { this.openSubmenuEl(sub, true); return; }
+          }
             const el = items[this.activeIndex]?.querySelector('a,button') || items[this.activeIndex];
             el?.click();
             if (!items[this.activeIndex]?.closest('.context-menu-sub')) this.close();
@@ -219,12 +242,46 @@ defmodule SutraUI.ContextMenu do
 
         handleMouseMove(e) {
           const item = this.items().find(i => i === e.target || i.contains(e.target));
-          if (!item) return;
+          if (!item) {
+            if (this.openSubmenu?.contains(e.target)) return;
+            this.setActive(-1);
+            return;
+          }
           const idx = this.items().indexOf(item);
           if (idx > -1) this.setActive(idx);
         },
 
-        openSubmenuEl(sub) {
+        submenuItems(sub) {
+          const content = sub.querySelector('.context-menu-sub-content');
+          const subMenu = content?.querySelector('[role="menu"]');
+          if (!subMenu) return [];
+
+          return Array.from(subMenu.querySelectorAll(':scope > [role^="menuitem"]'))
+            .filter(i => i.getAttribute('aria-disabled') !== 'true');
+        },
+
+        clearSubmenuActive(sub) {
+          this.submenuItems(sub).forEach(i => i.classList.remove('active'));
+        },
+
+        setSubmenuActive(sub, index) {
+          const items = this.submenuItems(sub);
+          items.forEach(i => i.classList.remove('active'));
+          if (items[index]) items[index].classList.add('active');
+        },
+
+        handleSubmenuMouseMove(e, sub) {
+          const items = this.submenuItems(sub);
+          const item = items.find(i => i === e.target || i.contains(e.target));
+          if (!item) {
+            this.clearSubmenuActive(sub);
+            return;
+          }
+
+          this.setSubmenuActive(sub, items.indexOf(item));
+        },
+
+        openSubmenuEl(sub, focusMenu = false) {
           this.closeSubmenu();
           this.openSubmenu = sub;
           const content = sub.querySelector('.context-menu-sub-content');
@@ -234,17 +291,19 @@ defmodule SutraUI.ContextMenu do
 
           const subMenu = content?.querySelector('[role="menu"]');
           if (subMenu) {
-            const subItems = Array.from(subMenu.querySelectorAll(':scope > [role^="menuitem"]'))
-              .filter(i => i.getAttribute('aria-disabled') !== 'true');
-            subItems.forEach(i => i.classList.remove('active'));
-            if (subItems[0]) subItems[0].classList.add('active');
-            subMenu.focus();
+            const subItems = this.submenuItems(sub);
+            this.clearSubmenuActive(sub);
+            if (focusMenu) {
+              if (subItems[0]) subItems[0].classList.add('active');
+              subMenu.focus();
+            }
           }
         },
 
         closeSubmenuEl(sub) {
           const content = sub.querySelector('.context-menu-sub-content');
           const trigger = sub.querySelector('.context-menu-sub-trigger');
+          this.clearSubmenuActive(sub);
           if (content) { content.setAttribute('aria-hidden', 'true'); content.classList.remove('open'); }
           if (trigger) trigger.setAttribute('aria-expanded', 'false');
           if (this.openSubmenu === sub) this.openSubmenu = null;
@@ -439,7 +498,7 @@ defmodule SutraUI.ContextMenu do
           <path d="m9 18 6-6-6-6" />
         </svg>
       </div>
-      <div class="context-menu-sub-content" data-popover aria-hidden="true">
+      <div class="context-menu-sub-content" aria-hidden="true">
         <div role="menu" tabindex="-1">
           {render_slot(@inner_block)}
         </div>

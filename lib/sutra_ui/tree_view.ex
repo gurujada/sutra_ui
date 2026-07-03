@@ -92,6 +92,8 @@ defmodule SutraUI.TreeView do
   slot(:inner_block, required: true)
 
   def tree_view(assigns) do
+    assigns = assign(assigns, :hook, assigns.id && "SutraUI.TreeView.TreeView")
+
     ~H"""
     <div
       id={@id}
@@ -99,7 +101,7 @@ defmodule SutraUI.TreeView do
       role="tree"
       aria-label={@label}
       data-select-event={@select_event}
-      phx-hook={@id && ".TreeView"}
+      phx-hook={@hook}
       {@rest}
     >
       {render_slot(@inner_block)}
@@ -116,7 +118,8 @@ defmodule SutraUI.TreeView do
         },
 
         initTree() {
-          this.items = Array.from(this.el.querySelectorAll('.tree-item'));
+          this.items = Array.from(this.el.querySelectorAll('.tree-item'))
+            .filter(item => item.getAttribute('aria-disabled') !== 'true');
           if (!this.items.length) return;
           this.selectEvent = this.el.dataset.selectEvent;
 
@@ -261,11 +264,8 @@ defmodule SutraUI.TreeView do
   slot(:inner_block, doc: "Child tree items")
 
   def tree_item(assigns) do
-    has_children = assigns.inner_block != []
-
-    assigns =
-      assigns
-      |> assign(:has_children, has_children)
+    children = Phoenix.Component.__render_slot__(%{}, assigns.inner_block, nil)
+    assigns = assign(assigns, :has_children, rendered_children?(children))
 
     ~H"""
     <%= if @has_children do %>
@@ -279,7 +279,7 @@ defmodule SutraUI.TreeView do
         data-value={@value}
         {@rest}
       >
-        <summary class="tree-item-trigger" data-tree-trigger>
+        <summary class="tree-item-trigger" data-tree-trigger tabindex={@disabled && "-1"}>
           <span class="tree-item-chevron" aria-hidden="true">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -315,9 +315,10 @@ defmodule SutraUI.TreeView do
       >
         <a
           :if={@href}
-          href={@href}
+          href={if @disabled, do: nil, else: @href}
           class="tree-item-trigger"
           data-tree-trigger
+          tabindex={@disabled && "-1"}
         >
           <span class="tree-item-spacer" aria-hidden="true"></span>
           <%= if @trigger != [] do %>
@@ -346,5 +347,18 @@ defmodule SutraUI.TreeView do
       </div>
     <% end %>
     """
+  end
+
+  defp rendered_children?(nil), do: false
+
+  defp rendered_children?(rendered) do
+    html =
+      rendered
+      |> Phoenix.HTML.Safe.to_iodata()
+      |> IO.iodata_to_binary()
+      |> String.replace(~r/<!--.*?-->/s, "")
+      |> String.trim()
+
+    html != ""
   end
 end
