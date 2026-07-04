@@ -23,6 +23,9 @@ library API.
   `:rest`.
 - Keep persistence, validation, navigation, and business rules in the parent
   LiveView.
+- Use Sutra primitives for structure and behavior, then compose richer app UI
+  with slots. For example: `card` + `header` + `table`, `popover` + `calendar`,
+  `activity` + `response`, or `tab_nav` + route-backed LiveView state.
 
 Good component shape:
 
@@ -39,6 +42,16 @@ Good component shape:
 
 Avoid over-specific APIs that force `title`, `subtitle`, `avatar`, `marker`,
 `action`, and similar attrs when the item content should just be a slot.
+
+## Icons
+
+Sutra UI does not provide a general icon helper or icon library. If the host
+application already has `<.icon>` or Lucide configured, use that app helper.
+Otherwise use inline SVG with `aria-hidden="true"` for decorative icons, or an
+accessible label for icon-only controls.
+
+Do not invent `SutraUI.Icon`, `icon_name`, or demo-only icon helpers in library
+examples. Icon-only buttons must include `aria-label`.
 
 ## Forms And Validation
 
@@ -119,6 +132,7 @@ summary", not hidden reasoning.
 
 - Exact attrs and slots come from source modules, not memory.
 - No invented component props.
+- No invented icon helper or icon dependency.
 - No external JS/npm dependency was added.
 - Hook-based components have stable ids.
 - Forms use Phoenix changesets and `used_input?/1` behavior.

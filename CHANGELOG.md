@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **docs**: Updated installation, demo copy, component counts, and release-facing examples for `0.4.0`
 - **installer**: Preserves web module indentation when inserting `use SutraUI` into `html_helpers`
 - **tab_nav**: Uses routed navigation semantics with `aria-current` instead of ARIA tab panel semantics
+- **tab_nav**: Owns the former Nav Pills responsive dropdown behavior; it collapses on small screens by default and supports `collapse="never"`
+
+### Removed
+
+- **nav_pills**: Removed the separate `SutraUI.NavPills` component for the major release. Use `SutraUI.TabNav` for routed pill/tab navigation.
 
 ### Fixed
 
@@ -100,7 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Layout**: card, header, table, item, sidebar
 - **Feedback**: alert, progress, skeleton, empty, loading_state, toast, flash
 - **Overlay**: dialog, popover, tooltip, dropdown_menu, command
-- **Navigation**: tabs, accordion, breadcrumb, pagination, nav_pills, tab_nav
+- **Navigation**: tabs, accordion, breadcrumb, pagination, tab_nav
 - **Display**: avatar, carousel, theme_switcher
 - CSS variables for theme customization (compatible with shadcn/ui themes)
 - Dark mode support

@@ -2,6 +2,11 @@
 
 This document provides guidelines for AI assistants when working with the Sutra UI component library.
 
+For application-level composition, start with `SKILL.md`, then use
+`cheatsheets/components.cheatmd` for component examples and
+`cheatsheets/forms.cheatmd` for form patterns. Use this file when editing
+Sutra UI internals, adding components, or reviewing implementation quality.
+
 ## Overview
 
 Sutra UI is a pure Phoenix LiveView UI component library with no external JavaScript/npm dependencies. Components use colocated JavaScript hooks where interactivity is needed; most are runtime hooks, with extracted exceptions documented in the hook guide.
@@ -12,6 +17,16 @@ Sutra UI is a pure Phoenix LiveView UI component library with no external JavaSc
 - Tailwind CSS v4 (CSS-first configuration)
 
 ## Core Principles
+
+### Reference Order
+
+- Start with `SKILL.md` for Sutra's design philosophy and reference routing.
+- Use `skill/patterns.md` for API selection and composition rules.
+- Use `skill/recipes.md` for common full-interface compositions.
+- Use `cheatsheets/components.cheatmd` and `cheatsheets/forms.cheatmd` for
+  compact examples.
+- Inspect `lib/sutra_ui/*.ex` before relying on exact attrs, slots, events, or
+  helper function names.
 
 ### 1. CSS-First Styling
 
@@ -107,6 +122,20 @@ slot :item, doc: "List items" do
   attr(:disabled, :boolean)
 end
 ```
+
+### 7. Icons
+
+Sutra UI does not export a general icon component or bundled icon set. Library
+components use inline SVG only where they own the icon.
+
+- **DO** use a host application's existing icon helper if it has one.
+- **DO** use inline SVG for local examples when no app helper exists.
+- **DON'T** invent `SutraUI.Icon`, `icon/1`, `icon_name`, or a new icon package.
+- **DON'T** copy the demo app's `<.icon name="lucide-...">` helper into generic
+  library guidance unless the target app provides it.
+
+Icon-only buttons and controls must have an accessible name such as
+`aria-label`.
 
 ## Component Patterns
 
@@ -258,9 +287,8 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `loading_state/1` - Loading indicator with message
 
 ### Navigation
-- `nav_pills/1` - Responsive navigation pills
 - `drawer/1` - Collapsible drawer navigation
-- `tab_nav/1` - Server-side routed tab navigation
+- `tab_nav/1` - Responsive server-side routed tab navigation
 - `theme_switcher/1` - Light/dark theme event button
 
 ## CSS Class Naming

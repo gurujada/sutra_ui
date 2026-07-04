@@ -117,8 +117,7 @@ defmodule SutraUI.Tabs do
   ## Related
 
   - `SutraUI.Accordion` - For collapsible sections (multiple can be open)
-  - `SutraUI.TabNav` - For page navigation that looks like tabs
-  - `SutraUI.NavPills` - For pill-style navigation
+  - `SutraUI.TabNav` - For responsive routed navigation that looks like tabs
   - [Accessibility Guide](accessibility.md) - ARIA patterns
   """
 

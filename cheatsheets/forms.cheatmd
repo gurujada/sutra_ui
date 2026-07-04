@@ -2,6 +2,12 @@
 
 Quick reference for form controls and patterns in Sutra UI.
 
+For the broader component list, use `components.cheatmd`. For design rules,
+composition, and implementation constraints, see `SKILL.md`,
+`skill/patterns.md`, and `usage_rules.md`.
+
+Browse live form and component examples at [sutraui.gurujada.com](https://sutraui.gurujada.com).
+
 ## Basic Form
 {: .col-2}
 

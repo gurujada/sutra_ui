@@ -34,10 +34,18 @@ is the API authority.
 
 ## Load The Relevant Reference
 
+- For exact copy-paste component examples, read `cheatsheets/components.cheatmd`.
+- For forms, changesets, validation, uploads, and selection controls, read
+  `cheatsheets/forms.cheatmd`.
 - For component philosophy, forms, hook behavior, CSS rules, and API selection,
   read `skill/patterns.md`.
 - For common UI compositions, including popover + calendar, wizard forms,
   activity feeds, uploads, menus, and AI surfaces, read `skill/recipes.md`.
+- For editing Sutra UI internals or adding components, read `usage_rules.md`.
+
+When building a full interface, start from the recipes and component
+cheatsheet, then inspect the relevant modules for exact attrs and slots before
+writing HEEx.
 
 ## Core Rules
 
@@ -55,6 +63,10 @@ is the API authority.
 - In Sutra library source, component styling belongs in `priv/static/sutra_ui.css`
   with semantic classes. In application templates, use `class` for layout and
   local composition, but do not rewrite component internals with utility soup.
+- Sutra UI does not export a general icon component or icon set. Use the host
+  app's existing icon helper when present, otherwise use inline accessible SVG.
+  Do not invent `SutraUI.Icon` or assume the demo app's `<.icon>` helper exists
+  in user applications.
 - For AI interfaces, show safe user-facing progress. Do not render private
   reasoning; use `activity/1` for visible steps and `response/1` for streamed
   text or Markdown.
@@ -71,8 +83,7 @@ is the API authority.
   `loading_state`, `toast`
 - Overlays/actions: `dialog`, `popover`, `tooltip`, `hover_card`,
   `dropdown_menu`, `context_menu`, `command`
-- Navigation: `tabs`, `accordion`, `breadcrumb`, `pagination`, `nav_pills`,
-  `tab_nav`
+- Navigation: `tabs`, `accordion`, `breadcrumb`, `pagination`, `tab_nav`
 - Display: `avatar`, `carousel`, `theme_switcher`
 - AI: `response`, `activity`
 

@@ -1,6 +1,16 @@
 # Components Cheatsheet
 
-Quick reference for all 56 Sutra UI components.
+Quick reference for all 55 Sutra UI components.
+
+For design rules and composition guidance, see `SKILL.md`,
+`skill/patterns.md`, and `skill/recipes.md`. For form-specific patterns, use
+`forms.cheatmd`.
+
+Browse the live component examples at [sutraui.gurujada.com](https://sutraui.gurujada.com).
+
+Icon examples use inline SVG intentionally. Sutra UI does not provide a general
+icon component or bundled icon set; use your app's existing icon helper if it
+has one, otherwise use inline accessible SVG.
 
 ## Foundation
 {: .col-2}
@@ -603,17 +613,9 @@ end
 />
 ```
 
-### Nav Pills
-
-```heex
-<.nav_pills id="main-nav" active_label="Dashboard">
-  <:item label="Dashboard" patch={~p"/dashboard"} />
-  <:item label="Analytics" patch={~p"/analytics"} />
-  <:item label="Reports" patch={~p"/reports"} />
-</.nav_pills>
-```
-
 ### Tab Nav
+
+Responsive server-side routed tab navigation. It collapses to a dropdown on small screens by default.
 
 ```heex
 <.tab_nav id="settings-tabs-nav">
@@ -625,6 +627,8 @@ end
   </:tab>
 </.tab_nav>
 ```
+
+Use `collapse="never"` when the tab row should stay visible on small screens.
 
 ## Display
 {: .col-2}

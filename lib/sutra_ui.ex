@@ -2,7 +2,7 @@ defmodule SutraUI do
   @moduledoc """
   Sutra UI - We define the rules, so you don't have to.
 
-  A pure Phoenix LiveView UI component library with **56 components**,
+  A pure Phoenix LiveView UI component library with **55 components**,
   CSS-first theming, and colocated JavaScript hooks. Built for Phoenix 1.8+ and
   Phoenix LiveView 1.2+ with Tailwind CSS v4.
 
@@ -128,7 +128,6 @@ defmodule SutraUI do
   | `SutraUI.Accordion` | Collapsible sections |
   | `SutraUI.Breadcrumb` | Breadcrumb trails |
   | `SutraUI.Pagination` | Page navigation |
-  | `SutraUI.NavPills` | Pill navigation |
   | `SutraUI.TabNav` | Routed tab-style navigation |
 
   ### Display
@@ -262,7 +261,6 @@ defmodule SutraUI do
       import SutraUI.SimpleForm
 
       # Phase 7: Navigation
-      import SutraUI.NavPills
       import SutraUI.Drawer
       import SutraUI.TabNav
       import SutraUI.Stepper

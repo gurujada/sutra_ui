@@ -2,6 +2,7 @@
 
 [![Hex.pm](https://img.shields.io/hexpm/v/sutra_ui.svg)](https://hex.pm/packages/sutra_ui)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/sutra_ui)
+[![Demo](https://img.shields.io/badge/demo-sutraui.gurujada.com-blue.svg)](https://sutraui.gurujada.com)
 [![License](https://img.shields.io/hexpm/l/sutra_ui.svg)](https://github.com/gurujada/sutra_ui/blob/main/LICENSE)
 
 *We define the rules, so you don't have to.*
@@ -10,6 +11,8 @@ A pure Phoenix LiveView UI component library inspired by shadcn/ui.
 
 Built for **Elixir 1.20+**, **Phoenix 1.8+**, **Phoenix LiveView 1.2+**, and **Tailwind CSS v4**.
 
+See the live demo and component examples at [sutraui.gurujada.com](https://sutraui.gurujada.com).
+
 ## Why Sutra UI?
 
 - **No external JavaScript packages** - No React, no npm packages, no node_modules bloat. Just Phoenix LiveView and colocated hooks.
@@ -17,16 +20,17 @@ Built for **Elixir 1.20+**, **Phoenix 1.8+**, **Phoenix LiveView 1.2+**, and **T
 - **Copy-paste friendly** - Like shadcn/ui, components are meant to be understood and modified.
 - **Phoenix-native** - Workflows live in LiveView; small hooks only handle local UI behavior.
 - **Production-minded** - Tests, accessibility-minded patterns, and dark mode included.
-- **LLM-friendly** - Includes `usage_rules.md` with guidelines for AI assistants working with this codebase.
+- **LLM-friendly** - Includes `SKILL.md`, usage rules, recipes, and cheatsheets for AI assistants.
 
 ## Features
 
-- **56 Components** - Buttons, forms, dialogs, tables, calendars, upload fields, AI primitives, and more
+- **55 Components** - Buttons, forms, dialogs, tables, calendars, upload fields, AI primitives, and more
 - **Pure LiveView** - No external JavaScript frameworks
 - **Colocated Hooks** - JS hooks live with their components (Phoenix 1.8+)
 - **CSS Variables** - Override any color in one line
 - **Accessible** - Semantic markup, ARIA patterns, and keyboard behavior where components are interactive
 - **Dark Mode** - Built-in light/dark theme support
+- **No bundled icon set** - Components own their internal SVGs; app icons come from your app or inline SVG
 - **Lightweight** - CSS-first styling with minimal colocated JS hooks
 
 ## Installation
@@ -67,6 +71,17 @@ rm lib/my_app_web/components/core_components.ex
 In your `my_app_web.ex`, remove the `import MyAppWeb.CoreComponents` line.
 If your app uses Phoenix's generated `<.icon>` helper, move that helper to a
 separate module or replace those calls before deleting `core_components.ex`.
+
+## Icons
+
+Sutra UI does not ship a general icon component or bundled icon set. Some
+components render their own internal SVGs, but application icons are owned by
+your app.
+
+Use your existing app helper, such as a Phoenix-generated `<.icon>` or a Lucide
+helper, when your app provides one. Otherwise use inline SVG with appropriate
+accessibility attributes. Do not import or invent `SutraUI.Icon`; it is not part
+of the public API.
 
 ### 4. Colocated Hooks
 
@@ -280,8 +295,7 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `accordion` - Collapsible sections
 - `breadcrumb` - Breadcrumb navigation
 - `pagination` - Page navigation
-- `nav_pills` - Pill-style navigation
-- `tab_nav` - Routed tab-style navigation
+- `tab_nav` - Responsive routed tab navigation
 
 ### Display
 - `avatar` - User avatars with fallback
@@ -298,15 +312,23 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 
 ## For AI Assistants
 
-This library includes `usage_rules.md` with detailed guidelines for AI assistants (LLMs) working with this codebase. The file covers:
+This library includes `SKILL.md`, `usage_rules.md`, and cheatsheets for AI
+assistants working with this codebase. Start with `SKILL.md` for design
+philosophy and reference routing, use `cheatsheets/components.cheatmd` and
+`cheatsheets/forms.cheatmd` for compact examples, and use `usage_rules.md` when
+editing library internals. These files cover:
 
 - CSS-first styling patterns
 - Required ID attributes for hook-based components
 - Event naming conventions (`sutra-ui:*` namespace)
 - Component structure patterns
 - Testing conventions
+- Icon guidance: Sutra UI does not provide a general icon helper; use the host
+  app's helper or inline accessible SVG
 
-If you're using an AI assistant to help modify or extend Sutra UI components, point it to `usage_rules.md` for context.
+If you're using an AI assistant to help build application UI with Sutra, point
+it to `SKILL.md`. If it is modifying or extending Sutra UI itself, also point it
+to `usage_rules.md`.
 
 ## Accessibility
 
@@ -336,15 +358,17 @@ MIT License - see [LICENSE](https://github.com/gurujada/sutra_ui/blob/main/LICEN
 
 ## Documentation
 
+- **[Live Demo](https://sutraui.gurujada.com)** - Browse components, examples, and docs
 - **[HexDocs](https://hexdocs.pm/sutra_ui)** - Full API reference
 - **[Installation Guide](https://hexdocs.pm/sutra_ui/installation.html)** - Setup for Phoenix 1.8+ and Tailwind v4
 - **[Theming Guide](https://hexdocs.pm/sutra_ui/theming.html)** - CSS variables, OKLCH colors, shadcn themes
 - **[Accessibility Guide](https://hexdocs.pm/sutra_ui/accessibility.html)** - ARIA patterns, keyboard navigation
 - **[JavaScript Hooks](https://hexdocs.pm/sutra_ui/colocated-hooks.html)** - Colocated hooks, custom events
-- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 56 components
+- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 55 components
 - **[Forms Cheatsheet](https://hexdocs.pm/sutra_ui/forms.html)** - Form patterns and validation
 
 ## Links
 
+- [Live Demo](https://sutraui.gurujada.com)
 - [GitHub](https://github.com/gurujada/sutra_ui)
 - [Changelog](CHANGELOG.md)

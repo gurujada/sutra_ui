@@ -19,6 +19,8 @@ defmodule SutraUI.TabNavTest do
         """)
 
       assert html =~ "tab-nav"
+      assert html =~ "tab-nav-list"
+      assert html =~ "tab-nav-mobile"
     end
 
     test "renders all tab items" do
@@ -143,6 +145,74 @@ defmodule SutraUI.TabNavTest do
 
       assert html =~ ~s(aria-label="My tabs")
     end
+
+    test "mobile dropdown has disclosure semantics" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav">
+          <:tab patch="/overview" active={true}>Overview</:tab>
+          <:tab patch="/members" active={false}>Members</:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ ~s(id="test-nav-mobile-trigger")
+      assert html =~ ~s(aria-expanded="false")
+      assert html =~ ~s(aria-controls="test-nav-mobile-menu")
+      assert html =~ ~s(id="test-nav-mobile-menu")
+      assert html =~ ~s(aria-hidden="true")
+      assert html =~ "tab-nav-mobile-item"
+    end
+  end
+
+  describe "tab_nav/1 responsive collapse" do
+    test "collapses to dropdown by default" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav">
+          <:tab patch="/overview" active={true}>Overview</:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ ~s(data-collapse="dropdown")
+      assert html =~ "tab-nav-mobile-trigger"
+      assert html =~ "tab-nav-mobile-menu"
+    end
+
+    test "supports never collapsing" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav" collapse="never">
+          <:tab patch="/overview" active={true}>Overview</:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ ~s(data-collapse="never")
+      assert html =~ "tab-nav-mobile"
+    end
+
+    test "renders active tab content in the mobile trigger" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav">
+          <:tab patch="/overview" active={false}>Overview</:tab>
+          <:tab patch="/members" active={true}>
+            <span class="custom-active">Members</span>
+          </:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ "tab-nav-mobile-label"
+      assert html =~ ~s(class="custom-active")
+      assert html =~ "Members"
+    end
   end
 
   describe "tab_nav/1 with icons" do
@@ -244,6 +314,15 @@ defmodule SutraUI.TabNavTest do
       assert source =~ "case 'Enter':"
       assert source =~ "case ' ':"
       assert source =~ "closest('.tab-nav-item')?.click()"
+    end
+
+    test "hook toggles the mobile dropdown without server events" do
+      source = File.read!("lib/sutra_ui/tab_nav.ex")
+
+      assert source =~ "toggleMenu()"
+      assert source =~ "aria-expanded"
+      assert source =~ "aria-hidden"
+      refute source =~ "pushEvent"
     end
   end
 end

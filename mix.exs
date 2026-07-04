@@ -16,7 +16,7 @@ defmodule SutraUI.MixProject do
 
       # Hex
       description:
-        "Sutra UI - We define the rules, so you don't have to. A Phoenix LiveView component library with 56 components and CSS-first theming.",
+        "Sutra UI - We define the rules, so you don't have to. A Phoenix LiveView component library with 55 components and CSS-first theming.",
       package: package(),
 
       # Docs
@@ -53,7 +53,8 @@ defmodule SutraUI.MixProject do
       licenses: ["MIT"],
       links: %{
         "GitHub" => @source_url,
-        "Docs" => "https://hexdocs.pm/sutra_ui"
+        "Docs" => "https://hexdocs.pm/sutra_ui",
+        "Demo" => "https://sutraui.gurujada.com"
       },
       files:
         ~w(lib priv guides cheatsheets .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage_rules.md)
@@ -138,7 +139,6 @@ defmodule SutraUI.MixProject do
           SutraUI.Accordion,
           SutraUI.Breadcrumb,
           SutraUI.Pagination,
-          SutraUI.NavPills,
           SutraUI.TabNav
         ],
         Display: [

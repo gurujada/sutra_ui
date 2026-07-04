@@ -67,9 +67,15 @@ The installer will also warn you if `core_components.ex` still exists (see Step 
 ## Step 3: Delete core_components.ex
 
 Sutra UI replaces Phoenix's generated button, input, flash, and related UI helpers.
-It does not provide a general `icon/1` helper; if your app uses Phoenix's
-generated `<.icon>`, move that helper to a separate module or replace those
-calls before deleting `core_components.ex`.
+It does not provide a general `icon/1` helper or bundled icon set. If your app
+uses Phoenix's generated `<.icon>`, move that helper to a separate module or
+replace those calls before deleting `core_components.ex`.
+
+> #### Icons Are App-Owned {: .info}
+>
+> Sutra components include internal SVGs only where the component owns the icon.
+> For application UI, use your app's existing icon helper or inline accessible
+> SVG. Do not use `SutraUI.Icon`; it is not a Sutra API.
 
 **Delete the generated file:**
 
@@ -227,6 +233,7 @@ document.documentElement.classList.toggle('dark')
 
 ## Next Steps
 
+- [Live Demo](https://sutraui.gurujada.com) - Browse components and examples
 - [Theming Guide](theming.md) - Customize colors and styles
 - [Components Cheatsheet](components.cheatmd) - Quick reference for all components
 - [JavaScript Hooks](colocated-hooks.md) - Understanding colocated hooks

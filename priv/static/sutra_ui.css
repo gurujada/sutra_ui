@@ -2918,47 +2918,6 @@
     }
 }
 
-/* Nav Pills */
-@layer components {
-    .nav-pills {
-        @apply relative;
-    }
-    .nav-pills-desktop {
-        @apply hidden sm:flex items-center gap-1 p-1 bg-muted rounded-lg;
-    }
-    .nav-pills-item {
-        @apply inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground;
-    }
-    .nav-pills-item-active {
-        @apply bg-background text-foreground shadow-sm;
-    }
-    .nav-pills-mobile {
-        @apply relative sm:hidden;
-    }
-    .nav-pills-mobile-trigger {
-        @apply w-full flex items-center justify-between px-4 py-2 text-sm font-medium bg-background border rounded-lg cursor-pointer;
-    }
-    .nav-pills-mobile-chevron {
-        @apply size-4 transition-transform;
-    }
-    .nav-pills-mobile-trigger[aria-expanded="true"] .nav-pills-mobile-chevron {
-        @apply rotate-180;
-    }
-    .nav-pills-mobile-menu {
-        @apply absolute z-50 w-full mt-1 py-1 bg-popover border rounded-lg shadow-lg;
-
-        &[aria-hidden="true"] {
-            @apply hidden;
-        }
-    }
-    .nav-pills-mobile-item {
-        @apply flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent;
-    }
-    .nav-pills-mobile-item-active {
-        @apply text-foreground bg-accent;
-    }
-}
-
 /* Drawer */
 @layer components {
     .drawer {
@@ -3157,7 +3116,10 @@
 /* Tab Nav */
 @layer components {
     .tab-nav {
-        @apply inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground;
+        @apply relative w-full sm:w-auto;
+    }
+    .tab-nav-list {
+        @apply hidden h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground sm:inline-flex;
     }
     .tab-nav-item {
         @apply inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
@@ -3167,6 +3129,43 @@
     }
     .tab-nav-icon {
         @apply size-4 mr-2;
+    }
+    .tab-nav-mobile {
+        @apply relative sm:hidden;
+    }
+    .tab-nav-mobile-trigger {
+        @apply flex w-full cursor-pointer items-center justify-between rounded-md border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    }
+    .tab-nav-mobile-label {
+        @apply inline-flex min-w-0 items-center truncate;
+    }
+    .tab-nav-mobile-chevron {
+        @apply size-4 shrink-0 text-muted-foreground transition-transform;
+    }
+    .tab-nav-mobile-trigger[aria-expanded="true"] .tab-nav-mobile-chevron {
+        @apply rotate-180;
+    }
+    .tab-nav-mobile-menu {
+        @apply absolute z-50 mt-1 w-full rounded-md border bg-popover p-1 text-popover-foreground shadow-md;
+
+        &[aria-hidden="true"] {
+            @apply hidden;
+        }
+    }
+    .tab-nav-mobile-item {
+        @apply flex cursor-pointer items-center rounded-sm px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground;
+    }
+    .tab-nav-mobile-item-active {
+        @apply bg-accent text-accent-foreground;
+    }
+    .tab-nav[data-collapse="never"] {
+        @apply w-auto;
+    }
+    .tab-nav[data-collapse="never"] .tab-nav-list {
+        @apply inline-flex;
+    }
+    .tab-nav[data-collapse="never"] .tab-nav-mobile {
+        @apply hidden;
     }
 }
 

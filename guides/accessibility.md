@@ -292,7 +292,9 @@ Use these utilities for screen reader content:
 
 ### Icon Buttons
 
-Always provide an `aria-label`:
+Always provide an `aria-label`. Sutra UI does not provide a general icon helper;
+these examples use inline SVG, but your application can use its own icon helper
+if one exists.
 
 ```heex
 <!-- Good -->
@@ -349,6 +351,7 @@ directly.
 
 ## Next Steps
 
+- [Live Demo](https://sutraui.gurujada.com) - Browse accessible component examples
 - [Components Cheatsheet](components.cheatmd) - All components with examples
 - [Installation Guide](installation.md) - Setup instructions
 - [Theming Guide](theming.md) - Customize your theme

@@ -46,12 +46,11 @@ Several Sutra UI components use colocated hooks for interactivity:
 | `hover_card` | `.HoverCard` | Runtime | Delayed hover/focus preview |
 | `input_otp` | `.InputOTP` | Runtime | Paste distribution and keyboard movement |
 | `live_select` | `.LiveSelect` | Runtime | Async search, tags |
-| `nav_pills` | `.NavPills` | Runtime | Mobile dropdown behavior |
 | `popover` | `.Popover` | Runtime | Popover dismissal and positioning |
 | `range_slider` | `.RangeSlider` | Runtime | Dual-handle slider |
 | `select` | `.Select` | Runtime | Dropdown behavior, search |
 | `slider` | `.Slider` | Runtime | Range input behavior |
-| `tab_nav` | `.TabNav` | Runtime | Routed navigation keyboard focus |
+| `tab_nav` | `.TabNav` | Runtime | Routed navigation keyboard focus and mobile dropdown |
 | `tabs` | `.Tabs` | Runtime | Keyboard navigation |
 | `toast` | `.ToastContainer` | Runtime | Toast push events and dismissal |
 | `theme_switcher` | `.ThemeSwitcher` | Runtime | Theme toggle event dispatch |
@@ -278,6 +277,7 @@ is runtime hooks.
 
 ## Next Steps
 
+- [Live Demo](https://sutraui.gurujada.com) - Browse interactive component examples
 - [Components Cheatsheet](components.cheatmd) - All components with examples
 - [Accessibility Guide](accessibility.md) - Keyboard navigation patterns
 - [Installation Guide](installation.md) - Setup instructions
