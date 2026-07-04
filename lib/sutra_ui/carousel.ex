@@ -41,7 +41,7 @@ defmodule SutraUI.Carousel do
 
   ## Accessibility
 
-  - Uses semantic HTML structure with proper ARIA roles
+  - Uses semantic HTML structure with ARIA roles
   - `aria-live="polite"` announces slide changes to screen readers
   - Carousel items can be navigated via scroll
   - Indicators provide visual feedback for current position
@@ -209,6 +209,7 @@ defmodule SutraUI.Carousel do
           this.liveRegion = this.el.querySelector('[data-carousel-live-region]');
           this.currentIndex = 0;
           this.loop = this.el.dataset.loop === 'true';
+          this.indicatorHandlers = [];
           
           // Set up intersection observer for indicators
           if (this.indicators.length > 0 || this.prevBtn || this.nextBtn) {
@@ -225,19 +226,24 @@ defmodule SutraUI.Carousel do
           
           // Indicator clicks
           this.indicators.forEach((indicator, index) => {
-            indicator.addEventListener('click', () => this.scrollToItem(index));
+            const handler = () => this.scrollToItem(index);
+            this.indicatorHandlers.push({ indicator, handler });
+            indicator.addEventListener('click', handler);
           });
           
           // Arrow button clicks
+          this.prevHandler = () => this.prev();
+          this.nextHandler = () => this.next();
           if (this.prevBtn) {
-            this.prevBtn.addEventListener('click', () => this.prev());
+            this.prevBtn.addEventListener('click', this.prevHandler);
           }
           if (this.nextBtn) {
-            this.nextBtn.addEventListener('click', () => this.next());
+            this.nextBtn.addEventListener('click', this.nextHandler);
           }
           
           // Keyboard navigation
-          this.viewport.addEventListener('keydown', (e) => this.handleKeydown(e));
+          this.keydownHandler = (e) => this.handleKeydown(e);
+          this.viewport.addEventListener('keydown', this.keydownHandler);
           
           // Initial button state
           this.updateButtonStates();
@@ -247,6 +253,13 @@ defmodule SutraUI.Carousel do
           if (this.observer) {
             this.observer.disconnect();
           }
+          this.indicatorHandlers?.forEach(({ indicator, handler }) => {
+            indicator.removeEventListener('click', handler);
+          });
+          this.indicatorHandlers = [];
+          this.prevBtn?.removeEventListener('click', this.prevHandler);
+          this.nextBtn?.removeEventListener('click', this.nextHandler);
+          this.viewport?.removeEventListener('keydown', this.keydownHandler);
         },
         
         handleIntersection(entries) {

@@ -307,6 +307,8 @@ defmodule SutraUI.DrawerTest do
       assert html =~ "<button"
       assert html =~ ~s(data-for="main-drawer")
       assert html =~ ~s(aria-label="Toggle drawer")
+      assert html =~ ~s(aria-controls="main-drawer")
+      assert html =~ ~s(aria-expanded="false")
       assert html =~ "phx-click"
     end
 

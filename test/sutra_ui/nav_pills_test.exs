@@ -160,9 +160,23 @@ defmodule SutraUI.NavPillsTest do
         </NavPills.nav_pills>
         """)
 
-      assert html =~ ~s(aria-haspopup="true")
+      assert html =~ ~s(aria-haspopup="menu")
       assert html =~ ~s(aria-expanded="false")
       assert html =~ ~s(role="menu")
+    end
+
+    test "marks the active item semantically" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <NavPills.nav_pills id="test-nav" active_label="Home">
+          <:item label="Home" patch="/home" />
+          <:item label="About" patch="/about" />
+        </NavPills.nav_pills>
+        """)
+
+      assert html =~ ~s(aria-current="page")
     end
   end
 

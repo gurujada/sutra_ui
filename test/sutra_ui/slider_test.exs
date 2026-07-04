@@ -20,6 +20,12 @@ defmodule SutraUI.SliderTest do
       assert html =~ ~s(id="volume")
     end
 
+    test "static stylesheet targets standalone slider class" do
+      css = File.read!("priv/static/sutra_ui.css")
+
+      assert css =~ ~s(input.slider[type="range"])
+    end
+
     test "renders with hook" do
       assigns = %{}
 
@@ -29,6 +35,18 @@ defmodule SutraUI.SliderTest do
         """)
 
       assert html =~ ~s(phx-hook="SutraUI.Slider.Slider")
+    end
+
+    test "hook updates associated output elements" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Slider.slider id="volume" />
+        """)
+
+      assert html =~ "updateOutputs(formattedValue)"
+      assert html =~ "output[for]"
     end
 
     test "renders with default values" do
@@ -122,6 +140,18 @@ defmodule SutraUI.SliderTest do
 
       # 2.3 snaps to 2.5
       assert html =~ ~s(value="2.5")
+    end
+
+    test "normalizes invalid step to one" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Slider.slider id="volume" min={0} max={100} step={0} value={23} />
+        """)
+
+      assert html =~ ~s(step="1.0")
+      assert html =~ ~s(value="23")
     end
   end
 

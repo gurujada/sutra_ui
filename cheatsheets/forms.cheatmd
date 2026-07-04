@@ -49,7 +49,9 @@ Quick reference for form controls and patterns in Sutra UI.
 
 ```heex
 <.input
-  field={@form[:email]}
+  id="email"
+  name="email"
+  value={@email}
   type="email"
   label="Email"
   errors={@errors}
@@ -102,7 +104,7 @@ Quick reference for form controls and patterns in Sutra UI.
 ```heex
 <.input_group>
   <:prefix>https://</:prefix>
-  <.input type="text" name="domain" placeholder="example.com" />
+  <input type="text" name="domain" class="input pl-21" placeholder="example.com" />
 </.input_group>
 ```
 
@@ -110,7 +112,7 @@ Quick reference for form controls and patterns in Sutra UI.
 
 ```heex
 <.input_group>
-  <.input type="number" name="weight" />
+  <input type="number" name="weight" class="input pr-12" />
   <:suffix>kg</:suffix>
 </.input_group>
 ```
@@ -119,15 +121,15 @@ Quick reference for form controls and patterns in Sutra UI.
 
 ```heex
 <.input_group>
-  <:prefix>
+  <:prefix type="icon">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
   </:prefix>
-  <.input type="search" name="q" placeholder="Search..." />
+  <input type="search" name="q" class="input pl-9" placeholder="Search..." />
 </.input_group>
 
 <.input_group>
   <:prefix>$</:prefix>
-  <.input type="number" name="price" />
+  <input type="number" name="price" class="input pl-7 pr-12" />
   <:suffix>.00</:suffix>
 </.input_group>
 ```
@@ -183,10 +185,14 @@ Quick reference for form controls and patterns in Sutra UI.
 ### Radio Group
 
 ```heex
-<.radio_group name="plan" value={@selected_plan}>
-  <:radio value="free">Free</:radio>
-  <:radio value="pro">Pro - $10/mo</:radio>
-  <:radio value="enterprise">Enterprise - Contact us</:radio>
+<.radio_group name="plan" label="Plan">
+  <:radio value="free" label="Free" checked={@selected_plan == "free"} />
+  <:radio value="pro" label="Pro - $10/mo" checked={@selected_plan == "pro"} />
+  <:radio
+    value="enterprise"
+    label="Enterprise - Contact us"
+    checked={@selected_plan == "enterprise"}
+  />
 </.radio_group>
 ```
 
@@ -194,12 +200,10 @@ Quick reference for form controls and patterns in Sutra UI.
 
 ```heex
 <.radio_group name="shipping">
-  <:radio value="standard">
-    <span class="font-medium">Standard</span>
+  <:radio value="standard" label="Standard">
     <span class="text-muted-foreground">3-5 business days</span>
   </:radio>
-  <:radio value="express">
-    <span class="font-medium">Express</span>
+  <:radio value="express" label="Express">
     <span class="text-muted-foreground">1-2 business days</span>
   </:radio>
 </.radio_group>
@@ -211,51 +215,39 @@ Quick reference for form controls and patterns in Sutra UI.
 ### Basic Select
 
 ```heex
-<.select 
-  id="country"
-  name="country"
-  placeholder="Select a country"
-  options={[
-    {"United States", "us"},
-    {"Canada", "ca"},
-    {"Mexico", "mx"}
-  ]}
-/>
+<.select id="country" name="country" value={@country}>
+  <:trigger>{@country_label || "Select a country"}</:trigger>
+  <.select_option value="us" label="United States" />
+  <.select_option value="ca" label="Canada" />
+  <.select_option value="mx" label="Mexico" />
+</.select>
 ```
 
 ### Select with Groups
 
 ```heex
-<.select 
-  id="timezone"
-  name="timezone"
-  placeholder="Select timezone"
-  options={[
-    {"Americas": [
-      {"New York", "America/New_York"},
-      {"Los Angeles", "America/Los_Angeles"}
-    ]},
-    {"Europe": [
-      {"London", "Europe/London"},
-      {"Paris", "Europe/Paris"}
-    ]}
-  ]}
-/>
+<.select id="timezone" name="timezone" value={@timezone} searchable>
+  <:trigger>{@timezone_label || "Select timezone"}</:trigger>
+  <.select_group label="Americas">
+    <.select_option value="America/New_York" label="New York" />
+    <.select_option value="America/Los_Angeles" label="Los Angeles" />
+  </.select_group>
+  <.select_separator />
+  <.select_group label="Europe">
+    <.select_option value="Europe/London" label="London" />
+    <.select_option value="Europe/Paris" label="Paris" />
+  </.select_group>
+</.select>
 ```
 
 ### Select with Default Value
 
 ```heex
-<.select 
-  id="status"
-  name="status"
-  value={@status}
-  options={[
-    {"Active", "active"},
-    {"Inactive", "inactive"},
-    {"Pending", "pending"}
-  ]}
-/>
+<.select id="status" name="status" value={@status} selected_label={@status_label}>
+  <.select_option value="active" label="Active" />
+  <.select_option value="inactive" label="Inactive" />
+  <.select_option value="pending" label="Pending" />
+</.select>
 ```
 
 ### Live Select (Async Search)
@@ -270,8 +262,11 @@ Quick reference for form controls and patterns in Sutra UI.
   />
 </.form>
 
-<%= if user = SutraUI.LiveSelect.decode(@form.params["user_id"]) do %>
-  Selected user id: {user}
+<%= case SutraUI.LiveSelect.decode(@form.params["user_id"]) do %>
+  <% nil -> %>
+  <% [] -> %>
+  <% user -> %>
+    Selected user id: {user}
 <% end %>
 ```
 
@@ -310,8 +305,8 @@ end
   name="price"
   min="0"
   max="1000"
-  min_value="200"
-  max_value="800"
+  value_min="200"
+  value_max="800"
 />
 ```
 
@@ -319,15 +314,11 @@ end
 
 ```heex
 <div class="space-y-2">
-  <.input
-    field={@form[:volume]}
-    type="number"
-    label={"Volume: #{@volume}%"}
-    min="0"
-    max="100"
-    phx-change="update_volume"
-  />
-  <.slider id="volume" name="volume" min="0" max="100" value={@volume} />
+  <div class="flex items-center justify-between">
+    <.label for="volume">Volume</.label>
+    <output for="volume">{@volume}%</output>
+  </div>
+  <.slider id="volume" name="volume" min="0" max="100" value={@volume} phx-change="update_volume" />
 </div>
 ```
 
@@ -367,19 +358,24 @@ end
 ### Multi-Step Form
 
 ```heex
-<.tabs id="form-steps" default_value={@step}>
-  <:tab value="1" disabled={@step < 1}>Step 1</:tab>
-  <:tab value="2" disabled={@step < 2}>Step 2</:tab>
-  <:tab value="3" disabled={@step < 3}>Review</:tab>
-  
-  <:panel value="1">
-    <.form for={@form} class="form" phx-submit="next_step">
+<.form for={@form} class="form" phx-change="validate" phx-submit="next_step">
+  <.stepper_wizard id="profile-wizard" current={@step} errors={@step_errors}>
+    <:step id="profile" label="Profile">
       <.input field={@form[:name]} label="Name" />
-      <.button type="submit">Next</.button>
-    </.form>
-  </:panel>
-  <!-- Additional panels... -->
-</.tabs>
+    </:step>
+    <:step id="details" label="Details">
+      <.input field={@form[:email]} type="email" label="Email" />
+    </:step>
+    <:step id="review" label="Review">
+      Review your details before submitting.
+    </:step>
+
+    <:actions>
+      <.button type="button" variant="outline" phx-click="previous_step">Back</.button>
+      <.button type="submit">Continue</.button>
+    </:actions>
+  </.stepper_wizard>
+</.form>
 ```
 
 ## Filter Forms
@@ -388,35 +384,39 @@ end
 ### Filter Bar
 
 ```heex
-<.filter_bar>
-  <.input type="search" name="q" value={@query} placeholder="Search..." />
-  <.select 
-    id="status" 
-    name="status" 
-    value={@status}
-    options={[{"All", ""}, {"Active", "active"}, {"Inactive", "inactive"}]}
-  />
-  <.select
-    id="sort"
-    name="sort"
-    value={@sort}
-    options={[{"Newest", "newest"}, {"Oldest", "oldest"}, {"Name", "name"}]}
-  />
-  <.button type="submit">Apply</.button>
-  <.button type="button" variant="outline" phx-click="reset_filters">
-    Reset
-  </.button>
+<.filter_bar on_change="filter" on_clear="reset_filters" show_clear={@has_filters}>
+  <:filter>
+    <.input type="search" name="q" value={@query} placeholder="Search..." />
+  </:filter>
+  <:filter>
+    <.input
+      type="select"
+      name="status"
+      value={@status}
+      options={[{"All", ""}, {"Active", "active"}, {"Inactive", "inactive"}]}
+    />
+  </:filter>
+  <:filter>
+    <.input
+      type="select"
+      name="sort"
+      value={@sort}
+      options={[{"Newest", "newest"}, {"Oldest", "oldest"}, {"Name", "name"}]}
+    />
+  </:filter>
 </.filter_bar>
 ```
 
 ### Date Range Filter
 
 ```heex
-<.filter_bar>
-  <.input type="date" name="start_date" value={@start_date} />
-  <span class="text-muted-foreground">to</span>
-  <.input type="date" name="end_date" value={@end_date} />
-  <.button type="submit">Filter</.button>
+<.filter_bar on_change="filter_dates" cols={2}>
+  <:filter>
+    <.input type="date" name="start_date" value={@start_date} />
+  </:filter>
+  <:filter>
+    <.input type="date" name="end_date" value={@end_date} />
+  </:filter>
 </.filter_bar>
 ```
 
@@ -431,7 +431,6 @@ end
   type="email"
   label="Email"
   phx-debounce="blur"
-  errors={Enum.map(@form[:email].errors, &translate_error/1)}
 />
 ```
 
@@ -440,7 +439,7 @@ end
 ```heex
 <.form for={@form} class="form" phx-submit="save">
   <.alert :if={@form.errors[:base]} variant="destructive">
-    {translate_error(@form.errors[:base])}
+    <:title>{translate_error(@form.errors[:base])}</:title>
   </.alert>
 
   <.input field={@form[:email]} label="Email" />
@@ -461,7 +460,9 @@ end
 
 ```heex
 <.input
-  field={@form[:email]}
+  id="email"
+  name="email"
+  value={@email}
   type="email"
   label="Email"
   phx-blur="validate_email"

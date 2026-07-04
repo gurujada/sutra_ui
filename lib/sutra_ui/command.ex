@@ -29,9 +29,10 @@ defmodule SutraUI.Command do
 
   ## Accessibility
 
-  - Full keyboard navigation (Arrow keys, Home, End, Enter, Escape)
+  - Keyboard navigation for Arrow keys, Home/End, and Enter selection
+  - Escape closes `command_dialog` through native dialog cancellation
   - Search/filter functionality with live updates
-  - Proper ARIA roles and attributes
+  - ARIA roles and attributes for combobox-style search and menu items
   - Focus management
   """
 
@@ -95,6 +96,7 @@ defmodule SutraUI.Command do
           role="combobox"
           aria-expanded="true"
           aria-controls={"#{@id}-menu"}
+          aria-activedescendant=""
           phx-debounce="100"
         />
       </header>
@@ -114,18 +116,32 @@ defmodule SutraUI.Command do
           this.refreshItems();
           
           // Search/filter
-          this.input.addEventListener('input', (e) => this.handleSearch(e.target.value));
+          this.searchHandler = (e) => this.handleSearch(e.target.value);
+          this.keydownHandler = (e) => this.handleKeydown(e);
+          this.menuClickHandler = (e) => {
+            const item = e.target.closest('[role="menuitem"]');
+            if (item && item.getAttribute('aria-disabled') !== 'true') {
+              const index = this.getVisibleItems().indexOf(item);
+              if (index > -1) this.setActiveItem(index);
+            }
+          };
+          this.input.addEventListener('input', this.searchHandler);
           
           // Keyboard navigation
-          this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
+          this.input.addEventListener('keydown', this.keydownHandler);
           
           // Item click
-          this.menu.addEventListener('click', (e) => {
-            const item = e.target.closest('[role="menuitem"]');
-            if (item && !item.hasAttribute('aria-disabled')) {
-              this.selectItem(item);
-            }
-          });
+          this.menu.addEventListener('click', this.menuClickHandler);
+        },
+
+        updated() {
+          this.refreshItems();
+        },
+
+        destroyed() {
+          this.input?.removeEventListener('input', this.searchHandler);
+          this.input?.removeEventListener('keydown', this.keydownHandler);
+          this.menu?.removeEventListener('click', this.menuClickHandler);
         },
         
         refreshItems() {
@@ -204,8 +220,16 @@ defmodule SutraUI.Command do
           this.activeIndex = index;
           
           if (index >= 0 && visibleItems[index]) {
-            visibleItems[index].classList.add('active');
-            visibleItems[index].scrollIntoView({ block: 'nearest' });
+            const item = visibleItems[index];
+            item.classList.add('active');
+            item.scrollIntoView({ block: 'nearest' });
+            if (item.id) {
+              this.input.setAttribute('aria-activedescendant', item.id);
+            } else {
+              this.input.removeAttribute('aria-activedescendant');
+            }
+          } else {
+            this.input.removeAttribute('aria-activedescendant');
           }
         },
         
@@ -249,6 +273,7 @@ defmodule SutraUI.Command do
       id={@id}
       class="command-dialog"
       aria-label="Command palette"
+      phx-hook=".CommandDialog"
       {@rest}
     >
       <div class={@class}>
@@ -261,6 +286,47 @@ defmodule SutraUI.Command do
         </.command>
       </div>
     </dialog>
+
+    <script :type={ColocatedHook} name=".CommandDialog" runtime>
+      {
+        mounted() {
+          this.showHandler = () => {
+            if (typeof this.el.showModal === "function" && !this.el.open) {
+              this.el.showModal();
+            } else {
+              this.el.setAttribute("open", "");
+            }
+
+            requestAnimationFrame(() => {
+              this.el.querySelector("input")?.focus();
+            });
+          };
+
+          this.hideHandler = () => {
+            if (this.el.open && typeof this.el.close === "function") {
+              this.el.close();
+            } else {
+              this.el.removeAttribute("open");
+            }
+          };
+
+          this.cancelHandler = (event) => {
+            event.preventDefault();
+            this.hideHandler();
+          };
+
+          this.el.addEventListener("phx:show-dialog", this.showHandler);
+          this.el.addEventListener("phx:hide-dialog", this.hideHandler);
+          this.el.addEventListener("cancel", this.cancelHandler);
+        },
+
+        destroyed() {
+          this.el.removeEventListener("phx:show-dialog", this.showHandler);
+          this.el.removeEventListener("phx:hide-dialog", this.hideHandler);
+          this.el.removeEventListener("cancel", this.cancelHandler);
+        }
+      }
+    </script>
     """
   end
 
@@ -291,6 +357,7 @@ defmodule SutraUI.Command do
       role="menuitem"
       data-keywords={@keywords_str}
       aria-disabled={to_string(@disabled)}
+      disabled={@disabled}
       tabindex="-1"
       {@rest}
     >
@@ -323,9 +390,12 @@ defmodule SutraUI.Command do
   @doc """
   Renders a separator between command items or groups.
   """
+  attr(:class, :string, default: nil, doc: "Additional CSS classes")
+  attr(:rest, :global, doc: "Additional HTML attributes")
+
   def command_separator(assigns) do
     ~H"""
-    <hr role="separator" />
+    <hr class={@class} role="separator" {@rest} />
     """
   end
 
@@ -334,7 +404,7 @@ defmodule SutraUI.Command do
 
   ## Examples
 
-      <button phx-click={PhxUI.Command.show_command_dialog("cmd-palette")}>Open</button>
+      <button phx-click={SutraUI.Command.show_command_dialog("cmd-palette")}>Open</button>
   """
   def show_command_dialog(js \\ %JS{}, id) when is_binary(id) do
     js
@@ -346,7 +416,7 @@ defmodule SutraUI.Command do
 
   ## Examples
 
-      <button phx-click={PhxUI.Command.hide_command_dialog("cmd-palette")}>Close</button>
+      <button phx-click={SutraUI.Command.hide_command_dialog("cmd-palette")}>Close</button>
   """
   def hide_command_dialog(js \\ %JS{}, id) when is_binary(id) do
     js

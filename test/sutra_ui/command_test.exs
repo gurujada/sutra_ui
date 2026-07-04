@@ -91,6 +91,7 @@ defmodule SutraUI.CommandTest do
         """)
 
       assert html =~ ~s(aria-disabled="true")
+      assert html =~ ~s(disabled)
     end
 
     test "includes custom class" do
@@ -203,17 +204,20 @@ defmodule SutraUI.CommandTest do
       assert html =~ "<dialog"
     end
 
-    test "includes on_cancel attribute" do
+    test "mounts command dialog hook for show/hide helpers" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Command.command_dialog id="cmd-dialog" on_cancel="close_palette">
+        <Command.command_dialog id="cmd-dialog">
           <Command.command_item id="item">Item</Command.command_item>
         </Command.command_dialog>
         """)
 
-      assert html =~ ~s(on_cancel="close_palette")
+      assert html =~ ~s(phx-hook="SutraUI.Command.CommandDialog")
+      assert html =~ ~s(data-phx-runtime-hook="SutraUI.Command.CommandDialog")
+      assert html =~ "phx:show-dialog"
+      assert html =~ "phx:hide-dialog"
     end
 
     test "passes placeholder to inner command" do
@@ -269,6 +273,19 @@ defmodule SutraUI.CommandTest do
 
       assert html =~ ~s(aria-controls="test-cmd-menu")
       assert html =~ ~s(id="test-cmd-menu")
+    end
+
+    test "input exposes active descendant state for keyboard navigation" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Command.command id="cmd">
+          <Command.command_item id="item">Item</Command.command_item>
+        </Command.command>
+        """)
+
+      assert html =~ ~s(aria-activedescendant)
     end
 
     test "menu has role=menu" do

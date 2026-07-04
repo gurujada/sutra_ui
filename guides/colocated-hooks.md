@@ -1,6 +1,6 @@
 # JavaScript Hooks
 
-Sutra UI uses **colocated hooks**, a Phoenix 1.8+ feature that allows JavaScript hooks to be defined alongside their components. Most hooks use the runtime form and do not need a separate `hooks.js` file.
+Sutra UI uses **colocated hooks**, a Phoenix 1.8+ feature that allows JavaScript hooks to be defined alongside their components. Most hooks use the runtime form. Extracted-hook components such as `dialog` and animated `response` still need the generated `phoenix-colocated/sutra_ui` hooks merged into your LiveSocket.
 
 ## What Are Colocated Hooks?
 
@@ -16,7 +16,7 @@ def my_component(assigns) do
   <script :type={Phoenix.LiveView.ColocatedHook} name=".MyHook" runtime>
     {
       mounted() {
-        console.log("Hook mounted!", this.el)
+        this.el.dataset.ready = "true"
       }
     }
   </script>
@@ -36,38 +36,54 @@ Several Sutra UI components use colocated hooks for interactivity:
 |-----------|------|------|---------|
 | `dialog` | `.Dialog` | Extracted | Show/hide modal (div-based for screen share compatibility) |
 | `response` | `SutraUI.Response.Response` | Extracted | Smooth text reveal |
-| `tabs` | `.Tabs` | Runtime | Keyboard navigation |
-| `select` | `.Select` | Runtime | Dropdown behavior, search |
-| `dropdown_menu` | `.DropdownMenu` | Runtime | Menu positioning, keyboard nav |
-| `command` | `.Command` | Runtime | Command palette behavior |
-| `toast` | `.ToastContainer` | Runtime | Auto-dismiss, animations |
-| `slider` | `.Slider` | Runtime | Range input behavior |
-| `range_slider` | `.RangeSlider` | Runtime | Dual-handle slider |
-| `live_select` | `.LiveSelect` | Runtime | Async search, tags |
 | `carousel` | `.Carousel` | Runtime | Scroll snap, navigation |
-| `theme_switcher` | `.ThemeSwitcher` | Runtime | Theme persistence |
+| `command` | `.Command` | Runtime | Command palette behavior |
+| `command_dialog` | `.CommandDialog` | Runtime | Native dialog show/hide helpers |
+| `context_menu` | `.ContextMenu` | Runtime | Right-click menu behavior |
+| `drawer` | `.Drawer` | Runtime | Drawer open/close state |
+| `dropdown_menu` | `.DropdownMenu` | Runtime | Menu positioning, keyboard nav |
+| `file_upload` | `SutraUI.FileUpload.FileUpload` | Runtime | Drag/drop state when an upload is provided |
+| `hover_card` | `.HoverCard` | Runtime | Delayed hover/focus preview |
+| `input_otp` | `.InputOTP` | Runtime | Paste distribution and keyboard movement |
+| `live_select` | `.LiveSelect` | Runtime | Async search, tags |
+| `nav_pills` | `.NavPills` | Runtime | Mobile dropdown behavior |
+| `popover` | `.Popover` | Runtime | Popover dismissal and positioning |
+| `range_slider` | `.RangeSlider` | Runtime | Dual-handle slider |
+| `select` | `.Select` | Runtime | Dropdown behavior, search |
+| `slider` | `.Slider` | Runtime | Range input behavior |
+| `tab_nav` | `.TabNav` | Runtime | Routed navigation keyboard focus |
+| `tabs` | `.Tabs` | Runtime | Keyboard navigation |
+| `toast` | `.ToastContainer` | Runtime | Toast push events and dismissal |
+| `theme_switcher` | `.ThemeSwitcher` | Runtime | Theme toggle event dispatch |
+| `tooltip` | `.Tooltip` | Runtime | Tooltip visibility and positioning |
+| `tree_view` | `SutraUI.TreeView.TreeView` | Runtime | Keyboard navigation when `id` is set |
 
 Extracted hooks without `runtime` are exceptions. If you use one, merge the
 generated `phoenix-colocated/sutra_ui` hooks into your LiveSocket.
 
 ## The Hook Name Convention
 
-Hook names in Sutra UI **start with a dot** (e.g., `.Dialog`, `.Tabs`). This is required by Phoenix's colocated hook system.
+Most Sutra UI colocated hook scripts use short dot names (e.g., `.Tabs`).
+When `phx-hook` lives in the same component that renders the script, reference
+that short name:
 
 ```heex
 <!-- The phx-hook value matches the script name -->
 <div id="my-dialog" phx-hook=".Dialog" class="dialog">
 ```
 
-The full hook name becomes `ModuleName.HookName` (e.g., `SutraUI.Dialog.Dialog`), but you only reference the short name with the dot prefix.
+Phoenix also generates a fully qualified hook name such as
+`SutraUI.TreeView.TreeView`. Sutra uses that form when the rendered
+`phx-hook` must point at a hook from another generated scope or from a
+conditional assignment.
 
 ## Custom Events
 
-Sutra UI hooks dispatch custom events using the `sutra-ui:` namespace.
+Public Sutra UI browser events use the `sutra-ui:` namespace.
 
 ```javascript
 document.dispatchEvent(new CustomEvent('sutra-ui:drawer', {
-  detail: { id: 'main-drawer', open: true }
+  detail: { id: 'main-drawer', action: 'open' }
 }))
 ```
 
@@ -77,7 +93,7 @@ Listen for Sutra UI events in your LiveView:
 
 ```javascript
 document.addEventListener('sutra-ui:drawer', (e) => {
-  console.log('Drawer event:', e.detail)
+  // Update local UI or analytics from e.detail.
 })
 ```
 
@@ -95,7 +111,7 @@ end
 
 | Event | Component | Detail |
 |-------|-----------|--------|
-| `sutra-ui:drawer` | Drawer | `{ id, open }` |
+| `sutra-ui:drawer` | Drawer | `{ id }` toggles; `{ id, action }` opens/closes when `action` is `"open"` or `"close"` |
 | `sutra-ui:set-theme` | ThemeSwitcher | `{ theme }` |
 | `sutra-ui:range-slide` | RangeSlider | `{ min, max }` |
 | `sutra-ui:range-change` | RangeSlider | `{ min, max }` |
@@ -104,14 +120,12 @@ end
 
 Sutra UI provides helper functions that work with colocated hooks:
 
-```elixir
-import SutraUI.Dialog
+```heex
+<%# Show a dialog %>
+<.button phx-click={SutraUI.Dialog.show_dialog("my-dialog")}>Open</.button>
 
-# Show a dialog
-<.button phx-click={show_dialog("my-dialog")}>Open</.button>
-
-# Hide a dialog
-<.button phx-click={hide_dialog("my-dialog")}>Close</.button>
+<%# Hide a dialog %>
+<.button phx-click={SutraUI.Dialog.hide_dialog("my-dialog")}>Close</.button>
 ```
 
 These helpers dispatch events that the hooks listen for:
@@ -145,7 +159,7 @@ defmodule MyAppWeb.Components.TrackedDialog do
 
   def tracked_dialog(assigns) do
     ~H"""
-    <div phx-hook=".TrackedDialog" data-dialog-id={@id}>
+    <div id={"#{@id}-tracker"} phx-hook=".TrackedDialog" data-dialog-id={@id}>
       <.dialog id={@id} show={@show} on_cancel={@on_cancel}>
         <:title :if={@title != []}>{render_slot(@title)}</:title>
         <:description :if={@description != []}>{render_slot(@description)}</:description>
@@ -197,7 +211,9 @@ In development, runtime hooks are compiled and reloaded when you change componen
 
 ### Production Builds
 
-Runtime hooks are rendered by their components. No additional JavaScript configuration is needed.
+Runtime hooks are rendered by their components. Extracted hooks are bundled by
+Phoenix and must be merged into your LiveSocket as shown in the installation
+guide.
 
 ## Troubleshooting
 
@@ -207,7 +223,7 @@ Runtime hooks are rendered by their components. No additional JavaScript configu
 
 **Causes:**
 1. Missing `phx-hook` attribute
-2. Wrong hook name (must start with `.`)
+2. Wrong hook name (`.HookName` for local colocated hooks, or the generated fully qualified name for extracted/cross-scope hooks)
 3. Phoenix version < 1.8
 
 **Fix:**

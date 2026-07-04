@@ -505,6 +505,21 @@ defmodule SutraUI.DropdownMenuTest do
       assert html =~ ~s(phx-hook=)
       assert html =~ "DropdownMenu"
     end
+
+    test "uses sutra-ui namespace for internal popover coordination" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_menu id="test-dropdown">
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="#">Item</a></DropdownMenu.dropdown_item>
+        </DropdownMenu.dropdown_menu>
+        """)
+
+      assert html =~ "sutra-ui:popover"
+      refute html =~ "sutra:popover"
+    end
   end
 
   describe "complete examples" do

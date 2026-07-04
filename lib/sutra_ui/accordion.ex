@@ -24,7 +24,7 @@ defmodule SutraUI.Accordion do
 
   ## Accessibility
 
-  - Uses proper ARIA attributes for accordion pattern
+  - Uses ARIA attributes for accordion disclosure state
   - Keyboard navigation with Enter/Space to toggle
   - `aria-expanded` indicates open/closed state
   - `aria-controls` links trigger to content panel
@@ -47,12 +47,10 @@ defmodule SutraUI.Accordion do
     doc: "The value(s) of items to open by default"
   )
 
+  attr(:id, :string, default: nil, doc: "Unique identifier used to scope accordion state")
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
 
-  attr(:rest, :global,
-    include: ~w(id),
-    doc: "Additional HTML attributes"
-  )
+  attr(:rest, :global, doc: "Additional HTML attributes")
 
   slot :item, required: true, doc: "Accordion items" do
     attr(:value, :string, required: true, doc: "Unique identifier for the item")
@@ -70,10 +68,13 @@ defmodule SutraUI.Accordion do
         true -> []
       end
 
-    assigns = assign(assigns, :default_open, default_open)
+    assigns =
+      assigns
+      |> assign(:default_open, default_open)
+      |> assign(:id, assigns.id || "accordion-#{System.unique_integer([:positive])}")
 
     ~H"""
-    <div class={["accordion", @class]} data-type={@type} {@rest}>
+    <div id={@id} class={["accordion", @class]} data-type={@type} {@rest}>
       <%= for item <- @item do %>
         <div
           class={["accordion-item", item[:disabled] && "accordion-disabled"]}
@@ -82,12 +83,13 @@ defmodule SutraUI.Accordion do
         >
           <h3 class="accordion-header">
             <button
+              id={"accordion-trigger-#{item.value}"}
               type="button"
               class="accordion-trigger"
               aria-expanded={if item.value in @default_open, do: "true", else: "false"}
               aria-controls={"accordion-content-#{item.value}"}
               disabled={item[:disabled]}
-              phx-click={toggle_item(item.value, @type)}
+              phx-click={toggle_item(@id, item.value, @type)}
             >
               <span>{item.title}</span>
               <svg
@@ -124,13 +126,26 @@ defmodule SutraUI.Accordion do
     """
   end
 
-  defp toggle_item(value, _type) do
-    JS.toggle_attribute({"aria-expanded", "true", "false"},
-      to: "#accordion-item-#{value} .accordion-trigger"
+  defp toggle_item(root_id, value, "single") do
+    JS.set_attribute({"aria-expanded", "false"},
+      to: "##{root_id} .accordion-trigger:not(#accordion-trigger-#{value})"
+    )
+    |> JS.set_attribute({"data-state", "closed"},
+      to: "##{root_id} .accordion-item:not(#accordion-item-#{value})"
+    )
+    |> JS.hide(to: "##{root_id} .accordion-content:not(#accordion-content-#{value})")
+    |> toggle_target_item(root_id, value)
+  end
+
+  defp toggle_item(root_id, value, _type), do: toggle_target_item(%JS{}, root_id, value)
+
+  defp toggle_target_item(js, root_id, value) do
+    JS.toggle_attribute(js, {"aria-expanded", "true", "false"},
+      to: "##{root_id} #accordion-item-#{value} .accordion-trigger"
     )
     |> JS.toggle_attribute({"data-state", "open", "closed"},
-      to: "#accordion-item-#{value}"
+      to: "##{root_id} #accordion-item-#{value}"
     )
-    |> JS.toggle(to: "#accordion-content-#{value}")
+    |> JS.toggle(to: "##{root_id} #accordion-content-#{value}")
   end
 end

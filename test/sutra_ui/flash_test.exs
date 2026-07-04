@@ -157,7 +157,7 @@ defmodule SutraUI.FlashTest do
         <Flash.flash kind={:info} flash={@flash} />
         """)
 
-      assert html =~ ~s(aria-label="close")
+      assert html =~ ~s(aria-label="Close")
     end
   end
 

@@ -7,8 +7,9 @@ defmodule SutraUI.RangeSlider do
 
   ## Integer vs Float Mode
 
-  **The `step` attribute determines the type of values emitted by the slider.**
-  This is important for database compatibility (e.g., Postgrex expects matching types).
+  **The `step` attribute determines the numeric mode used by the slider.**
+  `pushEvent` payloads use numbers in that mode; hidden form inputs use the
+  matching string representation, as normal HTML inputs do.
 
   ### Integer Mode (default)
 
@@ -17,7 +18,7 @@ defmodule SutraUI.RangeSlider do
       # Integer step = integer values
       <.range_slider name="price" min={0} max={1000} step={1} value_min={200} value_max={800} />
 
-      # Event payload: %{"price_min" => 200, "price_max" => 800}
+      # pushEvent payload: %{"price_min" => 200, "price_max" => 800}
       # Hidden inputs: value="200", value="800"
 
   ### Float Mode
@@ -27,19 +28,19 @@ defmodule SutraUI.RangeSlider do
       # Float step = float values
       <.range_slider name="rating" min={0} max={5} step={0.5} value_min={1.5} value_max={4.0} />
 
-      # Event payload: %{"rating_min" => 1.5, "rating_max" => 4.0}
+      # pushEvent payload: %{"rating_min" => 1.5, "rating_max" => 4.0}
       # Hidden inputs: value="1.5", value="4.0"
 
   ### Choosing the Right Mode
 
       # For integer database columns (e.g., price in cents, age, quantity)
-      <.range_slider name="price" step={1} ... />      # emits integers
+      <.range_slider name="price" min={0} max={1000} step={1} />      # integer mode
 
       # For float/decimal database columns (e.g., ratings, percentages, weights)
-      <.range_slider name="rating" step={0.5} ... />   # emits floats
+      <.range_slider name="rating" min={0} max={5} step={0.5} />   # float mode
 
       # Want floats but whole number increments? Use a float step like 1.0
-      <.range_slider name="score" step={1.0} ... />    # emits floats: 1.0, 2.0, 3.0
+      <.range_slider name="score" min={0} max={10} step={1.0} />    # float mode: 1.0, 2.0, 3.0
 
   ## Examples
 
@@ -92,7 +93,7 @@ defmodule SutraUI.RangeSlider do
   ## Event Payloads
 
   The slider emits events via `on_slide` (during drag) and `on_change` (on release).
-  The payload type matches the step type:
+  The `pushEvent` payload uses integer or float numbers based on the step:
 
       # Integer step (step={1}, step={5}, etc.)
       def handle_event("price_changed", %{"price_min" => 200, "price_max" => 800}, socket)
@@ -106,7 +107,8 @@ defmodule SutraUI.RangeSlider do
   - `{name}_min` - The minimum selected value
   - `{name}_max` - The maximum selected value
 
-  These are automatically submitted with forms. The value type matches the step type.
+  These are automatically submitted with forms. Values are strings, as with all
+  HTML inputs, but they are formatted according to the step mode.
 
   ## Setting Values from Server
 
@@ -115,7 +117,7 @@ defmodule SutraUI.RangeSlider do
 
   ## Accessibility
 
-  - Full keyboard support: Tab to focus, Arrow keys to adjust values
+  - Keyboard support: Tab to focus, Arrow keys to adjust values
   - ARIA attributes for screen readers
   - Visible focus states
   - Touch-friendly handle sizes
@@ -133,7 +135,7 @@ defmodule SutraUI.RangeSlider do
   - `name` - Base name for the hidden inputs (required)
   - `min` - Minimum value of the range (default: 0)
   - `max` - Maximum value of the range (default: 100)
-  - `step` - Step increment (default: 1). **Determines output type: integer step → integers, float step → floats**
+  - `step` - Step increment (default: 1). Integer steps use integer mode; float steps use float mode.
   - `value_min` - Current minimum selected value (default: 25% of range)
   - `value_max` - Current maximum selected value (default: 75% of range)
   - `format` - Optional function to format displayed values (does not affect emitted values)
@@ -152,7 +154,7 @@ defmodule SutraUI.RangeSlider do
 
   attr(:step, :any,
     default: 1,
-    doc: "Step increment. Integer (1, 5) emits integers; float (0.5, 1.0) emits floats"
+    doc: "Step increment. Integer (1, 5) uses integer mode; float (0.5, 1.0) uses float mode"
   )
 
   attr(:value_min, :any, default: nil, doc: "Current minimum value")
@@ -364,12 +366,19 @@ defmodule SutraUI.RangeSlider do
           this.onMouseUp = this.onMouseUp.bind(this);
           this.onTouchMove = this.onTouchMove.bind(this);
           this.onTouchEnd = this.onTouchEnd.bind(this);
+          this.thumbHandlers = [];
 
           // Mouse/touch events on thumbs
           this.thumbs.forEach((thumb, index) => {
-            thumb.addEventListener('mousedown', (e) => this.onMouseDown(e, index));
-            thumb.addEventListener('touchstart', (e) => this.onTouchStart(e, index), { passive: false });
-            thumb.addEventListener('keydown', (e) => this.onKeyDown(e, index));
+            const handlers = {
+              mouseDown: (e) => this.onMouseDown(e, index),
+              touchStart: (e) => this.onTouchStart(e, index),
+              keyDown: (e) => this.onKeyDown(e, index)
+            };
+            this.thumbHandlers.push({ thumb, handlers });
+            thumb.addEventListener('mousedown', handlers.mouseDown);
+            thumb.addEventListener('touchstart', handlers.touchStart, { passive: false });
+            thumb.addEventListener('keydown', handlers.keyDown);
           });
 
           // Track click to jump to position
@@ -383,6 +392,19 @@ defmodule SutraUI.RangeSlider do
         },
 
         removeEventListeners() {
+          if (this.thumbHandlers) {
+            this.thumbHandlers.forEach(({ thumb, handlers }) => {
+              thumb.removeEventListener('mousedown', handlers.mouseDown);
+              thumb.removeEventListener('touchstart', handlers.touchStart);
+              thumb.removeEventListener('keydown', handlers.keyDown);
+            });
+            this.thumbHandlers = [];
+          }
+
+          if (this.track && this.onTrackClick) {
+            this.track.removeEventListener('click', this.onTrackClick);
+          }
+
           document.removeEventListener('mousemove', this.onMouseMove);
           document.removeEventListener('mouseup', this.onMouseUp);
           document.removeEventListener('touchmove', this.onTouchMove);
@@ -592,7 +614,7 @@ defmodule SutraUI.RangeSlider do
           this.range.style.left = percentMin + '%';
           this.range.style.width = (percentMax - percentMin) + '%';
 
-          // Format values for display and emission
+          // Format values for display, hidden inputs, and event payloads.
           const formattedMin = this.formatValue(this.valueMin);
           const formattedMax = this.formatValue(this.valueMax);
 

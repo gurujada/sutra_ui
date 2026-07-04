@@ -4,11 +4,11 @@ This document provides guidelines for AI assistants when working with the Sutra 
 
 ## Overview
 
-Sutra UI is a pure Phoenix LiveView UI component library with no external JavaScript dependencies. Components use runtime colocated JavaScript hooks where interactivity is needed.
+Sutra UI is a pure Phoenix LiveView UI component library with no external JavaScript/npm dependencies. Components use colocated JavaScript hooks where interactivity is needed; most are runtime hooks, with extracted exceptions documented in the hook guide.
 
 **Requirements:**
 - Phoenix 1.8+ (for colocated hooks)
-- Phoenix LiveView 1.1+ (runtime ColocatedHook support)
+- Phoenix LiveView 1.2+
 - Tailwind CSS v4 (CSS-first configuration)
 
 ## Core Principles
@@ -33,7 +33,9 @@ class={["flex items-center gap-2", @class]}
 
 ### 2. Required ID Attributes
 
-Components that require JavaScript hooks or generate DOM references **must** have a required `id` attribute:
+Components that require JavaScript hooks or stable DOM references expose an `id`
+attribute. Hook-only components generally require it; progressive-enhancement
+components may enable extra behavior only when an `id` is provided:
 
 ```elixir
 # Good - explicit required ID
@@ -66,11 +68,11 @@ Use appropriate attribute types:
 
 | Attribute | Type | Notes |
 |-----------|------|-------|
-| `class` | `:string` | Always `:string`, merged internally with list pattern |
-| `id` | `:string` | Required for hook-based components |
+| `class` | `:string` or `:any` | Prefer `:string`; use `:any` when list-style class values are intentional |
+| `id` | `:string` | Required when hook behavior needs a stable DOM target; optional only for progressive enhancements |
 | `disabled` | `:boolean` | Boolean attributes |
 | `value` | `:string` or `:any` | Depends on component needs |
-| `errors` | `:list` | List of error messages |
+| `errors` | `:list` or `:map` | Lists for field messages; maps for keyed workflows like steppers |
 
 ### 5. Global Attributes
 
@@ -196,26 +198,28 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 
 ### Form Controls
 - `label/1` - Form labels
-- `input/1` - Text inputs (text, email, password, number, etc.)
+- `input/1` - Unified form fields with label, description, native select, and error support
 - `textarea/1` - Multi-line text input
 - `checkbox/1` - Checkbox input
 - `switch/1` - Toggle switch
 - `radio_group/1`, `radio/1` - Radio button groups
-- `field/1`, `fieldset/1` - Field containers with label/description/error
+- `simple_form/1` - Styled plain form shell; use Phoenix `<.form class="form">` for changeset-backed LiveView forms
 - `select/1` - Custom select dropdown (JS hook)
 - `slider/1` - Range slider (JS hook)
 - `range_slider/1` - Dual-handle range slider (JS hook)
-- `live_select/1` - Async searchable select (JS hook)
+- `SutraUI.LiveSelect` - LiveComponent async searchable select; render with `<.live_component module={SutraUI.LiveSelect} ... />`
 - `input_otp/1` - One-time password input (JS hook)
 - `file_upload/1` - LiveView upload dropzone configured with `allow_upload/3`
 
 ### Layout & Data Display
 - `card/1` - Card container with header/content/footer slots
 - `header/1` - Page header with title/subtitle/actions
-- `table/1` - Data table with column definitions
+- `table/1` - Raw styled table wrapper
+- `data_table/1` - Data table with column definitions
 - `skeleton/1` - Loading placeholder
 - `empty/1` - Empty state display
 - `alert/1` - Alert/callout messages
+- `flash/1` - Phoenix flash messages
 - `progress/1` - Progress bar
 - `stepper/1` - Multi-step progress indicator
 - `stepper_wizard/1` - Multi-step wizard shell for large forms and flows
@@ -229,11 +233,11 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `tabs/1` - Tab panels (JS hook)
 - `dropdown_menu/1` - Dropdown menu (JS hook)
 - `context_menu/1` - Right-click menu (JS hook)
-- `toast/1`, `toaster/1` - Toast notifications (JS hook)
+- `toast_container/1`, `toast/1` - Toast notifications (JS hook)
 
 ### Advanced UI
 - `avatar/1` - User avatars with fallback
-- `tooltip/1` - CSS-only hover tooltips
+- `tooltip/1` - Hover and focus tooltip (JS hook)
 - `hover_card/1` - Rich hover preview (JS hook)
 - `dialog/1` - Modal dialogs
 - `popover/1` - Click-triggered popups
@@ -244,7 +248,7 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `separator/1` - Visual or semantic divider
 
 ### AI Primitives
-- `response/1` - Plain text or streamed Markdown responses with optional reveal styles
+- `response/1` - Text responses with optional reveal styles, or streamed Markdown
 - `activity/1` - Safe user-facing agent progress with slot-owned row content
 
 ### Layout Helpers
@@ -252,13 +256,12 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `input_group/1` - Input with prefix/suffix
 - `item/1` - Versatile list item
 - `loading_state/1` - Loading indicator with message
-- `simple_form/1` - Form wrapper with auto-styling
 
 ### Navigation
 - `nav_pills/1` - Responsive navigation pills
 - `drawer/1` - Collapsible drawer navigation
 - `tab_nav/1` - Server-side routed tab navigation
-- `theme_switcher/1` - Light/dark theme toggle
+- `theme_switcher/1` - Light/dark theme event button
 
 ## CSS Class Naming
 
@@ -283,11 +286,13 @@ CSS classes in `sutra_ui.css` follow these conventions:
 
 ## Testing Components
 
-Tests are in `test/sutra_ui/` and use `ComponentCase`:
+Tests are in `test/sutra_ui/`. Most existing tests use `ExUnit.Case` with
+`Phoenix.LiveViewTest.rendered_to_string/1`; `SutraUI.ComponentCase` is
+available when its helpers are useful:
 
 ```elixir
 defmodule SutraUI.ComponentNameTest do
-  use ComponentCase, async: true
+  use SutraUI.ComponentCase, async: true
 
   import SutraUI.ComponentName
 
@@ -350,17 +355,17 @@ test/
   <:title>Edit User</:title>
   <:description>Update user information below.</:description>
 
-  <.simple_form for={@form} phx-submit="save_user">
+  <.form for={@form} class="form" phx-submit="save_user">
     <.input field={@form[:name]} label="Name" />
     <.input field={@form[:email]} label="Email" type="email" />
 
-    <:actions>
+    <div class="flex justify-end gap-2">
       <.button variant="outline" phx-click="close_edit_dialog">
         Cancel
       </.button>
       <.button type="submit">Save Changes</.button>
-    </:actions>
-  </.simple_form>
+    </div>
+  </.form>
 </.dialog>
 
 <.button phx-click="open_edit_dialog">
@@ -399,19 +404,13 @@ end
   </:col>
   <:action :let={user}>
     <.dropdown_menu id={"user-actions-#{user.id}"}>
-      <:trigger>
-        <.button variant="ghost" size="icon" aria-label="Actions">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-        </.button>
-      </:trigger>
-      <:content>
-        <.dropdown_menu_item navigate={~p"/users/#{user.id}"}>View</.dropdown_menu_item>
-        <.dropdown_menu_item navigate={~p"/users/#{user.id}/edit"}>Edit</.dropdown_menu_item>
-        <.dropdown_menu_separator />
-        <.dropdown_menu_item variant="destructive" phx-click="delete_user" phx-value-id={user.id}>
-          Delete
-        </.dropdown_menu_item>
-      </:content>
+      <:trigger>Actions</:trigger>
+      <.dropdown_item><.link navigate={~p"/users/#{user.id}"}>View</.link></.dropdown_item>
+      <.dropdown_item><.link navigate={~p"/users/#{user.id}/edit"}>Edit</.link></.dropdown_item>
+      <.dropdown_separator />
+      <.dropdown_item variant="destructive" phx-click="delete_user" phx-value-id={user.id}>
+        Delete
+      </.dropdown_item>
     </.dropdown_menu>
   </:action>
 </.data_table>
@@ -419,7 +418,7 @@ end
 <.pagination
   page={@page}
   total_pages={@total_pages}
-  path={~p"/users"}
+  on_page_change="page_changed"
 />
 ```
 
@@ -495,7 +494,7 @@ end
   <:panel value="overview">
     <.card>
       <:header>
-        <:title>Overview</:title>
+        <h2>Overview</h2>
       </:header>
       <:content>
         <p>Overview content here...</p>
@@ -506,12 +505,12 @@ end
   <:panel value="activity">
     <.card>
       <:header>
-        <:title>Recent Activity</:title>
+        <h2>Recent Activity</h2>
       </:header>
       <:content>
         <ul>
           <.item :for={activity <- @activities}>
-            {activity.description}
+            <:title>{activity.description}</:title>
           </.item>
         </ul>
       </:content>
@@ -519,10 +518,10 @@ end
   </:panel>
   
   <:panel value="settings">
-    <.simple_form for={@settings_form} phx-submit="save_settings">
-      <.switch field={@settings_form[:notifications]} label="Enable notifications" />
-      <.switch field={@settings_form[:dark_mode]} label="Dark mode" />
-    </.simple_form>
+    <.form for={@settings_form} class="form" phx-submit="save_settings">
+      <.input field={@settings_form[:notifications]} type="switch" label="Enable notifications" />
+      <.input field={@settings_form[:dark_mode]} type="switch" label="Dark mode" />
+    </.form>
   </:panel>
 </.tabs>
 ```
@@ -569,13 +568,17 @@ end
    {:phoenix, "~> 1.8"}
    ```
 
-2. **Check component ID** - Hook-based components require unique IDs:
+2. **Check component ID** - many hook-based components require unique IDs:
    ```heex
    <%# Wrong - missing ID %>
    <.select name="country">
+     <.select_option value="us" label="United States" />
+   </.select>
    
    <%# Correct %>
    <.select id="country-select" name="country">
+     <.select_option value="us" label="United States" />
+   </.select>
    ```
 
 3. **Check rendered hook markup** - Runtime hooks are emitted with the
@@ -619,11 +622,13 @@ end
 1. **Check name attribute** - Ensure `name` matches the form field:
    ```heex
    <.select id="role-select" name={@form[:role].name} value={@form[:role].value}>
+     <.select_option value="admin" label="Administrator" />
+   </.select>
    ```
 
 2. **Check phx-change** - Form needs `phx-change` for live validation:
    ```heex
-   <.simple_form for={@form} phx-change="validate" phx-submit="save">
+   <.form for={@form} class="form" phx-change="validate" phx-submit="save">
    ```
 
 ### Dialog not opening/closing
@@ -684,12 +689,13 @@ end
 
 **Solutions:**
 
-1. **Check variable syntax** - Use OKLCH format:
+1. **Check variable syntax** - Sutra UI defaults use OKLCH; other valid CSS
+   color formats also work if they give sufficient contrast:
    ```css
-   /* Wrong */
+   /* Valid, but less consistent with the default palette */
    --primary: #3b82f6;
    
-   /* Correct */
+   /* Preferred for Sutra UI themes */
    --primary: oklch(0.623 0.214 259.815);
    ```
 
@@ -711,7 +717,7 @@ end
 1. **Import correctly** - Test files need explicit imports:
    ```elixir
    defmodule SutraUI.ButtonTest do
-     use ComponentCase, async: true
+     use SutraUI.ComponentCase, async: true
      import SutraUI.Button
    ```
 

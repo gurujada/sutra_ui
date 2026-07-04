@@ -53,7 +53,7 @@ defmodule SutraUI.Card do
       </.card>
   """
 
-  attr(:class, :string, default: nil, doc: "Additional CSS classes (string or list)")
+  attr(:class, :string, default: nil, doc: "Additional CSS classes")
 
   attr(:rest, :global,
     include: ~w(id),

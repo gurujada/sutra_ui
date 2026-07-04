@@ -2,8 +2,8 @@ defmodule SutraUI.Spinner do
   @moduledoc """
   A loading indicator component.
 
-  The spinner provides visual feedback for loading states. It includes proper
-  accessibility attributes for screen readers.
+  The spinner provides visual feedback for loading states and exposes status
+  semantics for assistive technology.
 
   ## Sizes
 
@@ -14,7 +14,7 @@ defmodule SutraUI.Spinner do
 
   ## Accessibility
 
-  The component includes proper ARIA attributes:
+  The component includes loading status attributes:
   - `role="status"` indicates a live region
   - `aria-label` provides screen reader description
   - Visually hidden text for screen readers when no text slot is provided

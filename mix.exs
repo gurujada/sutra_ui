@@ -1,7 +1,7 @@
 defmodule SutraUI.MixProject do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.4.0"
   @source_url "https://github.com/gurujada/sutra_ui"
 
   def project do
@@ -16,7 +16,7 @@ defmodule SutraUI.MixProject do
 
       # Hex
       description:
-        "Sutra UI - We define the rules, so you don't have to. A Phoenix LiveView component library with 57 accessible components and CSS-first theming.",
+        "Sutra UI - We define the rules, so you don't have to. A Phoenix LiveView component library with 56 components and CSS-first theming.",
       package: package(),
 
       # Docs
@@ -55,7 +55,8 @@ defmodule SutraUI.MixProject do
         "GitHub" => @source_url,
         "Docs" => "https://hexdocs.pm/sutra_ui"
       },
-      files: ~w(lib priv .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files:
+        ~w(lib priv guides cheatsheets .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage_rules.md)
     ]
   end
 
@@ -111,6 +112,7 @@ defmodule SutraUI.MixProject do
           SutraUI.Item,
           SutraUI.Drawer,
           SutraUI.Stepper,
+          SutraUI.StepperWizard,
           SutraUI.TreeView
         ],
         Feedback: [
@@ -119,6 +121,7 @@ defmodule SutraUI.MixProject do
           SutraUI.Skeleton,
           SutraUI.Empty,
           SutraUI.LoadingState,
+          SutraUI.Flash,
           SutraUI.Toast
         ],
         Overlay: [

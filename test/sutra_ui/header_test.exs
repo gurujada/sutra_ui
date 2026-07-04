@@ -112,6 +112,20 @@ defmodule SutraUI.HeaderTest do
 
       assert html =~ "my-header"
     end
+
+    test "passes through global attributes" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Header.header id="page-header" data-testid="page-header">
+          Title
+        </Header.header>
+        """)
+
+      assert html =~ ~s(id="page-header")
+      assert html =~ ~s(data-testid="page-header")
+    end
   end
 
   describe "header/1 without optional slots" do

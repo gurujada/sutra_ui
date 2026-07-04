@@ -22,9 +22,10 @@ defmodule SutraUI.Tooltip do
   ## Accessibility
 
   - The tooltip is triggered by both hover and keyboard focus
-  - Uses `aria-describedby` to associate the tooltip with the trigger element
+  - Adds `aria-describedby` on the wrapper around the trigger content
   - Uses `role="tooltip"` on the tooltip content
-  - Screen readers announce the tooltip content when focus enters the trigger
+  - For custom focusable triggers, put `aria-describedby={"\#{id}-content"}` on the
+    focusable element when the description must be announced reliably
   - Note: Critical information should not be placed solely in tooltips
   """
 

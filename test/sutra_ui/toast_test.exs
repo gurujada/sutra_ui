@@ -254,5 +254,14 @@ defmodule SutraUI.ToastTest do
 
       assert html =~ ~s(phx-hook="SutraUI.Toast.ToastContainer")
     end
+
+    test "programmatic toast hook renders pushed text with textContent" do
+      source = File.read!("lib/sutra_ui/toast.ex")
+
+      assert source =~ "titleEl.textContent = title"
+      assert source =~ "descriptionEl.textContent = description"
+      refute source =~ "${title ?"
+      refute source =~ "${description ?"
+    end
   end
 end

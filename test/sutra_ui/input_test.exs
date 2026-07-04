@@ -338,6 +338,42 @@ defmodule SutraUI.InputTest do
 
       assert html =~ ~s(value="override@example.com")
     end
+
+    test "does not render form field errors before the field is used" do
+      assigns = %{
+        form:
+          Phoenix.Component.to_form(%{"email" => "", "_unused_email" => ""},
+            as: :user,
+            errors: [email: {"can't be blank", []}]
+          )
+      }
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input field={@form[:email]} type="email" />
+        """)
+
+      refute html =~ "can&#39;t be blank"
+      refute html =~ ~s(aria-invalid="true")
+    end
+
+    test "renders form field errors after the field is used" do
+      assigns = %{
+        form:
+          Phoenix.Component.to_form(%{"email" => ""},
+            as: :user,
+            errors: [email: {"can't be blank", []}]
+          )
+      }
+
+      html =
+        rendered_to_string(~H"""
+        <Input.input field={@form[:email]} type="email" />
+        """)
+
+      assert html =~ "can&#39;t be blank"
+      assert html =~ ~s(aria-invalid="true")
+    end
   end
 
   describe "input/1 file input" do
@@ -1020,7 +1056,6 @@ defmodule SutraUI.InputTest do
         """)
 
       assert html =~ "checked"
-      assert html =~ ~s(aria-checked="true")
     end
 
     test "renders switch as unchecked when value is false" do
@@ -1031,7 +1066,7 @@ defmodule SutraUI.InputTest do
         <Input.input type="switch" name="active" value={false} />
         """)
 
-      assert html =~ ~s(aria-checked="false")
+      refute html =~ ~r/<input[^>]*\schecked[\s>=]/
     end
 
     test "renders switch as checked when checked attribute is true" do

@@ -1,6 +1,6 @@
 # Components Cheatsheet
 
-Quick reference for all 57 Sutra UI components.
+Quick reference for all 56 Sutra UI components.
 
 ## Foundation
 {: .col-2}
@@ -89,9 +89,9 @@ Quick reference for all 57 Sutra UI components.
 | `tel` | Phone numbers |
 | `url` | URLs |
 | `search` | Search fields |
-| `date` | Date picker |
-| `time` | Time picker |
-| `datetime-local` | Date and time |
+| `date` | Native date input |
+| `time` | Native time input |
+| `datetime-local` | Native date/time input |
 
 ### Textarea
 
@@ -124,25 +124,21 @@ Quick reference for all 57 Sutra UI components.
 
 ```heex
 <.radio_group name="plan">
-  <:radio value="free">Free</:radio>
-  <:radio value="pro">Pro</:radio>
-  <:radio value="enterprise">Enterprise</:radio>
+  <:radio value="free" label="Free" />
+  <:radio value="pro" label="Pro" />
+  <:radio value="enterprise" label="Enterprise" />
 </.radio_group>
 ```
 
 ### Select
 
 ```heex
-<.select 
-  id="country" 
-  name="country"
-  placeholder="Select country"
-  options={[
-    {"United States", "us"},
-    {"United Kingdom", "uk"},
-    {"Canada", "ca"}
-  ]}
-/>
+<.select id="country" name="country" value={@country}>
+  <:trigger>{@country_label || "Select country"}</:trigger>
+  <.select_option value="us" label="United States" />
+  <.select_option value="uk" label="United Kingdom" />
+  <.select_option value="ca" label="Canada" />
+</.select>
 ```
 
 ### Slider
@@ -159,8 +155,8 @@ Quick reference for all 57 Sutra UI components.
   name="price"
   min="0" 
   max="1000" 
-  min_value="100" 
-  max_value="500"
+  value_min="100"
+  value_max="500"
 />
 ```
 
@@ -190,15 +186,15 @@ end
 ```heex
 <.input_group>
   <:prefix>$</:prefix>
-  <.input type="number" name="amount" />
+  <input type="number" name="amount" class="input pl-7 pr-12" />
   <:suffix>.00</:suffix>
 </.input_group>
 
 <.input_group>
-  <:prefix>
+  <:prefix type="icon">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
   </:prefix>
-  <.input type="search" name="q" placeholder="Search..." />
+  <input type="search" name="q" class="input pl-9" placeholder="Search..." />
 </.input_group>
 ```
 
@@ -228,10 +224,13 @@ end
 ### Filter Bar
 
 ```heex
-<.filter_bar>
-  <.input type="search" name="q" placeholder="Search..." />
-  <.select id="status" name="status" options={@status_options} />
-  <.button type="submit">Filter</.button>
+<.filter_bar on_change="filter">
+  <:filter>
+    <.input type="search" name="q" placeholder="Search..." />
+  </:filter>
+  <:filter>
+    <.input type="select" name="status" options={@status_options} />
+  </:filter>
 </.filter_bar>
 ```
 
@@ -243,10 +242,12 @@ end
 ```heex
 <.card>
   <:header>
-    <:title>Card Title</:title>
-    <:description>Card description</:description>
+    <h2>Card Title</h2>
+    <p>Card description</p>
   </:header>
-  Card content goes here
+  <:content>
+    Card content goes here
+  </:content>
   <:footer>
     <.button>Action</.button>
   </:footer>
@@ -257,7 +258,7 @@ end
 
 ```heex
 <.header>
-  <:title>Page Title</:title>
+  Page Title
   <:subtitle>Optional subtitle</:subtitle>
   <:actions>
     <.button>Action</.button>
@@ -268,32 +269,32 @@ end
 ### Table
 
 ```heex
-<.table id="users" rows={@users}>
+<.data_table id="users" rows={@users}>
   <:col :let={user} label="Name">{user.name}</:col>
   <:col :let={user} label="Email">{user.email}</:col>
   <:action :let={user}>
     <.button size="sm" variant="ghost">Edit</.button>
   </:action>
-</.table>
+</.data_table>
 ```
 
 ### Item
 
 ```heex
 <.item>
-  <:icon>
+  <:leading>
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-  </:icon>
+  </:leading>
   <:title>Document Title</:title>
   <:description>Description text</:description>
-  <:action><.button size="sm">View</.button></:action>
+  <:trailing><.button size="sm">View</.button></:trailing>
 </.item>
 ```
 
 ### Drawer
 
 ```heex
-# Basic drawer with toggle button
+<%# Basic drawer with toggle button %>
 <.drawer_trigger for="main-drawer" />
 <.drawer id="main-drawer">
   <:header>
@@ -308,7 +309,7 @@ end
   </:footer>
 </.drawer>
 
-# Initially open on desktop
+<%# Initially open on desktop %>
 <.drawer_trigger for="app-drawer" />
 <.drawer id="app-drawer" open>
   <.drawer_group label="Main">
@@ -317,7 +318,7 @@ end
   </.drawer_group>
 </.drawer>
 
-# Right-side drawer with custom trigger
+<%# Right-side drawer with custom trigger %>
 <.drawer_trigger for="filter-drawer" variant="outline">
   Filters
 </.drawer_trigger>
@@ -387,19 +388,30 @@ end
 ### Alert
 
 ```heex
-<.alert>Default alert message</.alert>
-<.alert variant="destructive">Error message</.alert>
+<.alert>
+  <:title>Default alert message</:title>
+</.alert>
+<.alert variant="destructive">
+  <:title>Error message</:title>
+</.alert>
 <.alert>
   <:title>Heads up!</:title>
-  You can add components to your app using the CLI.
+  <:description>You can add components to your app using the CLI.</:description>
 </.alert>
+```
+
+### Flash
+
+```heex
+<.flash kind={:info} flash={@flash} />
+<.flash kind={:error} flash={@flash} title="Something went wrong" />
 ```
 
 ### Progress
 
 ```heex
 <.progress value={33} />
-<.progress value={66} max={100} />
+<.progress value={66} />
 ```
 
 ### Skeleton
@@ -418,28 +430,29 @@ end
   </:icon>
   <:title>No messages</:title>
   <:description>Get started by sending your first message.</:description>
-  <:action><.button>Send Message</.button></:action>
+  <:actions><.button>Send Message</.button></:actions>
 </.empty>
 ```
 
 ### Loading State
 
 ```heex
-<.loading_state>Loading data...</.loading_state>
-<.loading_state>
-  <.spinner />
-  Please wait...
-</.loading_state>
+<.loading_state message="Loading data..." />
+<.loading_state message="Please wait..." wrap_card={false} />
 ```
 
 ### Toast
 
 ```heex
-<.toaster />
+<.toast_container flash={@flash} />
 
-<!-- Trigger toasts from LiveView -->
-<.toast variant="default">Changes saved</.toast>
-<.toast variant="destructive">Something went wrong</.toast>
+<.toast id="saved-toast" variant="default">
+  <:title>Changes saved</:title>
+</.toast>
+
+<.toast id="error-toast" variant="destructive">
+  <:title>Something went wrong</:title>
+</.toast>
 ```
 
 ## Overlay
@@ -448,15 +461,14 @@ end
 ### Dialog
 
 ```heex
-<.dialog id="confirm-dialog">
-  <:trigger>
-    <.button>Open Dialog</.button>
-  </:trigger>
+<.button phx-click="open_confirm">Open Dialog</.button>
+
+<.dialog id="confirm-dialog" show={@show_confirm} on_cancel="close_confirm">
   <:title>Confirm Action</:title>
   <:description>Are you sure?</:description>
   Dialog content here
   <:footer>
-    <.button variant="outline" onclick="this.closest('dialog').close()">
+    <.button variant="outline" phx-click="close_confirm">
       Cancel
     </.button>
     <.button phx-click="confirm">Confirm</.button>
@@ -466,11 +478,9 @@ end
 
 ### Dialog JS Commands
 
-```elixir
-import SutraUI.Dialog
-
-<.button phx-click={show_dialog("my-dialog")}>Open</.button>
-<.button phx-click={hide_dialog("my-dialog")}>Close</.button>
+```heex
+<.button phx-click={SutraUI.Dialog.show_dialog("my-dialog")}>Open</.button>
+<.button phx-click={SutraUI.Dialog.hide_dialog("my-dialog")}>Close</.button>
 ```
 
 ### Popover
@@ -478,18 +488,16 @@ import SutraUI.Dialog
 ```heex
 <.popover id="info-popover">
   <:trigger>
-    <.button variant="outline">Info</.button>
+    Info
   </:trigger>
-  <:content>
-    <p>Popover content here</p>
-  </:content>
+  <p>Popover content here</p>
 </.popover>
 ```
 
 ### Tooltip
 
 ```heex
-<.tooltip content="Helpful tip">
+<.tooltip id="help-tip" tooltip="Helpful tip">
   <.button>Hover me</.button>
 </.tooltip>
 ```
@@ -499,12 +507,12 @@ import SutraUI.Dialog
 ```heex
 <.dropdown_menu id="actions-menu">
   <:trigger>
-    <.button variant="outline">Actions</.button>
+    Actions
   </:trigger>
-  <:item phx-click="edit">Edit</:item>
-  <:item phx-click="duplicate">Duplicate</:item>
-  <:separator />
-  <:item phx-click="delete" variant="destructive">Delete</:item>
+  <.dropdown_item phx-click="edit">Edit</.dropdown_item>
+  <.dropdown_item phx-click="duplicate">Duplicate</.dropdown_item>
+  <.dropdown_separator />
+  <.dropdown_item phx-click="delete" variant="destructive">Delete</.dropdown_item>
 </.dropdown_menu>
 ```
 
@@ -570,7 +578,7 @@ import SutraUI.Dialog
     A Phoenix LiveView component library.
   </:item>
   <:item value="q2" title="Is it accessible?">
-    Yes, all components follow WAI-ARIA patterns.
+    Components use semantic markup and ARIA patterns where appropriate.
   </:item>
 </.accordion>
 ```
@@ -591,17 +599,17 @@ import SutraUI.Dialog
 <.pagination 
   page={@page} 
   total_pages={@total_pages}
-  path={~p"/users"}
+  on_page_change="page_changed"
 />
 ```
 
 ### Nav Pills
 
 ```heex
-<.nav_pills>
-  <:item href="/dashboard" active>Dashboard</:item>
-  <:item href="/analytics">Analytics</:item>
-  <:item href="/reports">Reports</:item>
+<.nav_pills id="main-nav" active_label="Dashboard">
+  <:item label="Dashboard" patch={~p"/dashboard"} />
+  <:item label="Analytics" patch={~p"/analytics"} />
+  <:item label="Reports" patch={~p"/reports"} />
 </.nav_pills>
 ```
 
@@ -625,7 +633,7 @@ import SutraUI.Dialog
 
 ```heex
 <.avatar src="/avatar.jpg" alt="User" />
-<.avatar src={nil} fallback="JD" />
+<.avatar src={nil} initials="JD" />
 <.avatar size="sm" src="/avatar.jpg" />
 <.avatar size="lg" src="/avatar.jpg" />
 ```
@@ -668,7 +676,7 @@ import SutraUI.Dialog
 
 <.timeline>
   <:item time="Today" icon="✓">
-    <.link navigate="/releases/1">v0.3.0 shipped</.link>
+    <.link navigate="/releases/1">v0.4.0 shipped</.link>
     <p>Release notes and migration details.</p>
   </:item>
 </.timeline>
@@ -697,6 +705,12 @@ import SutraUI.Dialog
 <.separator orientation="vertical" />
 ```
 
+### Theme Switcher
+
+```heex
+<.theme_switcher id="theme-toggle" />
+```
+
 ## AI
 {: .col-2}
 
@@ -718,10 +732,4 @@ import SutraUI.Dialog
   </:item>
   <:item status="pending">Preparing summary</:item>
 </.activity>
-```
-
-### Theme Switcher
-
-```heex
-<.theme_switcher id="theme-toggle" />
 ```

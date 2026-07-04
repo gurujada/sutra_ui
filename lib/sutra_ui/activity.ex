@@ -24,7 +24,10 @@ defmodule SutraUI.Activity do
         <.activity_item status="running">
           <:marker>
             <span class="grid size-6 place-items-center rounded-full bg-primary text-primary-foreground">
-              <.icon name="lucide-search" class="size-3" />
+              <svg viewBox="0 0 24 24" class="size-3" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
             </span>
           </:marker>
 

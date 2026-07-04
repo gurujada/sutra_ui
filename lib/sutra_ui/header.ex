@@ -43,7 +43,7 @@ defmodule SutraUI.Header do
 
   def header(assigns) do
     ~H"""
-    <header class={["header", @actions != [] && "header-with-actions", @class]}>
+    <header class={["header", @actions != [] && "header-with-actions", @class]} {@rest}>
       <div>
         <h1 class="header-title">
           {render_slot(@inner_block)}

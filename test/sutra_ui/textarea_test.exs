@@ -63,6 +63,12 @@ defmodule SutraUI.TextareaTest do
 
       assert html =~ ~s(rows="5")
     end
+
+    test "stylesheet allows rows to control height" do
+      css = File.read!("priv/static/sutra_ui.css")
+
+      refute css =~ "field-sizing-content"
+    end
   end
 
   describe "textarea/1 states" do

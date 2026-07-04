@@ -154,12 +154,28 @@ defmodule SutraUI.InputOTP do
           this.onComplete = this.el.dataset.onComplete;
           this.length = Number(this.el.dataset.length || this.slots.length);
           this.lastCompleteValue = null;
+          this.slotHandlers = [];
 
           this.slots.forEach((slot, index) => {
-            slot.addEventListener('input', (event) => this.handleInput(event, index));
-            slot.addEventListener('keydown', (event) => this.handleKeydown(event, index));
-            slot.addEventListener('paste', (event) => this.handlePaste(event, index));
+            const handlers = {
+              input: (event) => this.handleInput(event, index),
+              keydown: (event) => this.handleKeydown(event, index),
+              paste: (event) => this.handlePaste(event, index)
+            };
+            this.slotHandlers.push({ slot, handlers });
+            slot.addEventListener('input', handlers.input);
+            slot.addEventListener('keydown', handlers.keydown);
+            slot.addEventListener('paste', handlers.paste);
           });
+        },
+
+        destroyed() {
+          this.slotHandlers?.forEach(({ slot, handlers }) => {
+            slot.removeEventListener('input', handlers.input);
+            slot.removeEventListener('keydown', handlers.keydown);
+            slot.removeEventListener('paste', handlers.paste);
+          });
+          this.slotHandlers = [];
         },
 
         handleInput(event, index) {

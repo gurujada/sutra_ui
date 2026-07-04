@@ -2,14 +2,14 @@ defmodule SutraUI do
   @moduledoc """
   Sutra UI - We define the rules, so you don't have to.
 
-  A pure Phoenix LiveView UI component library with **57 accessible components**,
+  A pure Phoenix LiveView UI component library with **56 components**,
   CSS-first theming, and colocated JavaScript hooks. Built for Phoenix 1.8+ and
-  Tailwind CSS v4.
+  Phoenix LiveView 1.2+ with Tailwind CSS v4.
 
   ## Quick Start
 
       # mix.exs
-      {:sutra_ui, "~> 0.3.0"}
+      {:sutra_ui, "~> 0.4.0"}
 
       # lib/my_app_web.ex
       defp html_helpers do
@@ -29,15 +29,16 @@ defmodule SutraUI do
 
   | Dependency | Version | Notes |
   |------------|---------|-------|
-  | Elixir | 1.14+ | |
+  | Elixir | 1.20+ | Matches the package constraint |
   | Phoenix | **1.8+** | Required for colocated hooks |
-  | Phoenix LiveView | **1.1+** | `ColocatedHook` support |
+  | Phoenix LiveView | **1.2+** | Current supported LiveView line |
   | Tailwind CSS | **v4** | CSS-first configuration |
 
   > #### Why Phoenix 1.8+? {: .info}
   >
   > Sutra UI uses [colocated hooks](colocated-hooks.md) - JavaScript hooks defined
-  > alongside components. No separate `hooks.js` file needed.
+  > alongside components. Runtime hooks need no app-side hook file; extracted
+  > hooks such as `dialog` and animated `response` are merged into LiveSocket.
 
   ## Components by Category
 
@@ -66,7 +67,7 @@ defmodule SutraUI do
   | `SutraUI.Select` | Searchable dropdown (hook) |
   | `SutraUI.Slider` | Range slider (hook) |
   | `SutraUI.RangeSlider` | Dual-handle range (hook) |
-  | `SutraUI.LiveSelect` | Async searchable select (hook) |
+  | `SutraUI.LiveSelect` | LiveComponent async searchable select (hook) |
   | `SutraUI.Label` | Form labels |
   | `SutraUI.SimpleForm` | Form with auto-styling |
   | `SutraUI.InputGroup` | Input with prefix/suffix |
@@ -96,6 +97,7 @@ defmodule SutraUI do
   | Component | Description |
   |-----------|-------------|
   | `SutraUI.Alert` | Alert messages |
+  | `SutraUI.Flash` | Phoenix flash messages |
   | `SutraUI.Toast` | Toast notifications (hook) |
   | `SutraUI.Progress` | Progress bars |
   | `SutraUI.Skeleton` | Loading placeholders |
@@ -110,7 +112,7 @@ defmodule SutraUI do
   |-----------|-------------|
   | `SutraUI.Dialog` | Modal dialogs (hook) |
   | `SutraUI.Popover` | Click-triggered popups (hook) |
-  | `SutraUI.Tooltip` | Hover tooltips (CSS-only) |
+  | `SutraUI.Tooltip` | Hover and focus tooltips (hook) |
   | `SutraUI.DropdownMenu` | Dropdown menus (hook) |
   | `SutraUI.ContextMenu` | Right-click action menus (hook) |
   | `SutraUI.HoverCard` | Hover preview cards (hook) |
@@ -123,11 +125,11 @@ defmodule SutraUI do
   | Component | Description |
   |-----------|-------------|
   | `SutraUI.Tabs` | Tab panels (hook) |
-  | `SutraUI.Accordion` | Collapsible sections (hook) |
+  | `SutraUI.Accordion` | Collapsible sections |
   | `SutraUI.Breadcrumb` | Breadcrumb trails |
   | `SutraUI.Pagination` | Page navigation |
   | `SutraUI.NavPills` | Pill navigation |
-  | `SutraUI.TabNav` | Tab-style navigation |
+  | `SutraUI.TabNav` | Routed tab-style navigation |
 
   ### Display
 
@@ -137,7 +139,7 @@ defmodule SutraUI do
   |-----------|-------------|
   | `SutraUI.Avatar` | User avatars |
   | `SutraUI.Carousel` | Image carousels (hook) |
-  | `SutraUI.ThemeSwitcher` | Light/dark toggle (hook) |
+  | `SutraUI.ThemeSwitcher` | Light/dark theme event button (hook) |
   | `SutraUI.Separator` | Visual content dividers |
   | `SutraUI.Marquee` | Scrolling content banners |
   | `SutraUI.Calendar` | Monthly calendar grid |
@@ -149,7 +151,7 @@ defmodule SutraUI do
 
   | Component | Description |
   |-----------|-------------|
-  | `SutraUI.Response` | Plain text or streamed Markdown responses with reveal styles |
+  | `SutraUI.Response` | Text responses with reveal styles, or streamed Markdown |
   | `SutraUI.Activity` | Safe user-facing agent progress with slot-owned rows |
 
   ## Theming
@@ -165,12 +167,13 @@ defmodule SutraUI do
 
   ## Accessibility
 
-  All components follow WAI-ARIA patterns with:
+  Sutra UI components use accessibility patterns appropriate to their behavior:
 
   - Semantic HTML elements
-  - Keyboard navigation
-  - Focus management
-  - Screen reader support
+  - ARIA roles and attributes for composite widgets
+  - Keyboard navigation for interactive components
+  - Focus management where applicable
+  - Screen reader support for status-style components
 
   See the [Accessibility Guide](accessibility.md) for details.
 
@@ -190,7 +193,10 @@ defmodule SutraUI do
   @doc """
   Use Sutra UI in your Phoenix application.
 
-  This macro imports all available Sutra UI components for use in your templates.
+  This macro imports Sutra UI function components for use in your templates.
+  `SutraUI.LiveSelect` is a LiveComponent; render it with
+  `<.live_component module={SutraUI.LiveSelect} ... />`. The macro imports
+  its `decode/1` and `normalize_options/1` helpers.
 
   ## Example
 

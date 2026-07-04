@@ -349,8 +349,7 @@ defmodule SutraUI.LiveSelectTest do
 
   describe "edge cases" do
     test "decodes structured single-mode map from hidden input" do
-      # New hidden input format: two inputs with [value] and [label] suffixes
-      # Form params arrive as a map
+      # Single mode hidden input sends field[value]=...
       decoded = LiveSelect.decode(%{"value" => "nyc", "label" => "New York"})
 
       assert decoded == "nyc"

@@ -5,6 +5,28 @@ All notable changes to Sutra UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-07-04
+
+### Added
+
+- **components**: Added separator, marquee, stepper wizard, hover card, calendar, input OTP, timeline, file upload, context menu, tree view, response, and activity primitives
+- **ai**: Added streamed response rendering with text and Markdown reveal modes, plus slot-owned activity rows for user-facing agent progress
+- **tests**: Added regression coverage for installer injection, form error visibility, slider styling, and global LiveView button attrs
+
+### Changed
+
+- **docs**: Updated installation, demo copy, component counts, and release-facing examples for `0.4.0`
+- **installer**: Preserves web module indentation when inserting `use SutraUI` into `html_helpers`
+- **tab_nav**: Uses routed navigation semantics with `aria-current` instead of ARIA tab panel semantics
+
+### Fixed
+
+- **slider**: Styled standalone sliders through the emitted `.slider` class so they use Sutra UI theme colors instead of browser accent defaults
+- **slider**: Normalizes invalid nonpositive `step` values to avoid render-time crashes
+- **textarea**: Removed content-based field sizing so the documented `rows` attribute controls the initial height
+- **input**: Documented and covered `Phoenix.Component.used_input?/1` behavior so field errors stay hidden until the field is used
+- **docs**: Removed stale migration and app-specific scratch markdown that no longer reflected this library
+
 ## [0.3.0] - 2026-03-06
 
 ### Added

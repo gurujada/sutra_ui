@@ -896,7 +896,7 @@
     .btn-lg-icon-ghost,
     .btn-lg-icon-link,
     .btn-lg-icon-destructive {
-        @apply inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer rounded-md;
+        @apply inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer rounded-md;
     }
     .btn,
     .btn-primary,
@@ -1082,7 +1082,6 @@
 
         > header {
             @apply @container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6;
-            /* TODO: CLEAN has-data-[slot=card-action] */
 
             h2 {
                 @apply leading-none font-semibold;
@@ -1629,7 +1628,8 @@
 /* Range */
 @layer components {
     :is(.form, .field) input[type="range"],
-    .input[type="range"] {
+    .input[type="range"],
+    input.slider[type="range"] {
         @apply appearance-none flex items-center p-0 outline-none disabled:pointer-events-none disabled:opacity-50;
         --slider-value: 20%;
 
@@ -1971,7 +1971,7 @@
 @layer components {
     :is(.form, .field) textarea,
     .textarea {
-        @apply border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
+        @apply border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
     }
 }
 
@@ -3278,100 +3278,6 @@
 
     .range-slider-pip-label {
         @apply text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap;
-    }
-}
-
-/* LiveSelect - Dynamic searchable selection */
-@layer components {
-    .live-select {
-        @apply relative w-full;
-    }
-
-    .live-select-disabled {
-        @apply opacity-50 pointer-events-none;
-    }
-
-    /* Tags container */
-    .live-select-tags {
-        @apply flex flex-wrap gap-1 mb-2;
-    }
-
-    .live-select-tag {
-        @apply inline-flex items-center gap-1 px-2 py-1 text-sm bg-secondary text-secondary-foreground rounded-md;
-    }
-
-    .live-select-tag-sticky {
-        @apply bg-primary/20 text-primary;
-    }
-
-    .live-select-tag-label {
-        @apply truncate max-w-[150px];
-    }
-
-    .live-select-tag-remove {
-        @apply flex-shrink-0 rounded-sm opacity-70 hover:opacity-100 hover:bg-secondary-foreground/20 transition-opacity cursor-pointer;
-    }
-
-    /* Input container */
-    .live-select-input-container {
-        @apply relative flex items-center;
-    }
-
-    .live-select-input {
-        @apply flex h-9 w-full rounded-md border border-input bg-transparent dark:bg-input/30 px-3 py-1 text-sm shadow-xs ring-offset-background;
-        @apply placeholder:text-muted-foreground;
-        @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
-        @apply disabled:cursor-not-allowed disabled:opacity-50;
-    }
-
-    .live-select-clear {
-        @apply absolute right-2 p-1 rounded-sm opacity-50 hover:opacity-100 hover:bg-muted transition-opacity cursor-pointer;
-    }
-
-    /* Dropdown */
-    .live-select-dropdown {
-        @apply absolute z-50 top-full left-0 right-0 mt-1 max-h-60 overflow-auto;
-        @apply rounded-md border bg-popover text-popover-foreground shadow-md;
-        animation: live-select-dropdown-in 0.15s ease-out;
-    }
-
-    @keyframes live-select-dropdown-in {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    .live-select-option {
-        @apply relative flex cursor-pointer select-none items-center px-3 py-2 text-sm outline-none;
-        @apply hover:bg-accent hover:text-accent-foreground;
-        @apply transition-colors;
-    }
-
-    .live-select-option-active {
-        @apply bg-accent text-accent-foreground;
-    }
-
-    .live-select-option-selected {
-        @apply bg-primary/10;
-
-        &::after {
-            content: "✓";
-            @apply absolute right-3 text-primary;
-        }
-    }
-
-    .live-select-option-disabled {
-        @apply opacity-50 cursor-not-allowed pointer-events-none;
-    }
-
-    /* Empty state */
-    .live-select-empty {
-        @apply px-3 py-6 text-center text-sm text-muted-foreground;
     }
 }
 

@@ -3,7 +3,7 @@ defmodule SutraUI.DropdownMenu do
   A dropdown menu component that displays a list of actions or options.
 
   The dropdown menu provides a trigger button that opens a popover menu
-  with full keyboard navigation support:
+  with common keyboard navigation support:
 
   - Click to open/close the menu
   - Arrow keys (Up/Down) for navigation
@@ -77,7 +77,7 @@ defmodule SutraUI.DropdownMenu do
   - Menu items have `role="menuitem"`
   - The active item is tracked via `aria-activedescendant`
   - Disabled items have `aria-disabled="true"`
-  - Keyboard navigation follows WAI-ARIA menu pattern
+  - Keyboard navigation follows the common WAI-ARIA menu interactions
   """
 
   use Phoenix.Component
@@ -99,7 +99,8 @@ defmodule SutraUI.DropdownMenu do
   ## Slots
 
   - `trigger` - Required. Content for the trigger button
-  - `inner_block` - Required. Menu content (use `item/1`, `separator/1`, `label/1`)
+  - `inner_block` - Required. Menu content (use `dropdown_item/1`,
+    `dropdown_separator/1`, and `dropdown_label/1`)
   """
   attr(:id, :string, required: true, doc: "Unique identifier (required for hook)")
   attr(:class, :string, default: nil, doc: "Additional CSS classes for the container")
@@ -195,8 +196,13 @@ defmodule SutraUI.DropdownMenu do
             document.removeEventListener('click', this.documentClickHandler);
           }
           if (this.popoverEventHandler) {
-            document.removeEventListener('sutra:popover', this.popoverEventHandler);
+            document.removeEventListener('sutra-ui:popover', this.popoverEventHandler);
           }
+          this.trigger?.removeEventListener('click', this.triggerClickHandler);
+          this.el.removeEventListener('keydown', this.keydownHandler);
+          this.menu?.removeEventListener('mousemove', this.mouseMoveHandler);
+          this.menu?.removeEventListener('mouseleave', this.mouseLeaveHandler);
+          this.menu?.removeEventListener('click', this.menuClickHandler);
         },
 
         initDropdownMenu() {
@@ -212,11 +218,17 @@ defmodule SutraUI.DropdownMenu do
           this.menuItems = [];
           this.activeIndex = -1;
 
-          this.trigger.addEventListener('click', () => this.handleTriggerClick());
-          this.el.addEventListener('keydown', (e) => this.handleKeydown(e));
-          this.menu.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-          this.menu.addEventListener('mouseleave', () => this.handleMouseLeave());
-          this.menu.addEventListener('click', (e) => this.handleMenuClick(e));
+          this.triggerClickHandler = () => this.handleTriggerClick();
+          this.keydownHandler = (e) => this.handleKeydown(e);
+          this.mouseMoveHandler = (e) => this.handleMouseMove(e);
+          this.mouseLeaveHandler = () => this.handleMouseLeave();
+          this.menuClickHandler = (e) => this.handleMenuClick(e);
+
+          this.trigger.addEventListener('click', this.triggerClickHandler);
+          this.el.addEventListener('keydown', this.keydownHandler);
+          this.menu.addEventListener('mousemove', this.mouseMoveHandler);
+          this.menu.addEventListener('mouseleave', this.mouseLeaveHandler);
+          this.menu.addEventListener('click', this.menuClickHandler);
 
           this.documentClickHandler = (event) => {
             if (!this.el.contains(event.target)) {
@@ -230,7 +242,7 @@ defmodule SutraUI.DropdownMenu do
               this.closePopover(false);
             }
           };
-          document.addEventListener('sutra:popover', this.popoverEventHandler);
+          document.addEventListener('sutra-ui:popover', this.popoverEventHandler);
         },
 
         updateMenuItems() {
@@ -254,7 +266,7 @@ defmodule SutraUI.DropdownMenu do
         },
 
         openPopover(initialSelection = false) {
-          document.dispatchEvent(new CustomEvent('sutra:popover', {
+          document.dispatchEvent(new CustomEvent('sutra-ui:popover', {
             detail: { source: this.el }
           }));
 

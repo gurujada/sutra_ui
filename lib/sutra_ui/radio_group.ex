@@ -9,7 +9,7 @@ defmodule SutraUI.RadioGroup do
 
   ## Accessibility
 
-  - Uses semantic `<fieldset>` and `role="radiogroup"` for proper grouping
+  - Uses semantic `<fieldset>` and `role="radiogroup"` for grouping
   - Individual radio buttons use `<input type="radio">`
   - Supports `aria-invalid` for error states
   - Supports `aria-describedby` for error messages
@@ -91,17 +91,6 @@ defmodule SutraUI.RadioGroup do
 
     ~H"""
     <div class={["radio-group", @class]}>
-      <label
-        :if={@label}
-        id={@label_id}
-        class={[
-          "label",
-          @required && "after:content-['*'] after:text-destructive after:ml-0.5"
-        ]}
-      >
-        {@label}
-      </label>
-
       <fieldset
         id={@id}
         role="radiogroup"
@@ -112,6 +101,17 @@ defmodule SutraUI.RadioGroup do
         aria-required={@required && "true"}
         {@rest}
       >
+        <legend
+          :if={@label}
+          id={@label_id}
+          class={[
+            "label",
+            @required && "after:content-['*'] after:text-destructive after:ml-0.5"
+          ]}
+        >
+          {@label}
+        </legend>
+
         <label
           :for={radio <- @radio}
           class={[

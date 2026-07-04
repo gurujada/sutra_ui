@@ -58,7 +58,8 @@ defmodule SutraUI.Button do
 
   - Uses semantic `<button>` element (or `<a>` for links)
   - Loading state sets `aria-busy="true"`
-  - Disabled state uses native `disabled` attribute
+  - Button rendering uses the native `disabled` attribute
+  - Link rendering relies on `aria-disabled` styling and should avoid navigation props when unavailable
   - Icon-only buttons **must** have `aria-label`
 
   > #### Icon Buttons Need Labels {: .warning}
@@ -162,21 +163,42 @@ defmodule SutraUI.Button do
     cond do
       assigns.navigate ->
         ~H"""
-        <.link navigate={@navigate} class={@classes} {@rest}>
+        <.link
+          navigate={@navigate}
+          class={@classes}
+          aria-busy={@aria_busy}
+          aria-disabled={@is_disabled && "true"}
+          tabindex={@is_disabled && "-1"}
+          {@rest}
+        >
           {render_slot(@inner_block)}
         </.link>
         """
 
       assigns.patch ->
         ~H"""
-        <.link patch={@patch} class={@classes} {@rest}>
+        <.link
+          patch={@patch}
+          class={@classes}
+          aria-busy={@aria_busy}
+          aria-disabled={@is_disabled && "true"}
+          tabindex={@is_disabled && "-1"}
+          {@rest}
+        >
           {render_slot(@inner_block)}
         </.link>
         """
 
       assigns.href ->
         ~H"""
-        <a href={@href} class={@classes} {@rest}>
+        <a
+          href={@href}
+          class={@classes}
+          aria-busy={@aria_busy}
+          aria-disabled={@is_disabled && "true"}
+          tabindex={@is_disabled && "-1"}
+          {@rest}
+        >
           {render_slot(@inner_block)}
         </a>
         """

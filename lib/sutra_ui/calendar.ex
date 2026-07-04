@@ -214,36 +214,41 @@ defmodule SutraUI.Calendar do
           <span :for={day <- @weekdays} class="calendar-weekday" role="columnheader">{day}</span>
         </div>
         <div :for={week <- @weeks} class="calendar-week" role="row">
-          <button
+          <div
             :for={day <- week}
-            type="button"
-            class={[
-              calendar_day_class(
-                day,
-                @display_date,
-                @selected_date,
-                @range_end_date,
-                @today_date,
-                @mode,
-                @disabled_set
-              ),
-              is_nil(@select_event) && "calendar-day-static"
-            ]}
-            data-outside={to_attr(day.month != @display_date.month)}
-            data-today={to_attr(same_date?(day, @today_date))}
-            data-selected={to_attr(selected_day?(day, @selected_date, @range_end_date, @mode))}
-            data-in-range={to_attr(in_range?(day, @selected_date, @range_end_date, @mode))}
-            data-range-start={to_attr(range_start_day?(day, @selected_date, @range_end_date, @mode))}
-            data-range-end={to_attr(range_end_day?(day, @selected_date, @range_end_date, @mode))}
-            aria-selected={to_attr(selected_day?(day, @selected_date, @range_end_date, @mode))}
-            aria-current={same_date?(day, @today_date) && "date"}
-            disabled={day_disabled?(day, @display_date, @disabled_set)}
-            phx-click={@select_event}
-            phx-value-date={Date.to_iso8601(day)}
             role="gridcell"
+            aria-selected={to_attr(selected_day?(day, @selected_date, @range_end_date, @mode))}
           >
-            {day.day}
-          </button>
+            <button
+              type="button"
+              class={[
+                calendar_day_class(
+                  day,
+                  @display_date,
+                  @selected_date,
+                  @range_end_date,
+                  @today_date,
+                  @mode,
+                  @disabled_set
+                ),
+                is_nil(@select_event) && "calendar-day-static"
+              ]}
+              data-outside={to_attr(day.month != @display_date.month)}
+              data-today={to_attr(same_date?(day, @today_date))}
+              data-selected={to_attr(selected_day?(day, @selected_date, @range_end_date, @mode))}
+              data-in-range={to_attr(in_range?(day, @selected_date, @range_end_date, @mode))}
+              data-range-start={
+                to_attr(range_start_day?(day, @selected_date, @range_end_date, @mode))
+              }
+              data-range-end={to_attr(range_end_day?(day, @selected_date, @range_end_date, @mode))}
+              aria-current={same_date?(day, @today_date) && "date"}
+              disabled={day_disabled?(day, @display_date, @disabled_set)}
+              phx-click={@select_event}
+              phx-value-date={Date.to_iso8601(day)}
+            >
+              {day.day}
+            </button>
+          </div>
         </div>
       </div>
     </div>

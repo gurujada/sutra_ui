@@ -7,11 +7,12 @@ defmodule SutraUI.Slider do
 
   ## Value Types
 
-  The slider automatically determines whether to emit integer or float values
-  based on the `step` attribute:
+  The slider formats its rendered value from the `step` attribute so the
+  native range input, ARIA value, and associated `<output>` use consistent
+  precision:
 
-  - Integer step (e.g., `step={1}`, `step={5}`) → emits integers
-  - Float step (e.g., `step={0.1}`, `step={0.5}`) → emits floats with matching precision
+  - Integer step (e.g., `step={1}`, `step={5}`) -> integer-like values
+  - Float step (e.g., `step={0.1}`, `step={0.5}`) -> decimal values with matching precision
 
   ## Examples
 
@@ -19,7 +20,10 @@ defmodule SutraUI.Slider do
       <.slider id="volume-slider" min={0} max={100} value={50} />
 
       # With label
-      <label for="volume-slider">Volume</label>
+      <div>
+        <label for="volume-slider">Volume</label>
+        <span><output for="volume-slider">50</output>%</span>
+      </div>
       <.slider id="volume-slider" min={0} max={100} value={50} name="volume" />
 
       # Float mode - step determines precision
@@ -60,16 +64,16 @@ defmodule SutraUI.Slider do
   - Supports `aria-label` or `aria-labelledby` for labeling
   - Supports `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, `aria-valuetext`
   - Keyboard accessible (Arrow keys, Home, End, Page Up, Page Down)
-  - Announces value changes to screen readers
+  - Exposes current value through the native range input and `aria-valuenow`
 
   ## Colocated Hook
 
   This component includes a colocated JavaScript hook (`.Slider`) that updates:
   - The visual progress indicator via CSS custom property `--slider-value`
   - The `aria-valuenow` attribute as the value changes
+  - Associated `<output for="slider-id">` elements for instant value display
 
-  The hook is automatically available when you import colocated hooks via
-  `import { hooks as sutraUiHooks } from "phoenix-colocated/sutra_ui"` in your app.js.
+  The hook is rendered as a runtime colocated hook with the component.
   """
 
   use Phoenix.Component
@@ -110,7 +114,7 @@ defmodule SutraUI.Slider do
     # Convert all numeric values to floats internally
     min = to_float(assigns.min)
     max = to_float(assigns.max)
-    step = to_float(assigns.step)
+    step = normalize_step(assigns.step)
     value = to_float(assigns.value)
 
     # Calculate precision from step
@@ -119,8 +123,8 @@ defmodule SutraUI.Slider do
     # Ensure value is within bounds and snapped to step
     value = snap_to_step(clamp(value, min, max), step, min)
 
-    # Format value for emission (integer or float based on step)
-    emit_value = format_for_emit(value, precision)
+    # Format value for the DOM based on step precision.
+    formatted_value = format_value(value, precision)
 
     # Calculate percentage for CSS custom property
     percent = if max == min, do: 0.0, else: (value - min) / (max - min) * 100
@@ -131,7 +135,7 @@ defmodule SutraUI.Slider do
       |> assign(:max, max)
       |> assign(:step, step)
       |> assign(:precision, precision)
-      |> assign(:value, emit_value)
+      |> assign(:value, formatted_value)
       |> assign(:percent, "#{percent}%")
 
     ~H"""
@@ -159,12 +163,17 @@ defmodule SutraUI.Slider do
         mounted() {
           this.precision = parseInt(this.el.dataset.precision) || 0;
           this.updateSlider();
-          this.el.addEventListener('input', () => this.updateSlider());
+          this.inputHandler = () => this.updateSlider();
+          this.el.addEventListener('input', this.inputHandler);
         },
 
         updated() {
           this.precision = parseInt(this.el.dataset.precision) || 0;
           this.updateSlider();
+        },
+
+        destroyed() {
+          this.el.removeEventListener('input', this.inputHandler);
         },
 
         formatValue(value) {
@@ -183,6 +192,25 @@ defmodule SutraUI.Slider do
 
           // Update ARIA value
           this.el.setAttribute('aria-valuenow', formattedValue);
+
+          // Keep standard associated outputs in sync without a server roundtrip.
+          this.updateOutputs(formattedValue);
+        },
+
+        updateOutputs(value) {
+          if (!this.el.id) return;
+
+          const root = this.el.getRootNode?.() || document;
+          const outputs = root.querySelectorAll?.('output[for]') || [];
+
+          outputs.forEach((output) => {
+            const ids = (output.getAttribute('for') || '').split(/\s+/);
+
+            if (ids.includes(this.el.id)) {
+              output.value = value;
+              output.textContent = value;
+            }
+          });
         }
       }
     </script>
@@ -202,6 +230,15 @@ defmodule SutraUI.Slider do
 
   defp to_float(_), do: 0.0
 
+  defp normalize_step(step) do
+    step
+    |> to_float()
+    |> case do
+      value when value > 0 -> value
+      _value -> 1.0
+    end
+  end
+
   # Infer precision from step value
   defp infer_precision(step) when is_integer(step), do: 0
 
@@ -217,9 +254,9 @@ defmodule SutraUI.Slider do
 
   defp infer_precision(_), do: 0
 
-  # Format value for emission (integer or float based on precision)
-  defp format_for_emit(value, 0), do: trunc(value)
-  defp format_for_emit(value, precision), do: Float.round(value, precision)
+  # Format value for the DOM based on precision.
+  defp format_value(value, 0), do: trunc(value)
+  defp format_value(value, precision), do: Float.round(value, precision)
 
   # Clamp value to bounds
   defp clamp(value, min, max) do

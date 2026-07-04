@@ -8,14 +8,14 @@ Sutra UI requires:
 
 | Dependency | Minimum Version | Notes |
 |------------|-----------------|-------|
-| Elixir | 1.14+ | Required for LiveView 1.1 |
+| Elixir | 1.20+ | Matches the package constraint |
 | Phoenix | **1.8+** | Required for colocated hooks |
-| Phoenix LiveView | **1.1+** | `ColocatedHook` support |
+| Phoenix LiveView | **1.2+** | Current supported LiveView line |
 | Tailwind CSS | **v4** | CSS-first configuration |
 
 > #### Why Phoenix 1.8+? {: .info}
 >
-> Sutra UI uses [colocated hooks](colocated-hooks.md) - a Phoenix 1.8+ feature that allows JavaScript hooks to live alongside their components. No separate `hooks.js` file needed.
+> Sutra UI uses [colocated hooks](colocated-hooks.md) - a Phoenix 1.8+ feature that allows JavaScript hooks to live alongside their components. Runtime hooks need no app-side hook file; extracted hooks are merged into LiveSocket.
 
 ## Step 1: Add Dependencies
 
@@ -24,8 +24,7 @@ Add `sutra_ui` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:sutra_ui, "~> 0.3.0"},
-    {:jason, "~> 1.0"}  # Required for dropdown_menu and live_select
+    {:sutra_ui, "~> 0.4.0"}
   ]
 end
 ```
@@ -67,7 +66,10 @@ The installer will also warn you if `core_components.ex` still exists (see Step 
 
 ## Step 3: Delete core_components.ex
 
-Sutra UI provides a complete replacement for Phoenix's default `core_components.ex`, including the `icon/1` component.
+Sutra UI replaces Phoenix's generated button, input, flash, and related UI helpers.
+It does not provide a general `icon/1` helper; if your app uses Phoenix's
+generated `<.icon>`, move that helper to a separate module or replace those
+calls before deleting `core_components.ex`.
 
 **Delete the generated file:**
 
@@ -96,12 +98,13 @@ end
 
 > #### Why delete core_components? {: .info}
 >
-> Phoenix generates `core_components.ex` with basic UI components. Sutra UI provides enhanced versions of all these components plus 40+ more. Keeping both would cause naming conflicts and confusion.
+> Phoenix generates `core_components.ex` with basic UI components. Sutra UI provides enhanced versions of all these components plus 50+ more. Keeping both would cause naming conflicts and confusion.
 
 ## Step 4: Colocated Hooks
 
 Sutra UI uses Phoenix 1.8+ colocated hooks. Most hooks load at runtime.
-For extracted hooks, merge the generated Sutra UI hooks into your LiveSocket:
+Some components, such as `dialog` and animated `response`, use extracted hooks.
+Merge the generated Sutra UI hooks into your LiveSocket:
 
 ```js
 import {hooks as sutraUiHooks} from "phoenix-colocated/sutra_ui"
@@ -166,7 +169,7 @@ Then restart your Phoenix server and asset watcher.
 
 **Cause:** Both `core_components.ex` and Sutra UI define components like `button/1`, `input/1`, etc.
 
-**Fix:** Delete `lib/my_app_web/components/core_components.ex` and remove its import from your web module (see Step 2).
+**Fix:** Delete `lib/my_app_web/components/core_components.ex` and remove its import from your web module (see Step 3).
 
 ### Hook-based components don't work (Select, Dialog, Tabs, etc.)
 
@@ -184,6 +187,9 @@ Then run:
 ```bash
 mix deps.update phoenix
 ```
+
+If only extracted-hook components such as `dialog` or animated `response` fail,
+check that `phoenix-colocated/sutra_ui` hooks are merged into your LiveSocket.
 
 ### CSS variables not applying
 
@@ -206,7 +212,8 @@ mix deps.update phoenix
 
 **Cause:** Missing `dark` class on `<html>` element.
 
-**Fix:** Add the theme switcher or manually toggle the class:
+**Fix:** Add the theme switcher with the root-layout listener from
+`SutraUI.ThemeSwitcher`, or manually toggle the class:
 
 ```heex
 <.theme_switcher id="theme-toggle" />

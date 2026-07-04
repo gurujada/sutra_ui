@@ -34,7 +34,10 @@ defmodule SutraUI.TreeView do
       # Custom trigger content
       <.tree_item expanded>
         <:trigger>
-          <.icon name="lucide-folder" class="size-4" /> My Folder
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 7h5l2 3h11v9H3z" />
+          </svg>
+          My Folder
         </:trigger>
         <.tree_item label="child.ex" />
       </.tree_item>
@@ -117,6 +120,32 @@ defmodule SutraUI.TreeView do
           this.initTree();
         },
 
+        destroyed() {
+          this.el.querySelectorAll('[data-tree-select]').forEach(btn => {
+            if (btn._treeSelectHandler) {
+              btn.removeEventListener('click', btn._treeSelectHandler);
+              delete btn._treeSelectHandler;
+              delete btn._treeSelectBound;
+            }
+          });
+
+          this.el.querySelectorAll('[data-tree-trigger]').forEach(trigger => {
+            if (trigger._treeKeydownHandler) {
+              trigger.removeEventListener('keydown', trigger._treeKeydownHandler);
+              delete trigger._treeKeydownHandler;
+              delete trigger._treeKeydownBound;
+            }
+          });
+
+          this.el.querySelectorAll('details.tree-item').forEach(item => {
+            if (item._treeToggleHandler) {
+              item.removeEventListener('toggle', item._treeToggleHandler);
+              delete item._treeToggleHandler;
+              delete item._treeToggleBound;
+            }
+          });
+        },
+
         initTree() {
           this.items = Array.from(this.el.querySelectorAll('.tree-item'))
             .filter(item => item.getAttribute('aria-disabled') !== 'true');
@@ -128,11 +157,12 @@ defmodule SutraUI.TreeView do
             this.el.querySelectorAll('[data-tree-select]').forEach(btn => {
               if (btn._treeSelectBound) return;
               btn._treeSelectBound = true;
-              btn.addEventListener('click', () => {
+              btn._treeSelectHandler = () => {
                 const item = btn.closest('.tree-item');
                 const value = item?.dataset.value;
                 this.pushEvent(this.selectEvent, { node: value });
-              });
+              };
+              btn.addEventListener('click', btn._treeSelectHandler);
             });
           }
 
@@ -155,14 +185,16 @@ defmodule SutraUI.TreeView do
             const trigger = item.querySelector(':scope > .tree-item-trigger, :scope > summary > .tree-item-trigger, :scope > [data-tree-trigger]');
             if (trigger && !trigger._treeKeydownBound) {
               trigger._treeKeydownBound = true;
-              trigger.addEventListener('keydown', (e) => this.handleKeydown(e, item));
+              trigger._treeKeydownHandler = (e) => this.handleKeydown(e, item);
+              trigger.addEventListener('keydown', trigger._treeKeydownHandler);
             }
 
             if (item.tagName === 'DETAILS' && !item._treeToggleBound) {
               item._treeToggleBound = true;
-              item.addEventListener('toggle', () => {
+              item._treeToggleHandler = () => {
                 item.setAttribute('aria-expanded', item.open ? 'true' : 'false');
-              });
+              };
+              item.addEventListener('toggle', item._treeToggleHandler);
             }
           });
         },
@@ -274,7 +306,7 @@ defmodule SutraUI.TreeView do
         open={@expanded}
         role="treeitem"
         aria-selected={@selected && "true"}
-        aria-expanded={@expanded && "true"}
+        aria-expanded={to_string(@expanded)}
         aria-disabled={@disabled && "true"}
         data-value={@value}
         {@rest}

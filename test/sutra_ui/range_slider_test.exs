@@ -14,7 +14,7 @@ defmodule SutraUI.RangeSliderTest do
       assert html =~ ~s(class="range-slider)
       # phoenix_colocated transforms .RangeSlider to full module path
       assert html =~ ~s(phx-hook="SutraUI.RangeSlider.RangeSlider")
-      # Integer step (default) emits integers
+      # Integer step (default) uses integer mode.
       assert html =~ ~s(data-min="0")
       assert html =~ ~s(data-max="100")
       assert html =~ ~s(name="price_min")
@@ -29,7 +29,7 @@ defmodule SutraUI.RangeSliderTest do
           max: 1000
         })
 
-      # Integer step (default) emits integers
+      # Integer step (default) uses integer mode.
       assert html =~ ~s(data-min="100")
       assert html =~ ~s(data-max="1000")
       assert html =~ ~s(aria-valuemin="100")
@@ -46,7 +46,7 @@ defmodule SutraUI.RangeSliderTest do
           value_max: 80
         })
 
-      # With integer step, values are emitted as integers
+      # With integer step, values render in integer mode.
       assert html =~ ~s(data-value-min="20")
       assert html =~ ~s(data-value-max="80")
       assert html =~ ~s(aria-valuenow="20")
@@ -66,7 +66,7 @@ defmodule SutraUI.RangeSliderTest do
           value_max: 4.0
         })
 
-      # With float step, values are emitted as floats
+      # With float step, values render in float mode.
       assert html =~ ~s(data-step="0.5")
       assert html =~ ~s(data-float-mode)
       assert html =~ ~s(data-value-min="1.5")
@@ -98,7 +98,7 @@ defmodule SutraUI.RangeSliderTest do
           step: 10
         })
 
-      # Integer step emits integers
+      # Integer step uses integer mode.
       assert html =~ ~s(data-step="10")
       # No data-float-mode attribute when in integer mode
       refute html =~ ~s(data-float-mode)
@@ -471,7 +471,7 @@ defmodule SutraUI.RangeSliderTest do
   end
 
   describe "integer vs float mode" do
-    test "integer step emits integer values in data attributes" do
+    test "integer step renders integer-mode values in data attributes" do
       html =
         render_component(&range_slider/1, %{
           name: "quantity",
@@ -494,7 +494,7 @@ defmodule SutraUI.RangeSliderTest do
       refute html =~ ~s(data-float-mode)
     end
 
-    test "integer step with larger increment emits integers" do
+    test "integer step with larger increment renders integer-mode values" do
       html =
         render_component(&range_slider/1, %{
           name: "price",
@@ -511,7 +511,7 @@ defmodule SutraUI.RangeSliderTest do
       refute html =~ ~s(data-float-mode)
     end
 
-    test "float step emits float values in data attributes" do
+    test "float step renders float-mode values in data attributes" do
       html =
         render_component(&range_slider/1, %{
           name: "rating",
@@ -534,7 +534,7 @@ defmodule SutraUI.RangeSliderTest do
       assert html =~ ~s(data-float-mode)
     end
 
-    test "float step 1.0 emits floats (for whole number float increments)" do
+    test "float step 1.0 renders float-mode values for whole number increments" do
       html =
         render_component(&range_slider/1, %{
           name: "score",

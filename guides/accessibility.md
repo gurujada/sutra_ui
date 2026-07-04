@@ -1,10 +1,10 @@
 # Accessibility
 
-Sutra UI is built with accessibility as a core principle. All components follow WAI-ARIA patterns and support keyboard navigation.
+Sutra UI is built with accessibility as a core principle. Components use semantic HTML, ARIA patterns, and keyboard behavior where the component is interactive.
 
-## WCAG 2.1 AA Compliance
+## Accessibility Targets
 
-Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
+Sutra UI components are designed with WCAG 2.1 Level AA criteria in mind:
 
 - **Perceivable** - Text alternatives, adaptable content, distinguishable colors
 - **Operable** - Keyboard accessible, enough time, navigable
@@ -37,7 +37,7 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 | Key | Action |
 |-----|--------|
 | `Arrow Up/Down` | Navigate menu items |
-| `Enter` | Select item |
+| `Enter` / `Space` | Activate item |
 | `Escape` | Close menu |
 
 #### Select
@@ -47,16 +47,13 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 | `Arrow Up/Down` | Navigate options |
 | `Enter` | Select option |
 | `Escape` | Close dropdown |
-| `Type` | Jump to matching option |
+| Letter key (open listbox) | Jump to the next visible option starting with that letter |
 
 #### Accordion
 
 | Key | Action |
 |-----|--------|
-| `Arrow Up/Down` | Navigate accordion items |
 | `Enter` / `Space` | Toggle accordion panel |
-| `Home` | Go to first item |
-| `End` | Go to last item |
 
 #### Dialog
 
@@ -71,7 +68,7 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 |-----|--------|
 | `Arrow Up/Down` | Navigate results |
 | `Enter` | Select item |
-| `Escape` | Close palette |
+| `Escape` | Close `command_dialog` |
 
 ## ARIA Attributes by Component
 
@@ -79,7 +76,7 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 
 ```heex
 <.button>Save</.button>
-<!-- Renders with proper button semantics -->
+<!-- Renders with native button semantics -->
 
 <.button size="icon" aria-label="Close">
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -94,12 +91,14 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 
 ```heex
 <.input
-  field={@form[:email]}
+  id="email"
+  name="email"
   type="email"
   label="Email"
+  description="We'll use this for account notifications."
   errors={["Invalid email"]}
 />
-<!-- Automatically links label, input, and error with aria-describedby -->
+<!-- Links label, description, and errors; sets aria-invalid when errors are present -->
 ```
 
 ### Dialog
@@ -110,8 +109,8 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
   <:description>Are you sure?</:description>
   Content here
 </.dialog>
-<!-- Sets role="dialog", aria-modal, aria-labelledby, aria-describedby automatically -->
-<!-- Uses div-based overlay for screen share compatibility -->
+<!-- Sets role="dialog", aria-modal, aria-labelledby, and aria-describedby automatically -->
+<!-- Uses a div-based overlay for screen share compatibility -->
 ```
 
 ### Tabs
@@ -158,7 +157,7 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 <.calendar selected={@date} />
 ```
 
-<!-- Uses grid roles, aria-selected, and aria-current="date" for the active day. Compose it with popover and a hidden input when building a date-picker field. -->
+<!-- Uses grid roles, aria-selected for the selected date, and aria-current="date" for today. Compose it with popover and a hidden input when building a date-picker field. -->
 
 ### Context Menu
 
@@ -193,15 +192,18 @@ Sutra UI components are designed to meet WCAG 2.1 Level AA standards:
 
 ### Focus Trapping
 
-Modal components like `dialog` and `command` automatically trap focus:
+Modal components manage focus according to their implementation:
 
-- Focus moves to the dialog when opened
-- Tab cycles through focusable elements within the dialog
-- Focus returns to the trigger element when closed
+- `dialog` moves focus to the first focusable element when opened and traps
+  focus with `focus_wrap`.
+- `command_dialog` uses the native `<dialog>` element and browser modal focus
+  behavior.
+- If your workflow needs explicit focus restoration to a trigger, handle that in
+  the parent LiveView or with app-side JavaScript.
 
 ### Focus Indicators
 
-All interactive elements have visible focus indicators using the `--ring` CSS variable:
+Sutra-styled interactive components include visible focus indicators using the `--ring` CSS variable:
 
 ```css
 :root {
@@ -209,10 +211,10 @@ All interactive elements have visible focus indicators using the `--ring` CSS va
 }
 ```
 
-Focus indicators are:
-- Always visible (never `outline: none`)
+Focus indicators should be:
+- Visible when controls receive keyboard focus
 - High contrast against backgrounds
-- Consistent across all components
+- Consistent with the app theme
 
 ### Skip Links
 
@@ -235,11 +237,13 @@ For page-level accessibility, add a skip link at the top of your layout:
 Toast notifications use `aria-live` to announce messages:
 
 ```heex
-<.toaster />
-<!-- Creates a live region for announcements -->
+<.toast_container flash={@flash} />
+<!-- Renders toast messages with status/live-region semantics -->
 
-<.toast>File saved successfully</.toast>
-<!-- Announced by screen readers -->
+<.toast id="saved-toast">
+  <:title>File saved successfully</:title>
+</.toast>
+<!-- Exposes role="status" and aria-live="polite" -->
 ```
 
 ### Semantic HTML
@@ -280,7 +284,7 @@ Use these utilities for screen reader content:
 - [ ] Focus indicators are visible
 - [ ] All images have alt text
 - [ ] Form inputs have labels
-- [ ] Error messages are associated with inputs
+- [ ] Error states are exposed to assistive technology
 - [ ] Color is not the only means of conveying information
 - [ ] Text has sufficient contrast (4.5:1 for normal, 3:1 for large)
 
@@ -327,16 +331,21 @@ Use the `disabled` attribute, not just styling:
 
 ### Form Validation
 
-Associate errors with inputs:
+Expose validation errors on inputs:
 
 ```heex
 <.input
   field={@form[:password]}
   type="password"
   label="Password"
-  errors={Enum.map(@form[:password].errors, &translate_error/1)}
 />
 ```
+
+With `field={@form[...]}`, `<.input>` reads errors from the Phoenix form field
+and only displays them after `Phoenix.Component.used_input?/1` reports that the
+field was used. When the input has an `id`, generated helper and error text are
+linked through `aria-describedby`. For manual inputs, pass `errors={...}`
+directly.
 
 ## Next Steps
 

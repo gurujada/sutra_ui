@@ -27,8 +27,9 @@ defmodule SutraUI.StepperWizardTest do
       assert html =~ "Payment form"
       refute html =~ "Shipping form"
       refute html =~ "Confirm order"
-      assert html =~ ~s(role="tabpanel")
+      refute html =~ ~s(role="tabpanel")
       assert html =~ ~s(aria-labelledby="checkout-step-payment")
+      refute html =~ ~s(aria-controls="checkout-panel")
     end
 
     test "defaults to the first step when current is omitted" do

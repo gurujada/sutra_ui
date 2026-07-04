@@ -2,9 +2,9 @@ defmodule SutraUI.Input do
   @moduledoc """
   Renders form input elements with label, description, and error handling.
 
-  The unified form field component for Sutra UI. This is a drop-in replacement
-  for Phoenix's generated `input` component, providing full parity with Phoenix
-  generators while using Sutra UI styling.
+  The unified form field component for Sutra UI. It covers the common Phoenix
+  generator input patterns while using Sutra UI styling, and delegates richer
+  controls to the focused Sutra UI components.
 
   ## Basic Usage
 
@@ -28,7 +28,7 @@ defmodule SutraUI.Input do
   Pass a `Phoenix.HTML.FormField` via the `field` attribute to automatically
   extract the input's `id`, `name`, `value`, and validation errors:
 
-      <.simple_form for={@form} phx-submit="save">
+      <.form for={@form} class="form" phx-submit="save">
         <.input field={@form[:email]} type="email" label="Email" />
         <.input field={@form[:password]} type="password" label="Password" />
         <.input
@@ -37,10 +37,10 @@ defmodule SutraUI.Input do
           label="Bio"
           description="Tell us about yourself."
         />
-        <:actions>
+        <div class="flex justify-end">
           <.button type="submit">Save</.button>
-        </:actions>
-      </.simple_form>
+        </div>
+      </.form>
 
   Errors are displayed automatically when the field has been interacted with
   (via `Phoenix.Component.used_input?/1`), so errors won't flash on first render.
@@ -153,7 +153,7 @@ defmodule SutraUI.Input do
 
         def render(assigns) do
           ~H\"\"\"
-          <.simple_form for={@form} phx-change="validate" phx-submit="save">
+          <.form for={@form} class="form" phx-change="validate" phx-submit="save">
             <.input
               field={@form[:name]}
               label="Full Name"
@@ -198,10 +198,10 @@ defmodule SutraUI.Input do
               label="Subscribe to newsletter"
               description="Receive weekly updates about new features."
             />
-            <:actions>
+            <div class="flex justify-end">
               <.button type="submit">Create Account</.button>
-            </:actions>
-          </.simple_form>
+            </div>
+          </.form>
           \"\"\"
         end
       end
@@ -209,10 +209,10 @@ defmodule SutraUI.Input do
   ## Accessibility
 
   - Labels are properly associated with inputs via wrapping `<label>` elements
-  - Description text is linked via `aria-describedby` on the input
+  - Description and error text are linked via `aria-describedby` when an input id is available
   - `aria-invalid` is automatically set when errors are present
   - Error messages are displayed below inputs with destructive styling
-  - Switch inputs include `role="switch"` and `aria-checked`
+  - Switch inputs include `role="switch"` and use native checkbox checked state
   - Range inputs include `aria-valuemin`, `aria-valuemax`, `aria-valuenow`
   - Supports standard ARIA attributes via `:rest`
   """
@@ -294,9 +294,11 @@ defmodule SutraUI.Input do
   # Checkbox input - delegates to SutraUI.Checkbox
   def input(%{type: "checkbox"} = assigns) do
     assigns =
-      assign_new(assigns, :checked, fn ->
+      assigns
+      |> assign_new(:checked, fn ->
         Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
       end)
+      |> assign_field_accessibility()
 
     ~H"""
     <div class="fieldset mb-2">
@@ -315,19 +317,22 @@ defmodule SutraUI.Input do
           class={@class}
           id={@id}
           aria-invalid={@errors != [] && "true"}
+          aria-describedby={@describedby}
           {@rest}
         />
         <span :if={@label} class="label">{@label}</span>
       </label>
-      <p :if={@description} class="field-description mt-1">{@description}</p>
-      <.error :for={msg <- @errors}>{msg}</.error>
+      <p :if={@description} id={@description_id} class="field-description mt-1">{@description}</p>
+      <div :if={@errors != []} id={@error_id}>
+        <.error :for={msg <- @errors}>{msg}</.error>
+      </div>
     </div>
     """
   end
 
   # Select input - native HTML select
   def input(%{type: "select"} = assigns) do
-    assigns = assign_description_id(assigns)
+    assigns = assign_field_accessibility(assigns)
 
     ~H"""
     <div class="fieldset mb-2">
@@ -342,14 +347,16 @@ defmodule SutraUI.Input do
           class={["select w-full", @class]}
           multiple={@multiple}
           aria-invalid={@errors != [] && "true"}
-          aria-describedby={@description_id}
+          aria-describedby={@describedby}
           {@rest}
         >
           <option :if={@prompt} value="">{@prompt}</option>
           {Phoenix.HTML.Form.options_for_select(@options, @value)}
         </select>
       </label>
-      <.error :for={msg <- @errors}>{msg}</.error>
+      <div :if={@errors != []} id={@error_id}>
+        <.error :for={msg <- @errors}>{msg}</.error>
+      </div>
     </div>
     """
   end
@@ -362,7 +369,7 @@ defmodule SutraUI.Input do
         :textarea_value,
         Phoenix.HTML.Form.normalize_value("textarea", assigns.value)
       )
-      |> assign_description_id()
+      |> assign_field_accessibility()
 
     ~H"""
     <div class="fieldset mb-2">
@@ -377,11 +384,13 @@ defmodule SutraUI.Input do
           value={@textarea_value}
           class={@class}
           aria-invalid={@errors != [] && "true"}
-          aria-describedby={@description_id}
+          aria-describedby={@describedby}
           {@rest}
         />
       </label>
-      <.error :for={msg <- @errors}>{msg}</.error>
+      <div :if={@errors != []} id={@error_id}>
+        <.error :for={msg <- @errors}>{msg}</.error>
+      </div>
     </div>
     """
   end
@@ -389,9 +398,11 @@ defmodule SutraUI.Input do
   # Switch input - delegates to SutraUI.Switch
   def input(%{type: "switch"} = assigns) do
     assigns =
-      assign_new(assigns, :checked, fn ->
+      assigns
+      |> assign_new(:checked, fn ->
         Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
       end)
+      |> assign_field_accessibility()
 
     ~H"""
     <div class="fieldset mb-2">
@@ -410,12 +421,15 @@ defmodule SutraUI.Input do
           class={@class}
           id={@id}
           aria-invalid={@errors != [] && "true"}
+          aria-describedby={@describedby}
           {@rest}
         />
         <span :if={@label} class="label">{@label}</span>
       </label>
-      <p :if={@description} class="field-description mt-1">{@description}</p>
-      <.error :for={msg <- @errors}>{msg}</.error>
+      <p :if={@description} id={@description_id} class="field-description mt-1">{@description}</p>
+      <div :if={@errors != []} id={@error_id}>
+        <.error :for={msg <- @errors}>{msg}</.error>
+      </div>
     </div>
     """
   end
@@ -427,28 +441,34 @@ defmodule SutraUI.Input do
       assigns
       |> assign_new(:id, fn -> "range-#{System.unique_integer([:positive])}" end)
       |> assign(:slider_value, assigns.value || 50)
+      |> assign_field_accessibility()
 
     ~H"""
     <div class="fieldset mb-2">
       <label :if={@label}>
         <span class="label mb-1">{@label}</span>
       </label>
-      <p :if={@description} class="field-description mb-1.5">{@description}</p>
+      <p :if={@description} id={@description_id} class="field-description mb-1.5">
+        {@description}
+      </p>
       <SutraUI.Slider.slider
         id={@id}
         name={@name}
         value={@slider_value}
         class={@class}
+        aria-describedby={@describedby}
         {@rest}
       />
-      <.error :for={msg <- @errors}>{msg}</.error>
+      <div :if={@errors != []} id={@error_id}>
+        <.error :for={msg <- @errors}>{msg}</.error>
+      </div>
     </div>
     """
   end
 
   # All other inputs: text, email, password, number, date, etc.
   def input(assigns) do
-    assigns = assign_description_id(assigns)
+    assigns = assign_field_accessibility(assigns)
 
     ~H"""
     <div class="fieldset mb-2">
@@ -465,23 +485,51 @@ defmodule SutraUI.Input do
           class={["input w-full", @class]}
           multiple={@multiple}
           aria-invalid={@errors != [] && "true"}
-          aria-describedby={@description_id}
+          aria-describedby={@describedby}
           {@rest}
         />
       </label>
-      <.error :for={msg <- @errors}>{msg}</.error>
+      <div :if={@errors != []} id={@error_id}>
+        <.error :for={msg <- @errors}>{msg}</.error>
+      </div>
     </div>
     """
   end
 
-  # Assigns a description_id based on the input's id, or nil if no description.
-  defp assign_description_id(%{description: nil} = assigns),
-    do: assign(assigns, :description_id, nil)
+  # Assigns IDs for field helper/error text and links them through aria-describedby.
+  defp assign_field_accessibility(assigns) do
+    description_id =
+      if assigns.description && assigns.id, do: "#{assigns.id}-description"
 
-  defp assign_description_id(%{description: _} = assigns) do
-    desc_id = if assigns.id, do: "#{assigns.id}-description", else: nil
-    assign(assigns, :description_id, desc_id)
+    error_id =
+      if assigns.errors != [] && assigns.id, do: "#{assigns.id}-error"
+
+    {explicit_describedby, rest} = pop_describedby(assigns.rest)
+
+    describedby =
+      [explicit_describedby, description_id, error_id]
+      |> Enum.reject(&blank?/1)
+      |> Enum.join(" ")
+      |> case do
+        "" -> nil
+        value -> value
+      end
+
+    assigns
+    |> assign(:description_id, description_id)
+    |> assign(:error_id, error_id)
+    |> assign(:describedby, describedby)
+    |> assign(:rest, rest)
   end
+
+  defp pop_describedby(rest) when is_map(rest) do
+    explicit = Map.get(rest, :"aria-describedby") || Map.get(rest, "aria-describedby")
+    {explicit, Map.drop(rest, [:"aria-describedby", "aria-describedby"])}
+  end
+
+  defp blank?(nil), do: true
+  defp blank?(""), do: true
+  defp blank?(_), do: false
 
   # Renders an error message with icon.
   defp error(assigns) do

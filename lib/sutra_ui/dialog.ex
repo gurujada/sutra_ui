@@ -36,13 +36,13 @@ defmodule SutraUI.Dialog do
       # Form inside dialog
       <.dialog id="edit-user-dialog" show={@show_edit} on_cancel="cancel_edit">
         <:title>Edit Profile</:title>
-        <.simple_form for={@form} phx-submit="save_user">
+        <.form for={@form} class="form" phx-submit="save_user">
           <.input field={@form[:name]} label="Name" />
           <.input field={@form[:email]} label="Email" type="email" />
-          <:actions>
+          <div class="flex justify-end">
             <.button type="submit">Save Changes</.button>
-          </:actions>
-        </.simple_form>
+          </div>
+        </.form>
       </.dialog>
 
   ## Opening and Closing

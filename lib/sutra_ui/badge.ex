@@ -40,7 +40,7 @@ defmodule SutraUI.Badge do
 
   ## Attributes
 
-  * `variant` - Visual style. One of `default`, `secondary`, `destructive`, `outline`. Defaults to `default`.
+  * `variant` - Visual style. One of `default`, `secondary`, `destructive`, `success`, `outline`. Defaults to `default`.
   * `href` - Optional link URL. Renders as `<a>` instead of `<span>`.
   * `class` - Additional CSS classes.
 
@@ -89,7 +89,7 @@ defmodule SutraUI.Badge do
     end
   end
 
-  # Simple semantic CSS class - all styling via @apply in phx_ui.css
+  # Simple semantic CSS class - all styling via @apply in sutra_ui.css
   defp badge_class(variant, extra_class) do
     base =
       case variant do

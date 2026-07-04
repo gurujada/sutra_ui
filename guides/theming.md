@@ -118,7 +118,7 @@ Click "Copy code" and paste into your `app.css`:
 ```css
 @import "../../deps/sutra_ui/priv/static/sutra_ui.css";
 
-/* Paste shadcn theme here - it just works! */
+/* Paste compatible shadcn theme variables here */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -160,7 +160,10 @@ The easiest way to add dark mode is with the built-in theme switcher:
 <.theme_switcher id="theme-toggle" />
 ```
 
-This renders a button that toggles between light, dark, and system themes.
+This renders a button that dispatches `sutra-ui:set-theme`. Add the root-layout
+listener from `SutraUI.ThemeSwitcher` or your own listener to apply and persist
+the `dark` class. System preference can be used as the initial value in that
+root layout script.
 
 ### Manual Control
 

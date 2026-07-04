@@ -96,7 +96,7 @@ defmodule SutraUI.Table do
 
   - `.table` - Base table styling
   - Column alignment via Tailwind (`text-right`, `text-center`)
-  - Responsive overflow handled by wrapper
+  - For horizontal scrolling, wrap the table in your own overflow container
 
   > #### Large Data Sets {: .tip}
   >

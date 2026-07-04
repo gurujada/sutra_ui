@@ -293,6 +293,21 @@ defmodule SutraUI.ButtonTest do
       assert html =~ ~s(phx-click="handle_click")
     end
 
+    test "passes through arbitrary phx-value attributes" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Button.button phx-click="filter" phx-value-key="status" phx-value-page="2">
+          Filter
+        </Button.button>
+        """)
+
+      assert html =~ ~s(phx-click="filter")
+      assert html =~ ~s(phx-value-key="status")
+      assert html =~ ~s(phx-value-page="2")
+    end
+
     test "passes through phx-target" do
       assigns = %{}
 

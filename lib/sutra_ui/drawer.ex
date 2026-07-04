@@ -9,7 +9,7 @@ defmodule SutraUI.Drawer do
   It supports:
   - Mobile overlay mode with backdrop
   - Desktop persistent mode (via `open` attribute)
-  - Left or right positioning
+  - Left, right, top, or bottom positioning
   - Collapsible submenu sections
   - Active page highlighting
   - Custom header and footer sections
@@ -35,60 +35,72 @@ defmodule SutraUI.Drawer do
 
   ## Examples
 
-  # Basic drawer with trigger button
+  Basic drawer with trigger button:
+
+  ```heex
   <.drawer_trigger for="main-drawer" />
   <.drawer id="main-drawer">
-  <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="/dashboard">Dashboard</a></li>
-    <li><a href="/settings">Settings</a></li>
-  </ul>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="/settings">Settings</a></li>
+    </ul>
   </.drawer>
+  ```
 
-  # Drawer initially open on desktop
+  Drawer initially open on desktop:
+
+  ```heex
   <.drawer_trigger for="app-drawer" />
   <.drawer id="app-drawer" side="left" open>
-  <:header>
-    <div class="flex items-center gap-2 p-2">
-      <img src="/logo.svg" alt="Logo" class="w-8 h-8" />
-      <span class="font-semibold">My App</span>
-    </div>
-  </:header>
+    <:header>
+      <div class="flex items-center gap-2 p-2">
+        <img src="/logo.svg" alt="Logo" class="w-8 h-8" />
+        <span class="font-semibold">My App</span>
+      </div>
+    </:header>
 
-  <.drawer_group label="Main">
-    <.drawer_item href="/">Home</.drawer_item>
-    <.drawer_item href="/dashboard">Dashboard</.drawer_item>
-  </.drawer_group>
+    <.drawer_group label="Main">
+      <.drawer_item href="/">Home</.drawer_item>
+      <.drawer_item href="/dashboard">Dashboard</.drawer_item>
+    </.drawer_group>
 
-  <:footer>
-    <.drawer_item href="/settings">Settings</.drawer_item>
-  </:footer>
+    <:footer>
+      <.drawer_item href="/settings">Settings</.drawer_item>
+    </:footer>
   </.drawer>
+  ```
 
-  # Drawer with collapsible sections
+  Drawer with collapsible sections:
+
+  ```heex
   <.drawer_trigger for="nav-drawer" />
   <.drawer id="nav-drawer">
-  <.drawer_group label="Navigation">
-    <.drawer_item href="/">Overview</.drawer_item>
+    <.drawer_group label="Navigation">
+      <.drawer_item href="/">Overview</.drawer_item>
 
-    <.drawer_submenu label="Projects" open>
-      <.drawer_item href="/projects/active">Active</.drawer_item>
-      <.drawer_item href="/projects/archived">Archived</.drawer_item>
-    </.drawer_submenu>
+      <.drawer_submenu label="Projects" open>
+        <.drawer_item href="/projects/active">Active</.drawer_item>
+        <.drawer_item href="/projects/archived">Archived</.drawer_item>
+      </.drawer_submenu>
 
-    <.drawer_item href="/team">Team</.drawer_item>
-  </.drawer_group>
+      <.drawer_item href="/team">Team</.drawer_item>
+    </.drawer_group>
   </.drawer>
+  ```
 
-  # Right-side drawer with custom trigger
+  Right-side drawer with custom trigger:
+
+  ```heex
   <.drawer_trigger for="filter-drawer" variant="outline">
-  <span>Toggle Filters</span>
+    <span>Toggle Filters</span>
   </.drawer_trigger>
   <.drawer id="filter-drawer" side="right">
-  <.drawer_group label="Filters">
-    <p>Filter options here...</p>
-  </.drawer_group>
+    <.drawer_group label="Filters">
+      <p>Filter options here...</p>
+    </.drawer_group>
   </.drawer>
+  ```
 
   ## Programmatic Control
 
@@ -112,9 +124,10 @@ defmodule SutraUI.Drawer do
   ## Accessibility
 
   - Uses semantic `<aside>` and `<nav>` elements
-  - Includes proper ARIA labels and `aria-hidden` state
+  - Includes ARIA labels and `aria-hidden` state
+  - Trigger buttons expose `aria-controls` and synchronized `aria-expanded`
   - Sets `inert` attribute when closed to prevent keyboard navigation
-  - Automatically manages focus when opened/closed
+  - Prevents keyboard focus from entering the drawer while it is closed
   - Active page links marked with `aria-current="page"`
 
   ## Mobile Behavior
@@ -148,7 +161,7 @@ defmodule SutraUI.Drawer do
   ## Attributes
 
   - `id` (required) - Unique identifier for the drawer (required for hook)
-  - `side` - Which side to position the drawer ("left" or "right", default: "left")
+  - `side` - Which side to position the drawer ("left", "right", "top", or "bottom"; default: "left")
   - `open` - Initial open state for desktop (default: false)
   - `mobile_open` - Initial open state for mobile (default: false)
   - `breakpoint` - Pixel width for mobile breakpoint (default: 768)
@@ -235,6 +248,8 @@ defmodule SutraUI.Drawer do
           window.removeEventListener('sutra-ui:locationchange', this.updateCurrentPageLinksHandler);
           document.removeEventListener('sutra-ui:drawer', this.drawerEventHandler);
           document.removeEventListener('click', this.handleClickOutside);
+          this.backdrop?.removeEventListener('click', this.backdropClickHandler);
+          this.aside?.removeEventListener('click', this.asideClickHandler);
         },
 
         initializeDrawer() {
@@ -255,6 +270,8 @@ defmodule SutraUI.Drawer do
           // Bind event handlers
           this.updateCurrentPageLinksHandler = () => this.updateCurrentPageLinks();
           this.drawerEventHandler = (event) => this.handleDrawerEvent(event);
+          this.backdropClickHandler = () => this.setState(false);
+          this.asideClickHandler = (event) => this.handleAsideClick(event);
 
           // Listen for navigation events to update current page links
           window.addEventListener('popstate', this.updateCurrentPageLinksHandler);
@@ -265,11 +282,11 @@ defmodule SutraUI.Drawer do
 
           // Handle clicks on backdrop to close
           if (this.backdrop) {
-            this.backdrop.addEventListener('click', () => this.setState(false));
+            this.backdrop.addEventListener('click', this.backdropClickHandler);
           }
 
           // Handle clicks on links to close on mobile
-          this.aside.addEventListener('click', (event) => this.handleAsideClick(event));
+          this.aside.addEventListener('click', this.asideClickHandler);
 
           // Handle clicks outside drawer to close (for demo containers)
           this.handleClickOutside = (event) => {
@@ -343,6 +360,9 @@ defmodule SutraUI.Drawer do
           } else {
             this.aside.setAttribute('inert', '');
           }
+          document.querySelectorAll(`.drawer-trigger[data-for="${CSS.escape(this.drawerId)}"]`).forEach(trigger => {
+            trigger.setAttribute('aria-expanded', String(this.open));
+          });
         }
       }
     </script>
@@ -496,9 +516,12 @@ defmodule SutraUI.Drawer do
 
   <.drawer_separator />
   """
+  attr(:class, :string, default: nil, doc: "Additional CSS classes")
+  attr(:rest, :global, doc: "Additional HTML attributes")
+
   def drawer_separator(assigns) do
     ~H"""
-    <hr role="separator" />
+    <hr class={@class} role="separator" {@rest} />
     """
   end
 
@@ -552,6 +575,8 @@ defmodule SutraUI.Drawer do
       class={["drawer-trigger", drawer_trigger_class(@variant, @size), @class]}
       data-for={@for}
       aria-label="Toggle drawer"
+      aria-controls={@for}
+      aria-expanded="false"
       phx-click={Phoenix.LiveView.JS.dispatch("sutra-ui:drawer", detail: %{id: @for})}
       {@rest}
     >
@@ -568,7 +593,7 @@ defmodule SutraUI.Drawer do
   defp default_trigger_icon do
     # Hamburger icon (3 horizontal lines)
     Phoenix.HTML.raw(
-      ~s(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>)
+      ~s(<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>)
     )
   end
 end

@@ -26,16 +26,16 @@ defmodule SutraUI.LiveSelect do
   ## Handling Selection Changes
 
   Selection changes are communicated via the form's standard `phx-change` event.
-  The hidden input contains JSON-encoded `{label, value}` pairs:
+  Hidden inputs use structured names with plain submitted values:
 
       def handle_event("form_change", params, socket) do
-        # Single mode: params["city"] is a JSON string like "{\"label\":\"NYC\",\"value\":\"nyc\"}"
+        # Single mode: params["city"] is %{"value" => "nyc"}
         city = SutraUI.LiveSelect.decode(params["city"])
-        # => %{"label" => "NYC", "value" => "nyc"}
+        # => "nyc"
 
-        # Tags mode: params["tags"] is a list of JSON strings
+        # Tags mode: params["tags"] is %{"id" => ["elixir", "phoenix"]}
         tags = SutraUI.LiveSelect.decode(params["tags"])
-        # => [%{"label" => "Tag1", "value" => "t1"}, ...]
+        # => ["elixir", "phoenix"]
 
         {:noreply, assign(socket, city: city, tags: tags)}
       end
@@ -54,7 +54,7 @@ defmodule SutraUI.LiveSelect do
   | `update_min_len` | `integer` | `1` | Minimum characters before search |
   | `user_defined_options` | `boolean` | `false` | Allow creating tags by typing (tags modes) |
   | `max_selectable` | `integer` | `0` | Max tags allowed (0 = unlimited) |
-  | `phx-target` | `string` | `nil` | Target for search events (for LiveComponents) |
+  | `phx-target` | selector or `@myself` | `nil` | Target for search events (for LiveComponents) |
   | `class` | `string` | `nil` | Additional CSS classes |
   | `value_mapper` | `function` | `& &1` | Function to map form values to options (for Ecto) |
 
@@ -200,9 +200,11 @@ defmodule SutraUI.LiveSelect do
 
   To customize, override these classes in your CSS. Pass additional classes via the `class` attribute.
 
-  ## Decoding Complex Values
+  ## Decoding Submitted Values
 
-  When using maps or complex values, decode form params with `decode/1`:
+  Use `decode/1` on the submitted form params. Current hidden inputs submit
+  plain values; legacy JSON strings are still decoded for backwards
+  compatibility.
 
       def handle_event("save", %{"form" => params}, socket) do
         params = update_in(params, ["city"], &SutraUI.LiveSelect.decode/1)
@@ -234,7 +236,9 @@ defmodule SutraUI.LiveSelect do
 
   ## Using with Ecto Embeds
 
-  LiveSelect works with Ecto embeds using the `value_mapper` attribute:
+  Use stable IDs or string tokens as submitted values, then load or build embed
+  data in the parent LiveView. `value_mapper` is useful for rendering initial
+  values as options:
 
       # Schema
       embedded_schema do
@@ -252,12 +256,13 @@ defmodule SutraUI.LiveSelect do
 
       # Helper
       defp city_to_option(%City{name: name} = city) do
-        %{label: name, value: city}
+        %{label: name, value: city.id}
       end
 
       # Handle form change
       def handle_event("form_change", params, socket) do
-        params = update_in(params, ["form", "cities"], &SutraUI.LiveSelect.decode/1)
+        city_ids = SutraUI.LiveSelect.decode(params["form"]["cities"])
+        params = put_in(params, ["form", "city_ids"], city_ids)
         changeset = MyForm.changeset(params)
         {:noreply, assign(socket, form: to_form(changeset))}
       end
@@ -289,11 +294,7 @@ defmodule SutraUI.LiveSelect do
 
       # Handle form change - extract just the value (id)
       def handle_event("form_change", %{"post" => params}, socket) do
-        category_id =
-          case SutraUI.LiveSelect.decode(params["category_id"]) do
-            %{"value" => id} -> id
-            _ -> nil
-          end
+        category_id = SutraUI.LiveSelect.decode(params["category_id"])
 
         changeset = Post.changeset(socket.assigns.post, %{params | "category_id" => category_id})
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -320,8 +321,7 @@ defmodule SutraUI.LiveSelect do
         tag_ids =
           params["tag_ids"]
           |> SutraUI.LiveSelect.decode()
-          |> Enum.map(& &1["value"])
-          |> Enum.reject(&is_nil/1)
+          |> Enum.reject(&(&1 in ["", nil]))
 
         # Load tags and put_assoc in changeset
         tags = Repo.all(from t in Tag, where: t.id in ^tag_ids)
@@ -378,17 +378,12 @@ defmodule SutraUI.LiveSelect do
         font-size: 1.125rem;
       }
 
-  ### CSS Custom Properties
+  ### Theme Tokens
 
-  LiveSelect respects CSS custom properties for theming:
-
-      :root {
-        --live-select-bg: white;
-        --live-select-border: #e5e7eb;
-        --live-select-option-hover: #f3f4f6;
-        --live-select-tag-bg: #3b82f6;
-        --live-select-tag-text: white;
-      }
+  LiveSelect uses the shared Sutra UI theme tokens (`--background`, `--input`,
+  `--popover`, `--accent`, `--primary`, and related foreground tokens). Override
+  those tokens for broad theming, or target the `.live-select-*` classes for a
+  one-off customization.
 
   ## Testing LiveViews with LiveSelect
 
@@ -416,16 +411,8 @@ defmodule SutraUI.LiveSelect do
         test "searches and selects a city", %{conn: conn} do
           {:ok, view, _html} = live(conn, ~p"/cities")
 
-          # Type in the search input
-          view
-          |> element("#city-select input[type=text]")
-          |> render_change(%{value: "new"})
-
-          # Simulate the search event (normally triggered by JS hook)
-          send(view.pid, {:live_select_change, %{"text" => "new", "id" => "city-select"}})
-
-          # Or call handle_event directly in your test
-          render_click(view, "live_select_change", %{
+          # Simulate the hook event sent as the user types
+          render_hook(view, "live_select_change", %{
             "text" => "new",
             "id" => "city-select",
             "field" => "city"
@@ -441,11 +428,11 @@ defmodule SutraUI.LiveSelect do
       test "submits form with selected value", %{conn: conn} do
         {:ok, view, _html} = live(conn, ~p"/cities")
 
-        # Simulate selection by submitting form with encoded value
+        # Simulate selection by submitting the structured hidden input shape
         view
         |> form("#city-form", %{
           "form" => %{
-            "city" => ~s({"label":"NYC","value":"nyc"})
+            "city" => %{"value" => "nyc"}
           }
         })
         |> render_submit()
@@ -466,7 +453,7 @@ defmodule SutraUI.LiveSelect do
 
   - Ensure your form has `phx-change` handler
   - Check that hidden input is being updated (inspect DOM)
-  - Verify you're decoding the JSON value correctly with `decode/1`
+  - Verify you're decoding the submitted value with `decode/1`
 
   ### Options not appearing
 
@@ -1128,6 +1115,7 @@ defmodule SutraUI.LiveSelect do
             this.dropdownOpen = false;
             this.selection = [];
             this.debounceTimer = null;
+            this.blurTimer = null;
             this.pendingSearch = false; // Track if we're waiting for search results
 
             this.input = this.el.querySelector('[data-input]');
@@ -1174,7 +1162,7 @@ defmodule SutraUI.LiveSelect do
             // This survives DOM updates from LiveView
             
             // Input events
-            this.el.addEventListener('input', (e) => {
+            this.inputHandler = (e) => {
               if (!e.target.matches('[data-input]')) return;
               clearTimeout(this.debounceTimer);
               const text = e.target.value.trim();
@@ -1195,29 +1183,30 @@ defmodule SutraUI.LiveSelect do
               } else {
                 this.pendingSearch = false;
               }
-            });
+            };
 
-            this.el.addEventListener('focus', (e) => {
+            this.focusHandler = (e) => {
               if (!e.target.matches('[data-input]')) return;
               if (this.hasOptions()) {
                 this.openDropdown();
               }
-            }, true); // Use capture for focus
+            };
 
-            this.el.addEventListener('blur', (e) => {
+            this.blurHandler = (e) => {
               if (!e.target.matches('[data-input]')) return;
               // Delay to allow click events on dropdown options
-              setTimeout(() => {
+              clearTimeout(this.blurTimer);
+              this.blurTimer = setTimeout(() => {
                 this.closeDropdown();
                 // Restore input value in single mode
                 if (this.mode() === 'single' && this.selection.length > 0) {
                   this.input.value = this.selection[0].label;
                 }
               }, 150);
-            }, true); // Use capture for blur
+            };
 
             // Keyboard events
-            this.el.addEventListener('keydown', (e) => {
+            this.keydownHandler = (e) => {
               if (!e.target.matches('[data-input]')) return;
               
               switch (e.key) {
@@ -1296,26 +1285,33 @@ defmodule SutraUI.LiveSelect do
                   }
                   break;
               }
-            });
+            };
 
             // Dropdown click - event delegation
-            this.el.addEventListener('mousedown', (e) => {
+            this.mousedownHandler = (e) => {
               const option = e.target.closest('[data-index]');
               if (option && option.dataset.disabled !== 'true') {
                 e.preventDefault();
                 const index = parseInt(option.dataset.index);
                 this.pushEventTo(this.el, 'select', { index });
               }
-            });
+            };
 
             // Dropdown hover
-            this.el.addEventListener('mousemove', (e) => {
+            this.mousemoveHandler = (e) => {
               const option = e.target.closest('[data-index]');
               if (option && option.dataset.disabled !== 'true') {
                 this.activeIndex = parseInt(option.dataset.index);
                 this.updateActiveOption();
               }
-            });
+            };
+
+            this.el.addEventListener('input', this.inputHandler);
+            this.el.addEventListener('focus', this.focusHandler, true);
+            this.el.addEventListener('blur', this.blurHandler, true);
+            this.el.addEventListener('keydown', this.keydownHandler);
+            this.el.addEventListener('mousedown', this.mousedownHandler);
+            this.el.addEventListener('mousemove', this.mousemoveHandler);
           },
 
           listenToServer() {
@@ -1374,6 +1370,17 @@ defmodule SutraUI.LiveSelect do
               this.openDropdown();
               this.pendingSearch = false;
             }
+          },
+
+          destroyed() {
+            clearTimeout(this.debounceTimer);
+            clearTimeout(this.blurTimer);
+            this.el.removeEventListener('input', this.inputHandler);
+            this.el.removeEventListener('focus', this.focusHandler, true);
+            this.el.removeEventListener('blur', this.blurHandler, true);
+            this.el.removeEventListener('keydown', this.keydownHandler);
+            this.el.removeEventListener('mousedown', this.mousedownHandler);
+            this.el.removeEventListener('mousemove', this.mousemoveHandler);
           },
 
           reconnected() {

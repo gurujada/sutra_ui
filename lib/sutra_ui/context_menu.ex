@@ -1,8 +1,8 @@
 defmodule SutraUI.ContextMenu do
   @moduledoc """
-  A right-click or long-press context menu.
+  A right-click and keyboard-accessible context menu.
 
-  Renders a trigger that opens a positioned menu on right-click. Supports
+  Renders a trigger that opens a positioned menu on right-click or keyboard input. Supports
   nested submenus, checkboxes, radio groups, shortcuts, labels, and
   separators — following the shadcn/ui composition model.
 
@@ -38,7 +38,7 @@ defmodule SutraUI.ContextMenu do
 
   - Trigger has `aria-haspopup="menu"` and `aria-expanded`.
   - Menu uses `role="menu"`, items use `role="menuitem"`.
-  - Full keyboard navigation: ArrowUp/Down, Home/End, Enter/Space, Escape.
+  - Keyboard navigation: ArrowUp/Down, Home/End, Enter/Space, Escape.
   - Submenu: Right arrow opens, Left arrow / Escape closes.
   - Checkbox items use `role="menuitemcheckbox"` with `aria-checked`.
   - Radio items use `role="menuitemradio"` with `aria-checked`.
@@ -112,22 +112,30 @@ defmodule SutraUI.ContextMenu do
             }
           };
 
-          this.trigger.addEventListener('contextmenu', (e) => this.openAtEvent(e));
-          this.trigger.addEventListener('keydown', (e) => this.handleTriggerKey(e));
+          this.triggerContextMenuHandler = (e) => this.openAtEvent(e);
+          this.triggerKeyHandler = (e) => this.handleTriggerKey(e);
+          this.menuKeyHandler = (e) => this.handleMenuKey(e);
+          this.menuMouseMoveHandler = (e) => this.handleMouseMove(e);
+          this.menuMouseLeaveHandler = () => this.setActive(-1);
+          this.menuClickHandler = (e) => {
+            if (e.target.closest('[role^="menuitem"]') && !e.target.closest('.context-menu-sub-trigger')) {
+              this.close();
+            }
+          };
+          this.submenuHandlers = [];
+
+          this.trigger.addEventListener('contextmenu', this.triggerContextMenuHandler);
+          this.trigger.addEventListener('keydown', this.triggerKeyHandler);
           document.addEventListener('pointerdown', this.documentPointerHandler);
           document.addEventListener('contextmenu', this.documentContextMenuHandler);
           document.addEventListener('keydown', this.documentKeyHandler);
           window.addEventListener('scroll', this.dismissHandler, true);
           window.addEventListener('resize', this.dismissHandler);
-          this.menu.addEventListener('keydown', (e) => this.handleMenuKey(e));
-          this.menu.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-          this.menu.addEventListener('pointerover', (e) => this.handleMouseMove(e));
-          this.menu.addEventListener('mouseleave', () => this.setActive(-1));
-          this.menu.addEventListener('click', (e) => {
-            if (e.target.closest('[role^="menuitem"]') && !e.target.closest('.context-menu-sub-trigger')) {
-              this.close();
-            }
-          });
+          this.menu.addEventListener('keydown', this.menuKeyHandler);
+          this.menu.addEventListener('mousemove', this.menuMouseMoveHandler);
+          this.menu.addEventListener('pointerover', this.menuMouseMoveHandler);
+          this.menu.addEventListener('mouseleave', this.menuMouseLeaveHandler);
+          this.menu.addEventListener('click', this.menuClickHandler);
 
           // Submenu hover handling
           this.el.querySelectorAll('.context-menu-sub').forEach(sub => {
@@ -135,20 +143,43 @@ defmodule SutraUI.ContextMenu do
             const subContent = sub.querySelector('.context-menu-sub-content');
             if (!subTrigger || !subContent) return;
 
-            subTrigger.addEventListener('mouseenter', () => {
+            const mouseEnter = () => {
               const idx = this.items().indexOf(subTrigger);
               if (idx > -1) this.setActive(idx);
               this.openSubmenuEl(sub);
-            });
-            sub.addEventListener('mouseleave', () => this.closeSubmenuEl(sub));
-            subContent.addEventListener('keydown', (e) => this.handleSubmenuKey(e, sub));
-            subContent.addEventListener('mousemove', (e) => this.handleSubmenuMouseMove(e, sub));
-            subContent.addEventListener('pointerover', (e) => this.handleSubmenuMouseMove(e, sub));
-            subContent.addEventListener('mouseleave', () => this.clearSubmenuActive(sub));
+            };
+            const mouseLeave = () => this.closeSubmenuEl(sub);
+            const keydown = (e) => this.handleSubmenuKey(e, sub);
+            const mouseMove = (e) => this.handleSubmenuMouseMove(e, sub);
+            const clearActive = () => this.clearSubmenuActive(sub);
+
+            subTrigger.addEventListener('mouseenter', mouseEnter);
+            sub.addEventListener('mouseleave', mouseLeave);
+            subContent.addEventListener('keydown', keydown);
+            subContent.addEventListener('mousemove', mouseMove);
+            subContent.addEventListener('pointerover', mouseMove);
+            subContent.addEventListener('mouseleave', clearActive);
+            this.submenuHandlers.push({ sub, subTrigger, subContent, mouseEnter, mouseLeave, keydown, mouseMove, clearActive });
           });
         },
 
         destroyed() {
+          this.trigger?.removeEventListener('contextmenu', this.triggerContextMenuHandler);
+          this.trigger?.removeEventListener('keydown', this.triggerKeyHandler);
+          this.menu?.removeEventListener('keydown', this.menuKeyHandler);
+          this.menu?.removeEventListener('mousemove', this.menuMouseMoveHandler);
+          this.menu?.removeEventListener('pointerover', this.menuMouseMoveHandler);
+          this.menu?.removeEventListener('mouseleave', this.menuMouseLeaveHandler);
+          this.menu?.removeEventListener('click', this.menuClickHandler);
+          this.submenuHandlers?.forEach(({ sub, subTrigger, subContent, mouseEnter, mouseLeave, keydown, mouseMove, clearActive }) => {
+            subTrigger.removeEventListener('mouseenter', mouseEnter);
+            sub.removeEventListener('mouseleave', mouseLeave);
+            subContent.removeEventListener('keydown', keydown);
+            subContent.removeEventListener('mousemove', mouseMove);
+            subContent.removeEventListener('pointerover', mouseMove);
+            subContent.removeEventListener('mouseleave', clearActive);
+          });
+          this.submenuHandlers = [];
           document.removeEventListener('pointerdown', this.documentPointerHandler);
           document.removeEventListener('contextmenu', this.documentContextMenuHandler);
           document.removeEventListener('keydown', this.documentKeyHandler);

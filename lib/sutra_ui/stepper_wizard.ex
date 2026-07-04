@@ -88,7 +88,6 @@ defmodule SutraUI.StepperWizard do
           <span
             id={"#{@id}-step-#{step.id}"}
             class="stepper-wizard-trigger"
-            aria-controls={"#{@id}-panel"}
             aria-current={step.current? && "step"}
             data-stepper-wizard-trigger
             data-step-id={step.id}
@@ -105,7 +104,6 @@ defmodule SutraUI.StepperWizard do
       <section
         id={"#{@id}-panel"}
         class={["stepper-wizard-panel", @panel_class]}
-        role="tabpanel"
         aria-labelledby={"#{@id}-step-#{@steps.current.id}"}
         tabindex="0"
       >

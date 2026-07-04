@@ -23,7 +23,10 @@ defmodule SutraUI.Tabs do
         </:panel>
         <:panel value="notifications">
           <h3>Notification Preferences</h3>
-          <.switch name="email_notifications" label="Email notifications" />
+          <div class="flex items-center gap-2">
+            <.switch id="email-notifications" name="email_notifications" />
+            <.label for="email-notifications">Email notifications</.label>
+          </div>
         </:panel>
       </.tabs>
 
@@ -186,8 +189,14 @@ defmodule SutraUI.Tabs do
     <script :type={ColocatedHook} name=".Tabs" runtime>
       {
         mounted() {
-          this.el.addEventListener('keydown', (e) => this.handleKeydown(e));
+          this.keydownHandler = (e) => this.handleKeydown(e);
+          this.el.addEventListener('keydown', this.keydownHandler);
         },
+
+        destroyed() {
+          this.el.removeEventListener('keydown', this.keydownHandler);
+        },
+
         handleKeydown(e) {
           const tabs = Array.from(this.el.querySelectorAll('[role="tab"]:not([disabled])'));
           const currentIndex = tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true');

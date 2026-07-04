@@ -2,9 +2,9 @@ defmodule SutraUI.Select do
   @moduledoc """
   A custom select component with search/filter capabilities (combobox pattern).
 
-  Provides a fully accessible dropdown select with keyboard navigation, optional
-  search filtering, option grouping, and form integration. Use this instead of
-  native `<select>` when you need custom styling or searchable options.
+  Provides a keyboard-accessible custom dropdown select with optional search
+  filtering, option grouping, and form integration. Use this instead of native
+  `<select>` when you need custom styling or searchable options.
 
   ## Examples
 
@@ -72,7 +72,7 @@ defmodule SutraUI.Select do
   The select renders a hidden `<input>` with the selected value, making it
   compatible with Phoenix forms and `phx-change` events:
 
-      <.simple_form for={@form} phx-change="validate" phx-submit="save">
+      <.form for={@form} class="form" phx-change="validate" phx-submit="save">
         <.select
           id="role-select"
           name={@form[:role].name}
@@ -81,7 +81,7 @@ defmodule SutraUI.Select do
           <.select_option value="admin" label="Administrator" />
           <.select_option value="user" label="User" />
         </.select>
-      </.simple_form>
+      </.form>
 
   ## Colocated Hook
 
@@ -96,7 +96,7 @@ defmodule SutraUI.Select do
 
   ## Accessibility
 
-  - Implements WAI-ARIA combobox pattern
+  - Uses combobox/listbox-style ARIA roles and attributes
   - `role="listbox"` for the options container
   - `role="option"` for each selectable item
   - `aria-selected` indicates current selection
@@ -312,6 +312,8 @@ defmodule SutraUI.Select do
 
           updated() {
             // Re-query ALL DOM refs (morphdom may have replaced inner elements)
+            const oldTrigger = this.trigger;
+            const oldListbox = this.listbox;
             const oldFilter = this.filter;
             this.trigger = this.el.querySelector(':scope > button');
             this.selectedLabel = this.trigger.querySelector('[data-selected-label]');
@@ -325,14 +327,28 @@ defmodule SutraUI.Select do
             this.options = this.allOptions.filter(opt => opt.getAttribute('aria-disabled') !== 'true');
             this.visibleOptions = [...this.options];
 
+            if (this.trigger !== oldTrigger) {
+              oldTrigger?.removeEventListener('click', this.handleTriggerClick);
+              oldTrigger?.removeEventListener('keydown', this.handleTriggerKeydown);
+              this.trigger.addEventListener('click', this.handleTriggerClick);
+              this.trigger.addEventListener('keydown', this.handleTriggerKeydown);
+            }
+
+            if (this.listbox !== oldListbox) {
+              oldListbox?.removeEventListener('click', this.handleListboxClick);
+              oldListbox?.removeEventListener('mousemove', this.handleListboxMousemove);
+              oldListbox?.removeEventListener('mouseleave', this.handleListboxMouseleave);
+              this.listbox.addEventListener('click', this.handleListboxClick);
+              this.listbox.addEventListener('mousemove', this.handleListboxMousemove);
+              this.listbox.addEventListener('mouseleave', this.handleListboxMouseleave);
+            }
+
             // Re-register filter listeners if the element was replaced by morphdom
-            if (this.filter && this.filter !== oldFilter) {
-              this.filter.addEventListener('input', (e) => {
-                e.stopPropagation();
-                this.filterOptions();
-              });
-              this.filter.addEventListener('change', (e) => e.stopPropagation());
-              this.filter.addEventListener('keydown', (e) => this.handleKeyNavigation(e));
+            if (this.filter !== oldFilter) {
+              this.removeFilterListeners(oldFilter);
+              if (this.filter) {
+                this.addFilterListeners(this.filter);
+              }
             }
 
             // Sync value from server
@@ -343,6 +359,7 @@ defmodule SutraUI.Select do
             if (this._wasOpen) {
               this.popover.setAttribute('aria-hidden', 'false');
               this.trigger.setAttribute('aria-expanded', 'true');
+              this.filter?.setAttribute('aria-expanded', 'true');
               if (this.filter) {
                 this.filter.value = this._filterValue;
                 if (this._filterValue) {
@@ -355,6 +372,12 @@ defmodule SutraUI.Select do
 
           destroyed() {
             document.removeEventListener('click', this.handleOutsideClick);
+            this.trigger?.removeEventListener('click', this.handleTriggerClick);
+            this.trigger?.removeEventListener('keydown', this.handleTriggerKeydown);
+            this.listbox?.removeEventListener('click', this.handleListboxClick);
+            this.listbox?.removeEventListener('mousemove', this.handleListboxMousemove);
+            this.listbox?.removeEventListener('mouseleave', this.handleListboxMouseleave);
+            this.removeFilterListeners(this.filter);
           },
 
           initSelect() {
@@ -366,7 +389,7 @@ defmodule SutraUI.Select do
             this.filter = this.el.querySelector('input[type="text"]');
 
             if (!this.trigger || !this.popover || !this.listbox || !this.input) {
-              console.error('PhxUI.Select: Missing required elements');
+              console.error('SutraUI.Select: Missing required elements');
               return;
             }
 
@@ -375,19 +398,26 @@ defmodule SutraUI.Select do
             this.visibleOptions = [...this.options];
             this.activeIndex = -1;
 
-            this.trigger.addEventListener('click', () => this.togglePopover());
-            this.trigger.addEventListener('keydown', (e) => this.handleKeyNavigation(e));
-            this.listbox.addEventListener('click', (e) => this.handleOptionClick(e));
-            this.listbox.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-            this.listbox.addEventListener('mouseleave', () => this.handleMouseLeave());
+            this.handleTriggerClick = () => this.togglePopover();
+            this.handleTriggerKeydown = (e) => this.handleKeyNavigation(e);
+            this.handleListboxClick = (e) => this.handleOptionClick(e);
+            this.handleListboxMousemove = (e) => this.handleMouseMove(e);
+            this.handleListboxMouseleave = () => this.handleMouseLeave();
+            this.handleFilterInput = (e) => {
+              e.stopPropagation(); // Prevent bubbling to parent form's phx-change
+              this.filterOptions();
+            };
+            this.handleFilterChange = (e) => e.stopPropagation();
+            this.handleFilterKeydown = (e) => this.handleKeyNavigation(e);
+
+            this.trigger.addEventListener('click', this.handleTriggerClick);
+            this.trigger.addEventListener('keydown', this.handleTriggerKeydown);
+            this.listbox.addEventListener('click', this.handleListboxClick);
+            this.listbox.addEventListener('mousemove', this.handleListboxMousemove);
+            this.listbox.addEventListener('mouseleave', this.handleListboxMouseleave);
 
             if (this.filter) {
-              this.filter.addEventListener('input', (e) => {
-                e.stopPropagation(); // Prevent bubbling to parent form's phx-change
-                this.filterOptions();
-              });
-              this.filter.addEventListener('change', (e) => e.stopPropagation());
-              this.filter.addEventListener('keydown', (e) => this.handleKeyNavigation(e));
+              this.addFilterListeners(this.filter);
             }
 
             this.handleOutsideClick = (e) => {
@@ -414,17 +444,18 @@ defmodule SutraUI.Select do
             }
 
             this.activeIndex = index;
+            const activeTargets = [this.trigger, this.filter].filter(Boolean);
 
             if (this.activeIndex > -1) {
               const activeOption = this.options[this.activeIndex];
               activeOption.classList.add('bg-accent');
               if (activeOption.id) {
-                this.trigger.setAttribute('aria-activedescendant', activeOption.id);
+                activeTargets.forEach((target) => target.setAttribute('aria-activedescendant', activeOption.id));
               } else {
-                this.trigger.removeAttribute('aria-activedescendant');
+                activeTargets.forEach((target) => target.removeAttribute('aria-activedescendant'));
               }
             } else {
-              this.trigger.removeAttribute('aria-activedescendant');
+              activeTargets.forEach((target) => target.removeAttribute('aria-activedescendant'));
             }
           },
 
@@ -440,6 +471,7 @@ defmodule SutraUI.Select do
 
               if (triggerEvent) {
                 this.input.dispatchEvent(new Event('input', { bubbles: true }));
+                this.input.dispatchEvent(new Event('change', { bubbles: true }));
               }
             }
           },
@@ -456,12 +488,14 @@ defmodule SutraUI.Select do
             if (focusOnTrigger) this.trigger.focus();
             this.popover.setAttribute('aria-hidden', 'true');
             this.trigger.setAttribute('aria-expanded', 'false');
+            this.filter?.setAttribute('aria-expanded', 'false');
             this.setActiveOption(-1);
           },
 
           openPopover() {
             this.popover.setAttribute('aria-hidden', 'false');
             this.trigger.setAttribute('aria-expanded', 'true');
+            this.filter?.setAttribute('aria-expanded', 'true');
 
             if (this.filter) {
               setTimeout(() => this.filter.focus(), 0);
@@ -522,6 +556,11 @@ defmodule SutraUI.Select do
 
           handleKeyNavigation(event) {
             const isPopoverOpen = this.popover.getAttribute('aria-hidden') === 'false';
+            const isSpace = event.key === ' ' || event.key === 'Spacebar';
+
+            if (event.target === this.filter && isSpace) {
+              return;
+            }
 
             // Handle letter navigation when popover is open (but NOT when typing in search)
             if (isPopoverOpen && event.key.length === 1 && /[a-zA-Z]/.test(event.key) && event.target !== this.filter) {
@@ -529,7 +568,7 @@ defmodule SutraUI.Select do
               return;
             }
 
-            if (!['ArrowDown', 'ArrowUp', 'Enter', 'Home', 'End', 'Escape'].includes(event.key)) {
+            if (!['ArrowDown', 'ArrowUp', 'Enter', 'Home', 'End', 'Escape'].includes(event.key) && !isSpace) {
               return;
             }
 
@@ -548,7 +587,7 @@ defmodule SutraUI.Select do
               return;
             }
 
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' || isSpace) {
               if (this.activeIndex > -1) {
                 this.selectOption(this.options[this.activeIndex]);
               }
@@ -624,6 +663,19 @@ defmodule SutraUI.Select do
             if (clickedOption && clickedOption.getAttribute('aria-disabled') !== 'true') {
               this.selectOption(clickedOption);
             }
+          },
+
+          addFilterListeners(filter) {
+            filter.addEventListener('input', this.handleFilterInput);
+            filter.addEventListener('change', this.handleFilterChange);
+            filter.addEventListener('keydown', this.handleFilterKeydown);
+          },
+
+          removeFilterListeners(filter) {
+            if (!filter) return;
+            filter.removeEventListener('input', this.handleFilterInput);
+            filter.removeEventListener('change', this.handleFilterChange);
+            filter.removeEventListener('keydown', this.handleFilterKeydown);
           }
         }
       </script>

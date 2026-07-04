@@ -58,7 +58,7 @@ defmodule SutraUI.Flash do
   | Feature | Implementation |
   |---------|----------------|
   | Role | `role="alert"` announces content to screen readers immediately |
-  | Close button | `type="button"` with `aria-label="close"` |
+  | Close button | `type="button"` with `aria-label="Close"` |
   | Icons | Decorative icons hidden from screen readers via `aria-hidden` |
   | Dismissal | Click anywhere on flash or close button to dismiss |
 
@@ -200,7 +200,7 @@ defmodule SutraUI.Flash do
           <% end %>
         </p>
       </div>
-      <button type="button" class="flash-close" aria-label="close">
+      <button type="button" class="flash-close" aria-label="Close">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"

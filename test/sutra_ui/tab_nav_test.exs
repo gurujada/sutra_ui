@@ -88,7 +88,7 @@ defmodule SutraUI.TabNavTest do
   end
 
   describe "tab_nav/1 accessibility" do
-    test "has role=tablist on container" do
+    test "renders a navigation landmark" do
       assigns = %{}
 
       html =
@@ -98,24 +98,10 @@ defmodule SutraUI.TabNavTest do
         </TabNav.tab_nav>
         """)
 
-      assert html =~ ~s(role="tablist")
+      assert html =~ "<nav"
     end
 
-    test "has role=tab on each tab" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <TabNav.tab_nav id="test-nav">
-          <:tab patch="/overview" active={true}>Overview</:tab>
-          <:tab patch="/members" active={false}>Members</:tab>
-        </TabNav.tab_nav>
-        """)
-
-      assert html =~ ~s(role="tab")
-    end
-
-    test "has aria-selected on tabs" do
+    test "does not expose routed navigation as an ARIA tab widget" do
       assigns = %{}
 
       html =
@@ -126,11 +112,26 @@ defmodule SutraUI.TabNavTest do
         </TabNav.tab_nav>
         """)
 
-      assert html =~ ~s(aria-selected="true")
-      assert html =~ ~s(aria-selected="false")
+      refute html =~ ~s(role="tablist")
+      refute html =~ ~s(role="tab")
     end
 
-    test "has aria-label on tablist" do
+    test "marks the active page with aria-current" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <TabNav.tab_nav id="test-nav">
+          <:tab patch="/overview" active={true}>Overview</:tab>
+          <:tab patch="/members" active={false}>Members</:tab>
+        </TabNav.tab_nav>
+        """)
+
+      assert html =~ ~s(aria-current="page")
+      refute html =~ "aria-selected"
+    end
+
+    test "has aria-label on navigation" do
       assigns = %{}
 
       html =
@@ -235,6 +236,14 @@ defmodule SutraUI.TabNavTest do
         """)
 
       assert html =~ "phx-hook"
+    end
+
+    test "hook activates focused tabs with Enter and Space" do
+      source = File.read!("lib/sutra_ui/tab_nav.ex")
+
+      assert source =~ "case 'Enter':"
+      assert source =~ "case ' ':"
+      assert source =~ "closest('.tab-nav-item')?.click()"
     end
   end
 end

@@ -32,7 +32,7 @@ defmodule SutraUI.NavPills do
   ## Accessibility
 
   - Desktop pills use `role="navigation"` with `aria-label`
-  - Mobile dropdown uses proper ARIA attributes
+  - Mobile dropdown uses ARIA attributes for expanded state and menu ownership
   - Active item is clearly indicated visually and semantically
   """
 
@@ -78,6 +78,7 @@ defmodule SutraUI.NavPills do
           <.link
             patch={item.patch}
             class={["nav-pills-item", item.label == @active_label && "nav-pills-item-active"]}
+            aria-current={item.label == @active_label && "page"}
           >
             {if item.inner_block, do: render_slot(item)}
             {item.label}
@@ -89,9 +90,11 @@ defmodule SutraUI.NavPills do
       <div class="nav-pills-mobile">
         <button
           type="button"
+          id={"#{@id}-mobile-trigger"}
           class="nav-pills-mobile-trigger"
-          aria-haspopup="true"
+          aria-haspopup="menu"
           aria-expanded="false"
+          aria-controls={"#{@id}-mobile-menu"}
         >
           {@active_label}
           <svg
@@ -110,7 +113,13 @@ defmodule SutraUI.NavPills do
             <path d="m6 9 6 6 6-6" />
           </svg>
         </button>
-        <div class="nav-pills-mobile-menu" role="menu" aria-hidden="true">
+        <div
+          id={"#{@id}-mobile-menu"}
+          class="nav-pills-mobile-menu"
+          role="menu"
+          aria-hidden="true"
+          aria-labelledby={"#{@id}-mobile-trigger"}
+        >
           <%= for item <- @item do %>
             <.link
               patch={item.patch}
@@ -119,6 +128,7 @@ defmodule SutraUI.NavPills do
                 "nav-pills-mobile-item",
                 item.label == @active_label && "nav-pills-mobile-item-active"
               ]}
+              aria-current={item.label == @active_label && "page"}
             >
               {if item.inner_block, do: render_slot(item)}
               {item.label}
@@ -135,7 +145,14 @@ defmodule SutraUI.NavPills do
           this.menu = this.el.querySelector('.nav-pills-mobile-menu');
           
           if (this.trigger && this.menu) {
-            this.trigger.addEventListener('click', () => this.toggle());
+            this.triggerClickHandler = () => this.toggle();
+            this.menuClickHandler = (e) => {
+              if (e.target.closest('[role="menuitem"]')) {
+                this.close();
+              }
+            };
+
+            this.trigger.addEventListener('click', this.triggerClickHandler);
             
             this.outsideClickHandler = (e) => {
               if (!this.el.contains(e.target) && this.isOpen()) {
@@ -145,11 +162,7 @@ defmodule SutraUI.NavPills do
             document.addEventListener('click', this.outsideClickHandler);
             
             // Close on item click
-            this.menu.addEventListener('click', (e) => {
-              if (e.target.closest('[role="menuitem"]')) {
-                this.close();
-              }
-            });
+            this.menu.addEventListener('click', this.menuClickHandler);
           }
         },
         
@@ -157,6 +170,8 @@ defmodule SutraUI.NavPills do
           if (this.outsideClickHandler) {
             document.removeEventListener('click', this.outsideClickHandler);
           }
+          this.trigger?.removeEventListener('click', this.triggerClickHandler);
+          this.menu?.removeEventListener('click', this.menuClickHandler);
         },
         
         isOpen() {

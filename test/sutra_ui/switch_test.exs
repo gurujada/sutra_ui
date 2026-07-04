@@ -65,10 +65,9 @@ defmodule SutraUI.SwitchTest do
         """)
 
       assert html =~ "checked"
-      assert html =~ ~s(aria-checked="true")
     end
 
-    test "renders aria-checked=false when not checked" do
+    test "does not render checked when not checked" do
       assigns = %{}
 
       html =
@@ -76,7 +75,6 @@ defmodule SutraUI.SwitchTest do
         <Switch.switch name="notifications" checked={false} />
         """)
 
-      assert html =~ ~s(aria-checked="false")
       refute html =~ ~r/<input[^>]*\schecked[\s>=]/
     end
   end

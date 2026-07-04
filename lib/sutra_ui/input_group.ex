@@ -160,9 +160,9 @@ defmodule SutraUI.InputGroup do
   def input_group_horizontal(assigns) do
     ~H"""
     <div class={["input-group-horizontal", @class]} {@rest}>
-      <label :for={label <- @prefix_label} class="input-group-label input-group-label-start">
+      <span :for={label <- @prefix_label} class="input-group-label input-group-label-start">
         {render_slot(label)}
-      </label>
+      </span>
 
       {render_slot(@inner_block)}
 

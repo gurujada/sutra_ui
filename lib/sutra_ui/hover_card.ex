@@ -16,7 +16,7 @@ defmodule SutraUI.HoverCard do
           <.button variant="link">@jane</.button>
         </:trigger>
         <div class="flex items-center gap-3">
-          <.avatar src="/jane.jpg" fallback="JC" />
+          <.avatar src="/jane.jpg" initials="JC" />
           <div>
             <p class="font-medium">Jane Cooper</p>
             <p class="text-sm text-muted-foreground">@jane · Designer</p>
@@ -27,7 +27,7 @@ defmodule SutraUI.HoverCard do
       <.hover_card id="release-card" side="top" align="start">
         <:trigger>Release notes</:trigger>
         <div>
-          <p class="font-medium">v0.3.0</p>
+          <p class="font-medium">v0.4.0</p>
           <p class="text-sm text-muted-foreground">New display primitives.</p>
         </div>
       </.hover_card>
@@ -51,8 +51,8 @@ defmodule SutraUI.HoverCard do
   ## Accessibility
 
   - The trigger sets `aria-expanded` and `aria-describedby` linking to the card.
-  - The card uses `role="tooltip"` (per WAI-ARIA hovercard pattern) and toggles
-    `aria-hidden`.
+  - The card uses `role="tooltip"` for non-modal descriptive preview content and
+    toggles `aria-hidden`.
   - Opens on both `mouseenter` and `focusin` — keyboard users get the same
     preview as mouse users.
   - Escape key closes the card.

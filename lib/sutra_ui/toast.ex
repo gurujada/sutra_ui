@@ -2,9 +2,9 @@ defmodule SutraUI.Toast do
   @moduledoc """
   Toast notification component for displaying temporary messages.
 
-  Toasts provide brief, non-blocking notifications that automatically disappear.
-  Use them for success confirmations, error alerts, or informational messages
-  that don't require user action.
+  Toasts provide brief, non-blocking notifications. Use them for success
+  confirmations, error alerts, or informational messages that don't require
+  user action.
 
   ## Examples
 
@@ -156,25 +156,39 @@ defmodule SutraUI.Toast do
         showToast(variant, title, description, duration = 5000) {
           const container = this.el;
           const id = `toast-${Date.now()}`;
+          const safeVariant = ['default', 'success', 'destructive'].includes(variant) ? variant : 'default';
           const toast = document.createElement('div');
           toast.id = id;
-          toast.className = `toast toast-${variant || 'default'}`;
+          toast.className = safeVariant === 'default' ? 'toast' : `toast toast-${safeVariant}`;
           toast.setAttribute('role', 'status');
           toast.setAttribute('aria-live', 'polite');
-          
-          toast.innerHTML = `
-            <div class="toast-content">
-              ${title ? `<div class="toast-title">${title}</div>` : ''}
-              ${description ? `<div class="toast-description">${description}</div>` : ''}
-            </div>
-            <button class="toast-close" aria-label="Close">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-          `;
-          
-          const closeBtn = toast.querySelector('.toast-close');
+
+          const content = document.createElement('div');
+          content.className = 'toast-content';
+
+          if (title) {
+            const titleEl = document.createElement('div');
+            titleEl.className = 'toast-title';
+            titleEl.textContent = title;
+            content.appendChild(titleEl);
+          }
+
+          if (description) {
+            const descriptionEl = document.createElement('div');
+            descriptionEl.className = 'toast-description';
+            descriptionEl.textContent = description;
+            content.appendChild(descriptionEl);
+          }
+
+          const closeBtn = document.createElement('button');
+          closeBtn.type = 'button';
+          closeBtn.className = 'toast-close';
+          closeBtn.setAttribute('aria-label', 'Close');
+          closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
           closeBtn.addEventListener('click', () => this.dismissToast(toast));
-          
+
+          toast.appendChild(content);
+          toast.appendChild(closeBtn);
           container.appendChild(toast);
           
           // Trigger animation
@@ -203,7 +217,7 @@ defmodule SutraUI.Toast do
 
   ## Examples
 
-      <.toast variant="success">
+      <.toast id="success-toast" variant="success">
         <:title>Success!</:title>
         <:description>Your changes have been saved.</:description>
       </.toast>

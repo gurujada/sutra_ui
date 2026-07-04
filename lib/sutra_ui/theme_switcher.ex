@@ -2,16 +2,15 @@ defmodule SutraUI.ThemeSwitcher do
   @moduledoc """
   A component that allows users to toggle between light and dark themes.
 
-  The theme switcher manages theme persistence in localStorage and respects
-  the user's system preferences (prefers-color-scheme). It toggles the `.dark`
-  class on the document root element.
+  The theme switcher dispatches `sutra-ui:set-theme` events. With the
+  recommended root-layout listener, theme preference is persisted in
+  localStorage and system preference is used as the initial fallback.
 
   ## Theme Management
 
   The theme switcher integrates with a theme system that:
   - Persists theme preference in localStorage (key: 'sutra-ui:theme')
   - Applies theme before page load to prevent flash of unstyled content
-  - Syncs theme changes across browser tabs
   - Respects system preferences (prefers-color-scheme) as fallback
 
   The component dispatches `sutra-ui:set-theme` events to integrate with this system.
@@ -75,7 +74,8 @@ defmodule SutraUI.ThemeSwitcher do
   - `id` (required) - Unique identifier for the theme switcher. Required for the JavaScript hook.
   - `variant` - Button variant: "primary", "secondary", "destructive", "outline", "ghost", "link". Defaults to "outline".
   - `size` - Button size: "default", "sm", "lg", "icon". Defaults to "icon".
-  - `tooltip` - Tooltip text shown on hover. Defaults to "Toggle theme".
+  - `tooltip` - Optional tooltip text shown on hover. The button's `aria-label`
+    falls back to "Toggle theme" when no tooltip is provided.
   - `tooltip_side` - Tooltip position: "top", "bottom", "left", "right". Defaults to "bottom".
   - `icon_class` - CSS class for icon sizing (e.g., "size-4", "size-5"). Defaults to "size-4".
   - `class` - Additional CSS classes to apply to the button.
@@ -97,7 +97,7 @@ defmodule SutraUI.ThemeSwitcher do
 
   attr(:tooltip, :string,
     default: nil,
-    doc: "Tooltip text displayed on hover (optional)"
+    doc: "Optional tooltip text displayed on hover"
   )
 
   attr(:tooltip_side, :string,
@@ -174,11 +174,17 @@ defmodule SutraUI.ThemeSwitcher do
         mounted() {
           // Handle click events to toggle theme
           // Check current theme and toggle to the opposite
-          this.el.addEventListener('click', () => {
+          this.clickHandler = () => {
             const isDark = document.documentElement.classList.contains('dark');
             const newTheme = isDark ? 'light' : 'dark';
             window.dispatchEvent(new CustomEvent('sutra-ui:set-theme', { detail: { theme: newTheme } }));
-          });
+          };
+
+          this.el.addEventListener('click', this.clickHandler);
+        },
+
+        destroyed() {
+          this.el.removeEventListener('click', this.clickHandler);
         }
       }
     </script>

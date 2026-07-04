@@ -146,18 +146,7 @@ defmodule Mix.Tasks.SutraUi.Install do
           "#{IO.ANSI.yellow()}[skip]#{IO.ANSI.reset()} Web module already has Sutra UI"
         )
       else
-        # Add use SutraUI to html_helpers
-        new_content =
-          if String.contains?(content, "defp html_helpers") do
-            String.replace(
-              content,
-              ~r/(defp html_helpers.*?do\s+quote do\s+)/s,
-              "\\1use SutraUI\n        ",
-              global: false
-            )
-          else
-            content
-          end
+        new_content = inject_sutra_ui(content)
 
         if new_content != content do
           if dry_run? do
@@ -206,5 +195,16 @@ defmodule Mix.Tasks.SutraUi.Install do
       # Try lib/app_name_web.ex pattern
       nil
     end
+  end
+
+  defp inject_sutra_ui(content) do
+    Regex.replace(
+      ~r/(defp html_helpers\b.*?do\s+quote do)(\r?\n)([ \t]*)/s,
+      content,
+      fn _, prefix, newline, indent ->
+        "#{prefix}#{newline}#{indent}use SutraUI#{newline}#{indent}"
+      end,
+      global: false
+    )
   end
 end

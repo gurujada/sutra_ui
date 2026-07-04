@@ -13,7 +13,7 @@ defmodule SutraUI.Popover do
 
       <.popover id="user-popover">
         <:trigger>
-          <button class="btn">User Info</button>
+          User Info
         </:trigger>
         <div class="p-4">
           <p>User details go here</p>
@@ -23,7 +23,7 @@ defmodule SutraUI.Popover do
 
       <.popover id="settings-popover" side="auto">
         <:trigger>
-          <button class="btn">Settings</button>
+          Settings
         </:trigger>
         Settings content...
       </.popover>
@@ -32,10 +32,13 @@ defmodule SutraUI.Popover do
 
       <.popover id="toggle-popover">
         <:trigger let={open}>
-          <button class="btn">{if open, do: "Close", else: "Open"} Popover</button>
+          {if open, do: "Close", else: "Open"} Popover
         </:trigger>
         Popover content...
       </.popover>
+
+  The trigger slot is rendered inside the component's trigger button. Pass label,
+  icon, or inline content rather than another interactive element.
 
   ## Accessibility
 
@@ -43,7 +46,7 @@ defmodule SutraUI.Popover do
   - Popover content is hidden from screen readers when closed
   - Escape key closes the popover
   - Click outside closes the popover
-  - Focus is managed appropriately
+  - Escape returns focus to the trigger
   """
 
   use Phoenix.Component
@@ -139,9 +142,10 @@ defmodule SutraUI.Popover do
           
           if (this.side === 'auto') {
             // Calculate optimal position before showing
-            this.trigger.addEventListener('click', () => {
+            this.positionClickHandler = () => {
               this.calculatePosition();
-            });
+            };
+            this.trigger.addEventListener('click', this.positionClickHandler);
           }
           
           // Watch for aria-expanded changes to toggle button text
@@ -159,6 +163,7 @@ defmodule SutraUI.Popover do
         destroyed() {
           document.removeEventListener('click', this.outsideClickHandler);
           document.removeEventListener('keydown', this.escapeHandler);
+          this.trigger?.removeEventListener('click', this.positionClickHandler);
           this.observer?.disconnect();
         },
         
@@ -215,7 +220,7 @@ defmodule SutraUI.Popover do
 
   ## Examples
 
-      <button phx-click={PhxUI.Popover.show_popover("my-popover")}>Open</button>
+      <button phx-click={SutraUI.Popover.show_popover("my-popover")}>Open</button>
   """
   def show_popover(js \\ %JS{}, id) when is_binary(id) do
     js
@@ -228,7 +233,7 @@ defmodule SutraUI.Popover do
 
   ## Examples
 
-      <button phx-click={PhxUI.Popover.hide_popover("my-popover")}>Close</button>
+      <button phx-click={SutraUI.Popover.hide_popover("my-popover")}>Close</button>
   """
   def hide_popover(js \\ %JS{}, id) when is_binary(id) do
     js
@@ -241,7 +246,7 @@ defmodule SutraUI.Popover do
 
   ## Examples
 
-      <button phx-click={PhxUI.Popover.toggle_popover("my-popover")}>Toggle</button>
+      <button phx-click={SutraUI.Popover.toggle_popover("my-popover")}>Toggle</button>
   """
   def toggle_popover(js \\ %JS{}, id) when is_binary(id) do
     js

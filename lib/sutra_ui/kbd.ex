@@ -22,8 +22,8 @@ defmodule SutraUI.Kbd do
 
   ## Accessibility
 
-  - Uses the semantic `<kbd>` HTML element which is recognized by screen readers
-  - Screen readers will announce the content as keyboard input
+  - Uses the semantic `<kbd>` HTML element for keyboard input
+  - Assistive technology can expose the element's semantics where supported
   - When displaying key combinations, use visible separators (like "+") between
     individual `<kbd>` elements for clarity
   - Consider providing additional context for complex shortcuts using `aria-label`

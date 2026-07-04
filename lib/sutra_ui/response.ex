@@ -64,7 +64,7 @@ defmodule SutraUI.Response do
 
   attr(:streaming, :boolean,
     default: false,
-    doc: "Enables MDEx streaming mode for incomplete Markdown"
+    doc: "Marks the response as incomplete; enables MDEx streaming mode for Markdown"
   )
 
   attr(:reveal, :string,

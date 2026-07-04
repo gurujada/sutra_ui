@@ -52,11 +52,10 @@ defmodule SutraUI.TabNav do
 
   ## Accessibility
 
-  - Uses `role="tablist"` for the container
-  - Uses `role="tab"` for each tab trigger
-  - `aria-selected` indicates active tab
-  - `tabindex` management for roving focus
-  - Active tab marked with `aria-selected="true"`
+  - Uses semantic `<nav>` landmark navigation
+  - Active route links use `aria-current="page"`
+  - Arrow keys move focus between links as a convenience enhancement
+  - All links remain in the normal tab order
   """
   use Phoenix.Component
 
@@ -69,7 +68,7 @@ defmodule SutraUI.TabNav do
 
   - `id` (required) - Unique identifier for the tab navigation (required for keyboard nav)
   - `class` - Optional additional CSS classes for the container
-  - `label` - Accessible label for the tablist (default: "Tab navigation")
+  - `label` - Accessible label for the navigation landmark (default: "Tab navigation")
 
   ## Slots
 
@@ -80,7 +79,7 @@ defmodule SutraUI.TabNav do
   """
   attr(:id, :string, required: true, doc: "Unique identifier (required for keyboard navigation)")
   attr(:class, :string, default: nil, doc: "Additional CSS classes for the container")
-  attr(:label, :string, default: "Tab navigation", doc: "Accessible label for the tablist")
+  attr(:label, :string, default: "Tab navigation", doc: "Accessible label for the navigation")
 
   slot :tab, required: true, doc: "Tab definitions" do
     attr(:patch, :string, required: true, doc: "LiveView patch URL")
@@ -89,38 +88,43 @@ defmodule SutraUI.TabNav do
 
   def tab_nav(assigns) do
     ~H"""
-    <div
+    <nav
       id={@id}
       class={["tab-nav", @class]}
-      role="tablist"
       aria-label={@label}
-      aria-orientation="horizontal"
       phx-hook=".TabNav"
     >
       <%= for {tab, index} <- Enum.with_index(@tab) do %>
         <.link
           id={"#{@id}-tab-#{index}"}
           patch={tab.patch}
-          role="tab"
-          aria-selected={to_string(tab.active)}
-          tabindex={if tab.active, do: "0", else: "-1"}
+          aria-current={tab.active && "page"}
           class={["tab-nav-item", tab.active && "tab-nav-item-active"]}
           data-index={index}
         >
           {render_slot(tab)}
         </.link>
       <% end %>
-    </div>
+    </nav>
 
     <script :type={ColocatedHook} name=".TabNav" runtime>
       {
         mounted() {
-          this.el.addEventListener('keydown', (e) => this.handleKeydown(e));
+          this.keydownHandler = (e) => this.handleKeydown(e);
+          this.el.addEventListener('keydown', this.keydownHandler);
+        },
+
+        destroyed() {
+          this.el.removeEventListener('keydown', this.keydownHandler);
         },
 
         handleKeydown(e) {
-          const tabs = Array.from(this.el.querySelectorAll('[role="tab"]'));
-          const currentIndex = tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true');
+          const tabs = Array.from(this.el.querySelectorAll('.tab-nav-item'));
+          if (tabs.length === 0) return;
+
+          const focusedIndex = tabs.indexOf(document.activeElement);
+          const activeIndex = tabs.findIndex(tab => tab.getAttribute('aria-current') === 'page');
+          const currentIndex = focusedIndex >= 0 ? focusedIndex : Math.max(activeIndex, 0);
 
           let newIndex;
           switch(e.key) {
@@ -140,14 +144,14 @@ defmodule SutraUI.TabNav do
               e.preventDefault();
               newIndex = tabs.length - 1;
               break;
+            case 'Enter':
+            case ' ':
+              e.preventDefault();
+              e.target.closest('.tab-nav-item')?.click();
+              return;
             default:
               return;
           }
-
-          // Update tabindex for roving focus
-          tabs.forEach((tab, i) => {
-            tab.setAttribute('tabindex', i === newIndex ? '0' : '-1');
-          });
 
           tabs[newIndex].focus();
         }

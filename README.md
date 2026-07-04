@@ -8,24 +8,24 @@
 
 A pure Phoenix LiveView UI component library inspired by shadcn/ui.
 
-Built for **Phoenix 1.8+**, **Tailwind CSS v4**, and **Phoenix LiveView 1.1+**.
+Built for **Elixir 1.20+**, **Phoenix 1.8+**, **Phoenix LiveView 1.2+**, and **Tailwind CSS v4**.
 
 ## Why Sutra UI?
 
-- **Zero JavaScript dependencies** - No React, no npm packages, no node_modules bloat. Just Phoenix LiveView.
-- **CSS-first theming** - Customize colors with CSS variables. No build step, no config files.
+- **No external JavaScript packages** - No React, no npm packages, no node_modules bloat. Just Phoenix LiveView and colocated hooks.
+- **CSS-first theming** - Customize colors with CSS variables and no Tailwind config file.
 - **Copy-paste friendly** - Like shadcn/ui, components are meant to be understood and modified.
-- **Server-driven** - All state lives on the server. No client-side state sync headaches.
-- **Production-ready** - Full test coverage, accessibility support, dark mode included.
+- **Phoenix-native** - Workflows live in LiveView; small hooks only handle local UI behavior.
+- **Production-minded** - Tests, accessibility-minded patterns, and dark mode included.
 - **LLM-friendly** - Includes `usage_rules.md` with guidelines for AI assistants working with this codebase.
 
 ## Features
 
-- **57 Components** - Buttons, forms, dialogs, tables, calendars, upload fields, AI primitives, and more
+- **56 Components** - Buttons, forms, dialogs, tables, calendars, upload fields, AI primitives, and more
 - **Pure LiveView** - No external JavaScript frameworks
 - **Colocated Hooks** - JS hooks live with their components (Phoenix 1.8+)
 - **CSS Variables** - Override any color in one line
-- **Accessible** - WCAG 2.1 AA compliant, keyboard navigable
+- **Accessible** - Semantic markup, ARIA patterns, and keyboard behavior where components are interactive
 - **Dark Mode** - Built-in light/dark theme support
 - **Lightweight** - CSS-first styling with minimal colocated JS hooks
 
@@ -37,8 +37,7 @@ Built for **Phoenix 1.8+**, **Tailwind CSS v4**, and **Phoenix LiveView 1.1+**.
 # mix.exs
 def deps do
   [
-    {:sutra_ui, "~> 0.3.0"},
-    {:jason, "~> 1.0"}  # Required for dropdown_menu and live_select
+    {:sutra_ui, "~> 0.4.0"}
   ]
 end
 ```
@@ -59,20 +58,22 @@ This handles CSS setup and adds `use SutraUI` to your web module's `html_helpers
 
 ### 3. Delete core_components.ex
 
-Sutra UI replaces Phoenix's default `core_components.ex`. Delete it and remove its import:
+Sutra UI replaces Phoenix's generated button, input, flash, and related UI helpers. Delete `core_components.ex` and remove its import:
 
 ```bash
 rm lib/my_app_web/components/core_components.ex
 ```
 
 In your `my_app_web.ex`, remove the `import MyAppWeb.CoreComponents` line.
+If your app uses Phoenix's generated `<.icon>` helper, move that helper to a
+separate module or replace those calls before deleting `core_components.ex`.
 
 ### 4. Colocated Hooks
 
 Sutra UI uses Phoenix 1.8+ colocated hooks.
 
-Most hooks load at runtime. If your app uses extracted hooks, merge the
-generated Sutra UI hooks into your LiveSocket:
+Most hooks load at runtime. Components such as `dialog` and animated `response`
+use extracted hooks; merge the generated Sutra UI hooks into your LiveSocket:
 
 ```js
 import {hooks as sutraUiHooks} from "phoenix-colocated/sutra_ui"
@@ -102,14 +103,15 @@ Update your deployment aliases in `mix.exs`:
 
 <.button variant="destructive">Delete</.button>
 
-<.dialog id="confirm-dialog">
-  <:trigger>
-    <.button variant="outline">Open Dialog</.button>
-  </:trigger>
+<.button variant="outline" phx-click="open_confirm">
+  Open Dialog
+</.button>
+
+<.dialog id="confirm-dialog" show={@show_confirm} on_cancel="close_confirm">
   <:title>Confirm Action</:title>
   <:description>Are you sure you want to continue?</:description>
   <:footer>
-    <.button variant="outline" phx-click={hide_dialog("confirm-dialog")}>
+    <.button variant="outline" phx-click="close_confirm">
       Cancel
     </.button>
     <.button phx-click="confirm">Confirm</.button>
@@ -151,7 +153,7 @@ Since Sutra UI uses the same CSS variable names as shadcn/ui, you can copy theme
 ```css
 @import "../../deps/sutra_ui/priv/static/sutra_ui.css";
 
-/* Paste your shadcn theme here - it just works! */
+/* Paste compatible shadcn theme variables here */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -168,7 +170,7 @@ Since Sutra UI uses the same CSS variable names as shadcn/ui, you can copy theme
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.705 0.015 286.067);
@@ -222,8 +224,13 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 
 ## Components
 
-### Form Controls
+### Foundation
 - `button` - Buttons with variants (primary, secondary, destructive, outline, ghost, link)
+- `badge` - Status badges
+- `spinner` - Loading spinner
+- `kbd` - Keyboard shortcut display
+
+### Form Controls
 - `input` - Text inputs (text, email, password, number, date, etc.)
 - `textarea` - Multi-line text input
 - `checkbox` - Checkbox input
@@ -232,7 +239,8 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `select` - Custom dropdown with search
 - `slider` - Range slider
 - `range_slider` - Dual-handle range slider
-- `live_select` - Async searchable select with tags
+- `live_select` - LiveComponent async searchable select with tags
+- `label` - Form labels
 - `simple_form` - Form with auto-styling
 - `input_group` - Input with prefix/suffix
 - `input_otp` - One-time password and PIN input
@@ -251,9 +259,8 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 
 ### Feedback
 - `alert` - Alert messages
-- `badge` - Status badges
+- `flash` - Phoenix flash messages
 - `progress` - Progress bar
-- `spinner` - Loading spinner
 - `skeleton` - Loading placeholder
 - `empty` - Empty state
 - `loading_state` - Loading indicator with message
@@ -274,21 +281,19 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `breadcrumb` - Breadcrumb navigation
 - `pagination` - Page navigation
 - `nav_pills` - Pill-style navigation
-- `tab_nav` - Tab-style navigation
+- `tab_nav` - Routed tab-style navigation
 
 ### Display
 - `avatar` - User avatars with fallback
 - `carousel` - Image/content carousel
-- `kbd` - Keyboard shortcut display
-- `label` - Form labels
+- `theme_switcher` - Light/dark theme event button
 - `marquee` - Scrolling content banner
 - `separator` - Visual or semantic divider
 - `calendar` - Monthly calendar grid
 - `timeline` - Chronological event list
-- `theme_switcher` - Light/dark mode toggle
 
 ### AI
-- `response` - Plain text or streamed Markdown responses with reveal styles
+- `response` - Text responses with reveal styles, or streamed Markdown
 - `activity` - Safe user-facing agent progress with slot-owned rows
 
 ## For AI Assistants
@@ -305,13 +310,13 @@ If you're using an AI assistant to help modify or extend Sutra UI components, po
 
 ## Accessibility
 
-All components follow WAI-ARIA patterns:
+Sutra UI components use accessibility patterns appropriate to their behavior:
 
 - Semantic HTML elements
-- Proper ARIA roles and attributes
-- Keyboard navigation (Tab, Arrow keys, Enter, Escape)
-- Focus management and visible focus indicators
-- Screen reader announcements
+- ARIA roles and attributes for composite widgets
+- Keyboard navigation for interactive components
+- Focus management and visible focus indicators where applicable
+- Screen reader announcements for status-style components
 
 ## Browser Support
 
@@ -323,12 +328,11 @@ Requires support for:
 - CSS `@layer`
 - CSS custom properties
 - CSS `:has()` selector
-- `<dialog>` element
-- Popover API (progressive enhancement)
+- Native `<dialog>` element for `command_dialog`
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License - see [LICENSE](https://github.com/gurujada/sutra_ui/blob/main/LICENSE) for details.
 
 ## Documentation
 
@@ -337,7 +341,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 - **[Theming Guide](https://hexdocs.pm/sutra_ui/theming.html)** - CSS variables, OKLCH colors, shadcn themes
 - **[Accessibility Guide](https://hexdocs.pm/sutra_ui/accessibility.html)** - ARIA patterns, keyboard navigation
 - **[JavaScript Hooks](https://hexdocs.pm/sutra_ui/colocated-hooks.html)** - Colocated hooks, custom events
-- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 57 components
+- **[Components Cheatsheet](https://hexdocs.pm/sutra_ui/components.html)** - Quick reference for all 56 components
 - **[Forms Cheatsheet](https://hexdocs.pm/sutra_ui/forms.html)** - Form patterns and validation
 
 ## Links

@@ -26,7 +26,7 @@ defmodule SutraUI.Label do
   - Always use the `for` attribute to associate labels with their form controls
   - The `for` value must match the `id` of the associated input element
   - Clicking a properly associated label will focus/activate its form control
-  - Screen readers announce the label text when the user focuses the input
+  - Proper association gives the form control an accessible name
   - Avoid using placeholder text as a substitute for labels
   - For required fields, consider adding visual indicators and `aria-required`
     on the input rather than relying solely on the label text

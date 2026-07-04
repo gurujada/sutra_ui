@@ -208,6 +208,20 @@ defmodule SutraUI.AccordionTest do
       assert html =~ ~s(id="accordion-content-test-item")
     end
 
+    test "content region is labelled by trigger" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Accordion.accordion>
+          <:item title="Item" value="test-item">Content</:item>
+        </Accordion.accordion>
+        """)
+
+      assert html =~ ~s(id="accordion-trigger-test-item")
+      assert html =~ ~s(aria-labelledby="accordion-trigger-test-item")
+    end
+
     test "content has role=region" do
       assigns = %{}
 
