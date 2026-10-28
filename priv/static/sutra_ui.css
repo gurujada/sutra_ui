@@ -4398,7 +4398,7 @@
                 @apply text-muted-foreground opacity-60;
             }
             &[data-today] {
-                @apply font-semibold text-primary;
+                @apply font-semibold text-primary ring-1 ring-inset ring-primary/60;
             }
             &[data-in-range] {
                 @apply rounded-none bg-accent text-accent-foreground;
@@ -4422,6 +4422,10 @@
         }
         .dp-cell {
             @apply rounded-md px-2 py-2.5 text-sm hover:bg-accent aria-pressed:bg-primary aria-pressed:text-primary-foreground;
+
+            &[data-today] {
+                @apply font-semibold ring-1 ring-inset ring-primary/60;
+            }
         }
         .dp-summary {
             @apply mt-3 border-t pt-2 text-xs text-muted-foreground empty:hidden;

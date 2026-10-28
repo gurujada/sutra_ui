@@ -84,7 +84,10 @@ export class Picker {
     const d = this.el.dataset;
     this.kind = d.kind;
     this.zone = d.zone || "Etc/UTC";
-    this.locale = d.locale || pageLocale();
+    // The order of the segments is the app's choice (`data-locale`, day-first by default);
+    // `<html lang>` only names the months and weekdays.
+    this.locale = d.locale || "en-GB";
+    this.nameLocale = pageLocale();
     this.weekStart = Number(d.weekStart) || 1;
     this.rules = json(d.rules, {});
     this.presets = json(d.presets, []);
@@ -390,7 +393,7 @@ export class Picker {
 
     if (this.kind === "datetime") {
       const r = this.resolution;
-      const locale = this.locale;
+      const locale = this.nameLocale;
       if (r.kind === "ok") {
         const name = zoneName(this.zone, r.at.ms);
         let hint = "";
@@ -461,7 +464,7 @@ export class Picker {
       hover: null,
       rules: this.rules,
       weekStart: this.weekStart,
-      locale: this.locale,
+      locale: this.nameLocale,
       today: this.today,
       idBase: this.idBase,
     };

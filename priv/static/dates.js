@@ -1,4 +1,4 @@
-/* sutra_ui dates source-hash:39356d14d1fdc889 (built by mix assets.build; do not edit) */
+/* sutra_ui dates source-hash:1292fb4ac7f5312e (built by mix assets.build; do not edit) */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -522,11 +522,13 @@ function navButton(label, paths, onClick) {
   b.addEventListener("click", onClick);
   return b;
 }
+var todayParts = (state) => parse(state.today);
+var thisMonth = (state, month) => todayParts(state).y === state.y && todayParts(state).m === month;
 function monthList(state, cb) {
   const short = monthNames(state.locale, "short");
   const list = h("div", { class: "dp-months", role: "group", "aria-label": `Months of ${state.y}` });
   short.forEach((name, i) => {
-    const b = h("button", { type: "button", class: "dp-cell", "data-current": i + 1 === state.m, "aria-pressed": i + 1 === state.m, text: name });
+    const b = h("button", { type: "button", class: "dp-cell", "data-current": i + 1 === state.m, "data-today": thisMonth(state, i + 1), "aria-current": thisMonth(state, i + 1) ? "date" : null, "aria-pressed": i + 1 === state.m, text: name });
     b.addEventListener("click", () => cb.month(i + 1));
     list.append(b);
   });
@@ -536,7 +538,7 @@ function yearList(state, cb) {
   const list = h("div", { class: "dp-years", role: "group", "aria-label": "Years" });
   for (let i = 0; i < 12; i++) {
     const year = state.yearPage + i;
-    const b = h("button", { type: "button", class: "dp-cell", "data-current": year === state.y, "aria-pressed": year === state.y, text: String(year) });
+    const b = h("button", { type: "button", class: "dp-cell", "data-current": year === state.y, "data-today": year === todayParts(state).y, "aria-current": year === todayParts(state).y ? "date" : null, "aria-pressed": year === state.y, text: String(year) });
     b.addEventListener("click", () => cb.year(year));
     list.append(b);
   }
@@ -1008,7 +1010,8 @@ var Picker = class {
     const d = this.el.dataset;
     this.kind = d.kind;
     this.zone = d.zone || "Etc/UTC";
-    this.locale = d.locale || pageLocale();
+    this.locale = d.locale || "en-GB";
+    this.nameLocale = pageLocale();
     this.weekStart = Number(d.weekStart) || 1;
     this.rules = json(d.rules, {});
     this.presets = json(d.presets, []);
@@ -1280,7 +1283,7 @@ var Picker = class {
     if (this.reasonText) parts.push(h("span", { class: "dp-reason", "data-reason": this.reason, text: this.reasonText }));
     if (this.kind === "datetime") {
       const r = this.resolution;
-      const locale = this.locale;
+      const locale = this.nameLocale;
       if (r.kind === "ok") {
         const name = zoneName(this.zone, r.at.ms);
         let hint = "";
@@ -1346,7 +1349,7 @@ var Picker = class {
       hover: null,
       rules: this.rules,
       weekStart: this.weekStart,
-      locale: this.locale,
+      locale: this.nameLocale,
       today: this.today,
       idBase: this.idBase
     };
