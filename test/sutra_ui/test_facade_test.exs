@@ -2,6 +2,9 @@ defmodule SutraUI.TestFacadeTest do
   use ExUnit.Case, async: true
 
   test "the one import reaches the date, toast and confirm helpers" do
+    # function_exported?/3 does not load the module; without this the result depends on test order.
+    Code.ensure_loaded!(SutraUI.Test)
+
     for {name, arity} <- [
           pick: 3,
           pick: 4,
