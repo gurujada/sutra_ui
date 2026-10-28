@@ -64,7 +64,8 @@ defmodule SutraUI.Response do
 
   attr(:streaming, :boolean,
     default: false,
-    doc: "Marks the response as incomplete; enables MDEx streaming mode for Markdown"
+    doc:
+      "Marks the response as incomplete; closes Markdown left open at the end (MDEx `auto_close`)"
   )
 
   attr(:reveal, :string,
@@ -243,7 +244,7 @@ defmodule SutraUI.Response do
     options =
       assigns.mdex_options
       |> normalize_options()
-      |> Keyword.put(:streaming, assigns.streaming)
+      |> Keyword.put(:auto_close, assigns.streaming)
       |> put_sanitize(assigns.sanitize)
 
     MDEx.new(options)

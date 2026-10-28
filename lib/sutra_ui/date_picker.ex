@@ -16,6 +16,16 @@ defmodule SutraUI.DatePicker do
 
   ## How it works
 
+  ## The field group
+
+  Like `<.input>`, a picker draws its own field group (`fieldset mb-5 gap-1.5`): the visible
+  `label` (a `<label for>` that focuses the first segment), a `description`, the control, and
+  the `errors` (a `field`'s errors show once the field is used). The inputs carry
+  `aria-invalid` and `aria-describedby` for them. Pass `bare` for the control alone in a custom
+  layout (then no label, description or errors are drawn; `label` still names the segments).
+  `<.input type="date">`, `type="time"` and `type="datetime-local"` with a `zone` render these
+  pickers.
+
   The server renders the browser's own `<input type="date">` (and `time`, `datetime-local`)
   inside the wrapper, so forms post and tests read the value with no JavaScript. The extracted
   `.DatePicker` hook (it imports `sutra_ui/dates`) hides that input and draws:
@@ -130,6 +140,18 @@ defmodule SutraUI.DatePicker do
   attr(:value, :any, default: nil, doc: "A `Date` or an ISO 8601 string")
   attr(:field, FormField, default: nil, doc: "A form field, for example `@form[:due]`")
   attr(:label, :string, default: nil, doc: "Accessible name, and the title of the phone sheet")
+  attr(:description, :string, default: nil, doc: "Helper text under the label")
+
+  attr(:errors, :list,
+    default: [],
+    doc: "Error messages (a `field`'s errors show once it is used)"
+  )
+
+  attr(:bare, :boolean,
+    default: false,
+    doc: "Only the picker: no label, description or errors, for a custom layout"
+  )
+
   attr(:rules, :any, default: nil, doc: "A `%SutraUI.DateRules{}` (or keyword list)")
 
   attr(:presets, :any,
@@ -155,27 +177,29 @@ defmodule SutraUI.DatePicker do
     assigns = assign(assigns, :iso, date_value(assigns.value))
 
     ~H"""
-    <div
-      id={"#{@id}-wrapper"}
-      class={["date-picker", @class]}
-      {@wrapper}
-      phx-hook=".DatePicker"
-    >
-      <input
-        type="date"
-        id={@id}
-        name={@name}
-        value={@iso}
-        min={@min}
-        max={@max}
-        disabled={@disabled}
-        class="dp-native"
-        data-dp="main"
-        {@rest}
-      />
-      <div id={"#{@id}-ui"} class="dp-ui" phx-update="ignore"></div>
-      <.picker_hook />
-    </div>
+    <.group {group_assigns(assigns)}>
+      <div
+        id={"#{@id}-wrapper"}
+        class={["date-picker", @class]}
+        {@wrapper}
+        phx-hook=".DatePicker"
+      >
+        <input
+          type="date"
+          id={@id}
+          name={@name}
+          value={@iso}
+          min={@min}
+          max={@max}
+          disabled={@disabled}
+          class="dp-native"
+          data-dp="main"
+          {@rest}
+        />
+        <div id={"#{@id}-ui"} class="dp-ui" phx-update="ignore"></div>
+        <.picker_hook />
+      </div>
+    </.group>
     """
   end
 
@@ -199,6 +223,18 @@ defmodule SutraUI.DatePicker do
 
   attr(:field, FormField, default: nil)
   attr(:label, :string, default: nil)
+  attr(:description, :string, default: nil, doc: "Helper text under the label")
+
+  attr(:errors, :list,
+    default: [],
+    doc: "Error messages (a `field`'s errors show once it is used)"
+  )
+
+  attr(:bare, :boolean,
+    default: false,
+    doc: "Only the picker: no label, description or errors, for a custom layout"
+  )
+
   attr(:rules, :any, default: nil, doc: "`min_length` and `max_length` apply here")
   attr(:presets, :any, default: :default)
   attr(:zone, :string, default: "Etc/UTC")
@@ -231,47 +267,49 @@ defmodule SutraUI.DatePicker do
       )
 
     ~H"""
-    <div
-      id={"#{@id}-wrapper"}
-      class={["date-picker", @class]}
-      {@wrapper}
-      phx-hook=".DatePicker"
-    >
-      <input
-        type="date"
-        id={@id}
-        name={@start_name}
-        value={@from}
-        min={@min}
-        max={@max}
-        disabled={@disabled}
-        class="dp-native"
-        data-dp="start"
-        {@rest}
-      />
-      <input
-        type="date"
-        id={"#{@id}-end"}
-        name={@end_name}
-        value={@to}
-        min={@min}
-        max={@max}
-        disabled={@disabled}
-        class="dp-native"
-        data-dp="end"
-        {@rest}
-      />
-      <input
-        :if={@preset_key}
-        type="hidden"
-        name={@preset_name}
-        value={@preset}
-        disabled={@disabled}
-        data-dp="preset"
-      />
-      <div id={"#{@id}-ui"} class="dp-ui" phx-update="ignore"></div>
-      <.picker_hook />
-    </div>
+    <.group {group_assigns(assigns)}>
+      <div
+        id={"#{@id}-wrapper"}
+        class={["date-picker", @class]}
+        {@wrapper}
+        phx-hook=".DatePicker"
+      >
+        <input
+          type="date"
+          id={@id}
+          name={@start_name}
+          value={@from}
+          min={@min}
+          max={@max}
+          disabled={@disabled}
+          class="dp-native"
+          data-dp="start"
+          {@rest}
+        />
+        <input
+          type="date"
+          id={"#{@id}-end"}
+          name={@end_name}
+          value={@to}
+          min={@min}
+          max={@max}
+          disabled={@disabled}
+          class="dp-native"
+          data-dp="end"
+          {@rest}
+        />
+        <input
+          :if={@preset_key}
+          type="hidden"
+          name={@preset_name}
+          value={@preset}
+          disabled={@disabled}
+          data-dp="preset"
+        />
+        <div id={"#{@id}-ui"} class="dp-ui" phx-update="ignore"></div>
+        <.picker_hook />
+      </div>
+    </.group>
     """
   end
 
@@ -286,6 +324,18 @@ defmodule SutraUI.DatePicker do
   attr(:value, :any, default: nil, doc: "A `Time` or `\"HH:MM\"`")
   attr(:field, FormField, default: nil)
   attr(:label, :string, default: nil)
+  attr(:description, :string, default: nil, doc: "Helper text under the label")
+
+  attr(:errors, :list,
+    default: [],
+    doc: "Error messages (a `field`'s errors show once it is used)"
+  )
+
+  attr(:bare, :boolean,
+    default: false,
+    doc: "Only the picker: no label, description or errors, for a custom layout"
+  )
+
   attr(:rules, :any, default: nil, doc: "`step` applies here too; the `step` attribute wins")
 
   attr(:step, :integer,
@@ -304,26 +354,28 @@ defmodule SutraUI.DatePicker do
     assigns = assign(assigns, step: step, time: time_value(assigns.value))
 
     ~H"""
-    <div
-      id={"#{@id}-wrapper"}
-      class={["date-picker", @class]}
-      {@wrapper}
-      phx-hook=".DatePicker"
-    >
-      <input
-        type="time"
-        id={@id}
-        name={@name}
-        value={@time}
-        step={@step * 60}
-        disabled={@disabled}
-        class="dp-native"
-        data-dp="main"
-        {@rest}
-      />
-      <div id={"#{@id}-ui"} class="dp-ui" phx-update="ignore"></div>
-      <.picker_hook />
-    </div>
+    <.group {group_assigns(assigns)}>
+      <div
+        id={"#{@id}-wrapper"}
+        class={["date-picker", @class]}
+        {@wrapper}
+        phx-hook=".DatePicker"
+      >
+        <input
+          type="time"
+          id={@id}
+          name={@name}
+          value={@time}
+          step={@step * 60}
+          disabled={@disabled}
+          class="dp-native"
+          data-dp="main"
+          {@rest}
+        />
+        <div id={"#{@id}-ui"} class="dp-ui" phx-update="ignore"></div>
+        <.picker_hook />
+      </div>
+    </.group>
     """
   end
 
@@ -343,6 +395,17 @@ defmodule SutraUI.DatePicker do
 
   attr(:field, FormField, default: nil)
   attr(:label, :string, default: nil)
+  attr(:description, :string, default: nil, doc: "Helper text under the label")
+
+  attr(:errors, :list,
+    default: [],
+    doc: "Error messages (a `field`'s errors show once it is used)"
+  )
+
+  attr(:bare, :boolean,
+    default: false,
+    doc: "Only the picker: no label, description or errors, for a custom layout"
+  )
 
   attr(:zone, :string,
     required: true,
@@ -377,29 +440,31 @@ defmodule SutraUI.DatePicker do
       )
 
     ~H"""
-    <div
-      id={"#{@id}-wrapper"}
-      class={["date-picker", @class]}
-      {@wrapper}
-      phx-hook=".DatePicker"
-    >
-      <input
-        type="datetime-local"
-        id={@id}
-        name={@name}
-        value={@wall}
-        min={@min && "#{@min}T00:00"}
-        max={@max && "#{@max}T23:59"}
-        step={@step * 60}
-        disabled={@disabled}
-        class="dp-native"
-        data-dp="main"
-        {@rest}
-      />
-      <input type="hidden" name={@name} value={@posted} disabled data-dp="posted" />
-      <div id={"#{@id}-ui"} class="dp-ui" phx-update="ignore"></div>
-      <.picker_hook />
-    </div>
+    <.group {group_assigns(assigns)}>
+      <div
+        id={"#{@id}-wrapper"}
+        class={["date-picker", @class]}
+        {@wrapper}
+        phx-hook=".DatePicker"
+      >
+        <input
+          type="datetime-local"
+          id={@id}
+          name={@name}
+          value={@wall}
+          min={@min && "#{@min}T00:00"}
+          max={@max && "#{@max}T23:59"}
+          step={@step * 60}
+          disabled={@disabled}
+          class="dp-native"
+          data-dp="main"
+          {@rest}
+        />
+        <input type="hidden" name={@name} value={@posted} disabled data-dp="posted" />
+        <div id={"#{@id}-ui"} class="dp-ui" phx-update="ignore"></div>
+        <.picker_hook />
+      </div>
+    </.group>
     """
   end
 
@@ -417,9 +482,15 @@ defmodule SutraUI.DatePicker do
   # Id, name and value from the field; the rules resolved against today in the zone; the
   # wrapper's data attributes the hook reads.
   defp common(%{field: %FormField{} = field} = assigns, kind) do
+    errors =
+      if Phoenix.Component.used_input?(field),
+        do: Enum.map(field.errors, &SutraUI.Input.translate_error/1),
+        else: []
+
     assigns
     |> assign(field: nil, id: assigns.id || field.id, name: assigns.name || field.name)
     |> assign(:value, if(is_nil(assigns.value), do: field.value, else: assigns.value))
+    |> assign(:errors, assigns.errors ++ errors)
     |> common(kind)
   end
 
@@ -446,7 +517,70 @@ defmodule SutraUI.DatePicker do
         :"data-hint-label" => assigns[:hint_label]
       }
 
-    assign(assigns, id: id, wrapper: wrapper, min: map["min"], max: map["max"])
+    assigns = assign(assigns, id: id, wrapper: wrapper, min: map["min"], max: map["max"])
+    field_accessibility(assigns)
+  end
+
+  # The field group's ids, and the `aria-invalid` and `aria-describedby` the inputs carry (the
+  # hook reads both: the server's verdict, and what its own note is added to).
+  defp field_accessibility(assigns) do
+    shown? = not assigns.bare
+    description_id = if shown? && assigns.description, do: "#{assigns.id}-description"
+    error_id = if shown? && assigns.errors != [], do: "#{assigns.id}-error"
+    explicit = assigns.rest[:"aria-describedby"]
+
+    describedby =
+      case Enum.reject([explicit, description_id, error_id], &(&1 in [nil, ""])) do
+        [] -> nil
+        ids -> Enum.join(ids, " ")
+      end
+
+    rest =
+      assigns.rest
+      |> Map.delete(:"aria-describedby")
+      |> then(&if(describedby, do: Map.put(&1, :"aria-describedby", describedby), else: &1))
+      |> then(&if(assigns.errors != [], do: Map.put(&1, :"aria-invalid", "true"), else: &1))
+
+    assign(assigns, rest: rest, description_id: description_id, error_id: error_id)
+  end
+
+  defp group_assigns(assigns) do
+    Map.take(assigns, [
+      :id,
+      :label,
+      :description,
+      :description_id,
+      :errors,
+      :error_id,
+      :bare,
+      :inner_block
+    ])
+  end
+
+  # The same field group as `<.input>`: label, description, control, errors. `bare` is the
+  # control alone.
+  attr(:id, :string, required: true)
+  attr(:label, :string, default: nil)
+  attr(:description, :string, default: nil)
+  attr(:description_id, :string, default: nil)
+  attr(:errors, :list, default: [])
+  attr(:error_id, :string, default: nil)
+  attr(:bare, :boolean, default: false)
+  slot(:inner_block, required: true)
+
+  defp group(%{bare: true} = assigns), do: ~H"{render_slot(@inner_block)}"
+
+  defp group(assigns) do
+    ~H"""
+    <div class="fieldset mb-5 gap-1.5">
+      <label :if={@label} for={@id} class="label">{@label}</label>
+      <p :if={@description} id={@description_id} class="field-description">{@description}</p>
+      {render_slot(@inner_block)}
+      <div :if={@errors != []} id={@error_id}>
+        <SutraUI.FieldError.error :for={msg <- @errors}>{msg}</SutraUI.FieldError.error>
+      </div>
+    </div>
+    """
   end
 
   defp derive_id(nil),

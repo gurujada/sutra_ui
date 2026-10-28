@@ -66,7 +66,11 @@ defmodule SutraUI.Input do
 
     * `type="checkbox"` - Delegates to `SutraUI.Checkbox` with hidden false value
     * `type="switch"` - Delegates to `SutraUI.Switch` (toggle with role="switch")
-    * `type="select"` - Renders `SutraUI.Select`: a real `<select>` with SutraUI's list on top
+    * `type="date"`, `type="time"`, and `type="datetime-local"` with a `zone` - Render the
+    `SutraUI.DatePicker` pickers (`native` keeps the browser's own control; a `datetime-local`
+    without a `zone` stays native, because a wall time needs a place). `min`/`max`, `step`,
+    `rules`, `locale` and `zone` are passed on
+  * `type="select"` - Renders `SutraUI.Select`: a real `<select>` with SutraUI's list on top
     * `type="textarea"` - Delegates to `SutraUI.Textarea`
     * `type="range"` - Delegates to `SutraUI.Slider` with colocated hook
     * `type="hidden"` - Renders just the input, no wrapper or label
@@ -267,6 +271,18 @@ defmodule SutraUI.Input do
     doc: "Select inputs: only the browser's own `<select>`"
   )
 
+  attr(:zone, :string,
+    default: nil,
+    doc: "`datetime-local` inputs: the place's IANA zone. Given, the input is a `datetime_picker`"
+  )
+
+  attr(:rules, :any,
+    default: nil,
+    doc: "Date and time inputs: a `SutraUI.DateRules` (or keyword list) for the picker"
+  )
+
+  attr(:locale, :string, default: nil, doc: "Date and time inputs: the picker's locale")
+
   attr(:class, :any, default: nil, doc: "Additional CSS classes")
 
   attr(:rest, :global,
@@ -371,6 +387,71 @@ defmodule SutraUI.Input do
         <.error :for={msg <- @errors}>{msg}</.error>
       </div>
     </div>
+    """
+  end
+
+  # Date, time and (with a `zone`) datetime-local inputs - the SutraUI.DatePicker pickers. The
+  # picker draws the same field group, so it is not wrapped again. `native` keeps the browser's
+  # own control, and so does a datetime-local without a zone (a wall time needs a place).
+  def input(%{type: type, native: false} = assigns)
+      when type in ["date", "time"] or (type == "datetime-local" and assigns.zone != nil) do
+    assigns =
+      assigns
+      |> assign(
+        :id,
+        assigns.id || (assigns.name && String.replace(assigns.name, ~r/[^A-Za-z0-9_-]+/, "_"))
+      )
+      |> assign(:picker_rules, picker_rules(assigns))
+      |> assign(
+        :picker_rest,
+        Map.take(assigns.rest, [:required, :form, :disabled, :"phx-change"])
+      )
+
+    ~H"""
+    <SutraUI.DatePicker.date_picker
+      :if={@type == "date"}
+      id={@id}
+      name={@name}
+      value={@value}
+      label={@label}
+      description={@description}
+      errors={@errors}
+      rules={@picker_rules}
+      locale={@locale}
+      disabled={@rest[:disabled] == true}
+      class={@class}
+      {@picker_rest}
+    />
+    <SutraUI.DatePicker.time_picker
+      :if={@type == "time"}
+      id={@id}
+      name={@name}
+      value={@value}
+      label={@label}
+      description={@description}
+      errors={@errors}
+      rules={@picker_rules}
+      step={picker_step(@rest)}
+      disabled={@rest[:disabled] == true}
+      class={@class}
+      {@picker_rest}
+    />
+    <SutraUI.DatePicker.datetime_picker
+      :if={@type == "datetime-local"}
+      id={@id}
+      name={@name}
+      value={@value}
+      label={@label}
+      description={@description}
+      errors={@errors}
+      zone={@zone}
+      rules={@picker_rules}
+      locale={@locale}
+      step={picker_step(@rest)}
+      disabled={@rest[:disabled] == true}
+      class={@class}
+      {@picker_rest}
+    />
     """
   end
 
@@ -509,6 +590,32 @@ defmodule SutraUI.Input do
     """
   end
 
+  # `min` and `max` of the browser input become the picker's rules (an explicit `rules` wins).
+  defp picker_rules(%{rules: rules}) when rules != nil, do: rules
+
+  defp picker_rules(%{rest: rest}) do
+    bound = fn key ->
+      with value when is_binary(value) <- rest[key],
+           {:ok, date} <- value |> String.slice(0, 10) |> Date.from_iso8601() do
+        date
+      else
+        _ -> nil
+      end
+    end
+
+    [min: bound.(:min), max: bound.(:max)]
+  end
+
+  # The browser's `step` is in seconds; the picker's, in minutes.
+  defp picker_step(%{step: seconds}) when is_binary(seconds) or is_integer(seconds) do
+    case Integer.parse(to_string(seconds)) do
+      {n, _} when n >= 60 -> div(n, 60)
+      _ -> nil
+    end
+  end
+
+  defp picker_step(_rest), do: nil
+
   # Assigns IDs for field helper/error text and links them through aria-describedby.
   defp assign_field_accessibility(assigns) do
     description_id =
@@ -545,26 +652,7 @@ defmodule SutraUI.Input do
   defp blank?(_), do: false
 
   # Renders an error message with icon.
-  defp error(assigns) do
-    ~H"""
-    <p class="flex gap-2 items-center text-sm text-destructive">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        class="size-5 shrink-0"
-        aria-hidden="true"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
-          clip-rule="evenodd"
-        />
-      </svg>
-      {render_slot(@inner_block)}
-    </p>
-    """
-  end
+  defp error(assigns), do: SutraUI.FieldError.error(assigns)
 
   @doc """
   Translates an error message using gettext.

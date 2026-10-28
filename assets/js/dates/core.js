@@ -226,3 +226,13 @@ export function monthNames(locale, style = "long") {
   const fmt = new Intl.DateTimeFormat(locale, { month: style, timeZone: "UTC" });
   return Array.from({ length: 12 }, (_, i) => fmt.format(new Date(Date.UTC(2024, i, 1))));
 }
+
+/**
+ * The tone of a field: `invalid` (an error: red border, `aria-invalid`) for a refused value, a
+ * skipped wall time or the server's own verdict; `warning` (a choice is pending, no
+ * `aria-invalid`) for a repeated hour, until an error takes over.
+ */
+export function fieldTone({ reason, resolutionKind, server }) {
+  const invalid = Boolean(reason) || resolutionKind === "gap" || Boolean(server);
+  return { invalid, warning: !invalid && resolutionKind === "ambiguous" };
+}
