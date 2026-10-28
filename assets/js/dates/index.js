@@ -17,6 +17,7 @@ import {
   checkDate,
   checkRange,
   checkTime,
+  fieldTone,
   moveFocus,
   parse,
   presetValue,
@@ -151,7 +152,10 @@ export class Picker {
       this.groups.end = dateGroup("end", `${this.label || "Range"}, end date`);
       this.length = h("span", { class: "dp-length", "aria-live": "polite" });
       this.groups.start.links.after = this.groups.end;
-      control.append(this.groups.start.root, h("span", { class: "dp-dash", "aria-hidden": "true", text: "–" }), this.groups.end.root, this.length);
+      // The dash stays with the end date: below the field's minimum width the dates stack as
+      // "dd/mm/yyyy" over "– dd/mm/yyyy", never a dash left alone at a line end.
+      const to = h("span", { class: "dp-to" }, [h("span", { class: "dp-dash", "aria-hidden": "true", text: "–" }), this.groups.end.root]);
+      control.append(this.groups.start.root, to, this.length);
     } else if (this.kind === "time") {
       this.groups.time = timeGroup();
       control.append(this.groups.time.root);
@@ -378,13 +382,19 @@ export class Picker {
     }
     this.reason = reason;
     this.reasonText = reason ? reasonWords(reason, rules) : "";
-    const gap = this.kind === "datetime" && ["gap", "ambiguous"].includes(this.resolution?.kind);
     // The server's own verdict (a changeset error) rides on the input it renders.
     const source = this.main || this.startInput;
     const server = source?.getAttribute("aria-invalid") === "true";
     const described = [source?.getAttribute("aria-describedby"), `${this.idBase}-note`].filter(Boolean).join(" ");
-    for (const g of Object.values(this.groups)) g.setInvalid(Boolean(reason) || gap || server, described);
-    this.el.toggleAttribute("data-invalid", Boolean(reason) || gap || server);
+    const tone = fieldTone({
+      reason,
+      resolutionKind: this.kind === "datetime" ? this.resolution?.kind : null,
+      server,
+    });
+    for (const g of Object.values(this.groups)) g.setInvalid(tone.invalid, described);
+    this.el.toggleAttribute("data-invalid", tone.invalid);
+    // A repeated hour is a choice, not an error: warning tone, no aria-invalid.
+    this.el.toggleAttribute("data-warning", tone.warning);
   }
 
   renderNote() {

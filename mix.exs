@@ -40,7 +40,7 @@ defmodule SutraUI.MixProject do
     [
       {:phoenix_live_view, "~> 1.2"},
       {:phoenix_html, "~> 4.0"},
-      {:mdex, "~> 0.13"},
+      {:mdex, "~> 0.14"},
       # Dev/Test
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:esbuild, "~> 0.10", only: :dev, runtime: false},

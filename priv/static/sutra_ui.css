@@ -4312,6 +4312,18 @@
         &[data-invalid] .dp-control {
             @apply border-destructive ring-destructive/20;
         }
+        /* A repeated hour is a choice, not an error: the warning tone until it is made. */
+        &[data-warning]:not([data-invalid]) .dp-control {
+            @apply border-warning ring-warning/20;
+        }
+        /* Both dates and the open button sit on one line; in a narrower container the dates
+           stack, the dash leading the second. */
+        &[data-kind="range"] {
+            min-width: min(100%, 20rem);
+        }
+        .dp-to {
+            @apply inline-flex items-center gap-x-1.5 whitespace-nowrap;
+        }
         &[data-disabled] .dp-control {
             @apply cursor-not-allowed opacity-50;
         }

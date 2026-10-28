@@ -40,6 +40,22 @@ defmodule SutraUI.ResponseTest do
       assert html =~ "response-cursor"
     end
 
+    test "markdown rendering uses current MDEx options (no deprecation warning)" do
+      assigns = %{}
+
+      warnings =
+        ExUnit.CaptureIO.capture_io(:stderr, fn ->
+          for _ <- 1..2 do
+            rendered_to_string(~H"""
+            <Response.response value="**Open" format="markdown" streaming />
+            <Response.response value="**Done**" format="markdown" />
+            """)
+          end
+        end)
+
+      assert warnings == ""
+    end
+
     test "renders animated reveal hook for text responses with an id" do
       assigns = %{}
 

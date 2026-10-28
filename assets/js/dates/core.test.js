@@ -107,3 +107,12 @@ test("reasonWords says why in plain words", () => {
   assert.equal(c.reasonWords("too_long", { maxLength: 14 }), "At most 14 days");
   assert.equal(c.reasonWords("disabled_date", {}), "Not available");
 });
+
+test("a repeated hour is a warning until chosen; a skipped time is an error", () => {
+  assert.deepEqual(c.fieldTone({ resolutionKind: "ambiguous" }), { invalid: false, warning: true });
+  assert.deepEqual(c.fieldTone({ resolutionKind: "gap" }), { invalid: true, warning: false });
+  assert.deepEqual(c.fieldTone({ resolutionKind: "ok" }), { invalid: false, warning: false });
+  assert.deepEqual(c.fieldTone({ reason: "min", resolutionKind: "ambiguous" }), { invalid: true, warning: false });
+  assert.deepEqual(c.fieldTone({ server: true, resolutionKind: "ambiguous" }), { invalid: true, warning: false });
+});
+

@@ -1,4 +1,4 @@
-/* sutra_ui dates source-hash:1292fb4ac7f5312e (built by mix assets.build; do not edit) */
+/* sutra_ui dates source-hash:de69a780b95d972e (built by mix assets.build; do not edit) */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -247,6 +247,7 @@ __export(core_exports, {
   daysInMonth: () => daysInMonth,
   diffDays: () => diffDays,
   endRefused: () => endRefused,
+  fieldTone: () => fieldTone,
   monthGrid: () => monthGrid,
   monthNames: () => monthNames,
   moveFocus: () => moveFocus,
@@ -421,6 +422,10 @@ function weekdayNames(weekStart = 1, locale) {
 function monthNames(locale, style = "long") {
   const fmt = new Intl.DateTimeFormat(locale, { month: style, timeZone: "UTC" });
   return Array.from({ length: 12 }, (_, i) => fmt.format(new Date(Date.UTC(2024, i, 1))));
+}
+function fieldTone({ reason, resolutionKind, server }) {
+  const invalid = Boolean(reason) || resolutionKind === "gap" || Boolean(server);
+  return { invalid, warning: !invalid && resolutionKind === "ambiguous" };
 }
 
 // assets/js/dates/dom.js
@@ -1069,7 +1074,8 @@ var Picker = class {
       this.groups.end = dateGroup("end", `${this.label || "Range"}, end date`);
       this.length = h("span", { class: "dp-length", "aria-live": "polite" });
       this.groups.start.links.after = this.groups.end;
-      control.append(this.groups.start.root, h("span", { class: "dp-dash", "aria-hidden": "true", text: "\u2013" }), this.groups.end.root, this.length);
+      const to = h("span", { class: "dp-to" }, [h("span", { class: "dp-dash", "aria-hidden": "true", text: "\u2013" }), this.groups.end.root]);
+      control.append(this.groups.start.root, to, this.length);
     } else if (this.kind === "time") {
       this.groups.time = timeGroup();
       control.append(this.groups.time.root);
@@ -1271,12 +1277,17 @@ var Picker = class {
     }
     this.reason = reason;
     this.reasonText = reason ? reasonWords(reason, rules) : "";
-    const gap = this.kind === "datetime" && ["gap", "ambiguous"].includes(this.resolution?.kind);
     const source = this.main || this.startInput;
     const server = source?.getAttribute("aria-invalid") === "true";
     const described = [source?.getAttribute("aria-describedby"), `${this.idBase}-note`].filter(Boolean).join(" ");
-    for (const g of Object.values(this.groups)) g.setInvalid(Boolean(reason) || gap || server, described);
-    this.el.toggleAttribute("data-invalid", Boolean(reason) || gap || server);
+    const tone = fieldTone({
+      reason,
+      resolutionKind: this.kind === "datetime" ? this.resolution?.kind : null,
+      server
+    });
+    for (const g of Object.values(this.groups)) g.setInvalid(tone.invalid, described);
+    this.el.toggleAttribute("data-invalid", tone.invalid);
+    this.el.toggleAttribute("data-warning", tone.warning);
   }
   renderNote() {
     const parts = [];

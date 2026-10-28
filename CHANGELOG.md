@@ -39,6 +39,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **date_picker, date_range_picker, time_picker, datetime_picker**: draw the same field group as `<.input>` (`fieldset mb-5 gap-1.5`): a visible `label` that focuses the picker, `description`, `errors` (and a `field`'s errors once used), `aria-invalid` and `aria-describedby`. New `description`, `errors` and `bare` attributes; `bare` renders the control alone for custom layouts (the pickers used to draw no label at all, so pass `bare` where you drew your own)
+- **input** (breaking): `<.input type="date">`, `type="time"` and `type="datetime-local"` with a `zone` render the pickers (new `zone`, `rules` and `locale` attributes; `min`/`max` become the rules, `step` in seconds becomes minutes). `native` keeps the browser's control, and a `datetime-local` without a `zone` stays native, because a wall time needs a place
+- **date_range_picker**: at least 20rem wide (never more than its container), so both dates sit on one line; in a narrower container the dates stack, the dash leading the second
+- **response**: uses MDEx's `auto_close` instead of the deprecated `streaming` option (requires `mdex ~> 0.14`)
+
 - **command_dialog**: Now a div-based `SutraUI.Dialog` (it was a native `<dialog>`, invisible in some screen shares): the root element is a `div` with `role="dialog"`, it takes `show`, opens and closes with `show_command_dialog/2` and `hide_command_dialog/2` as before, and the `.CommandDialog` hook is gone. Its CSS is now `.dialog-panel.command-dialog`; styles that targeted the native `dialog.command-dialog` must move. Apps that want shortcuts, pages or server search use `command_palette` instead; the inline `command` is unchanged
 - **input** (breaking): `<.input type="select">` renders `SutraUI.Select` instead of a bare `<select>` inside a `<label>`. The attributes are the same (`field`, `options`, `prompt`, `multiple`, errors) and the posted value is still the `<select>`'s. The label is now a sibling `<label for>` (not a wrapper), the `<select>` is hidden once the hook runs, and `searchable` and `native` are new. Pass `native` for the old browser-only control
 - **select** (breaking): `select/1` takes `options` or a `field` and renders a real `<select>`; `id` is optional when `name` or `field` is given. The `select_option`/`select_group`/`select_separator` form still works and still keeps a hidden `<input>` instead of a `<select>`; its `<:trigger>` content is no longer overwritten by the chosen label. The `.Select` hook is now **extracted** (it imports `sutra_ui/select`): merge `phoenix-colocated/sutra_ui` into your LiveSocket, as for `dialog`; the `nonce` attribute is unused. `search_placeholder` defaults to "Search..." and `searchable` defaults to `nil`
@@ -62,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **datetime_picker**: a repeated hour pending a choice showed the red error border and `aria-invalid`. It is a warning now (warning border, no `aria-invalid`) until the choice is made; only the skipped time is an error
 - **select**: A required select that fails the browser's validation left focus on the hidden `<select>`. The trigger now takes focus, is marked `aria-invalid` and shows the browser's message under it (`role="alert"`, `aria-describedby`); the message clears when a value is chosen. The browser's own bubble cannot be kept: it closes as soon as focus leaves the `<select>`, so it is replaced rather than moved
 - **dialog**: An open dialog closed itself when a parent re-render patched its class (see Changed)
 
