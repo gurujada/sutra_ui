@@ -252,4 +252,32 @@ defmodule SutraUI.PopoverTest do
       assert %Phoenix.LiveView.JS{} = js
     end
   end
+
+  describe "closed popovers take no room" do
+    setup do
+      {:ok, css: File.read!("priv/static/sutra_ui.css")}
+    end
+
+    test "a closed [data-popover] is display: none and keeps its animation", %{css: css} do
+      assert css =~ ~r/\[data-popover\] \{[^}]*transition-behavior: allow-discrete;/s
+      assert css =~ ~r/@starting-style \{\s*opacity: 0;/
+      assert css =~ ~r/&\[aria-hidden="true"\] \{\s*@apply hidden invisible opacity-0 scale-95;/
+    end
+
+    test "the other floating panels are display: none when closed", %{css: css} do
+      for selector <- [
+            ~s(.hover-card .hover-card-content[aria-hidden="true"]),
+            ~s(.context-menu-popover[aria-hidden="true"]),
+            ~s(.context-menu-sub-content[aria-hidden="true"])
+          ] do
+        assert css =~ Regex.compile!(Regex.escape(selector) <> ~S( \{\s*@apply hidden;))
+      end
+
+      # select list and tab-nav mobile menu nest the rule under their own block
+      assert css =~
+               ~r/\.select-popover,\s*\[data-popover\] \{[^}]*&\[aria-hidden="true"\] \{\s*@apply hidden;/s
+
+      assert css =~ ~r/\.tab-nav-mobile-menu \{[^}]*&\[aria-hidden="true"\] \{\s*@apply hidden;/s
+    end
+  end
 end

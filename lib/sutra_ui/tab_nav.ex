@@ -113,6 +113,8 @@ defmodule SutraUI.TabNav do
     attr(:active, :boolean, required: true, doc: "Whether this tab is active")
   end
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def tab_nav(assigns) do
     active_tab = Enum.find(assigns.tab, & &1.active) || List.first(assigns.tab)
     assigns = assign(assigns, :active_tab, active_tab)
@@ -187,7 +189,7 @@ defmodule SutraUI.TabNav do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".TabNav" runtime>
+    <script :type={ColocatedHook} name=".TabNav" runtime nonce={@nonce}>
       {
         mounted() {
           this.trigger = this.el.querySelector('.tab-nav-mobile-trigger');

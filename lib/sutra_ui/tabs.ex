@@ -143,6 +143,8 @@ defmodule SutraUI.Tabs do
     attr(:value, :string, required: true, doc: "Value matching the corresponding tab")
   end
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def tabs(assigns) do
     ~H"""
     <div
@@ -185,7 +187,7 @@ defmodule SutraUI.Tabs do
       <% end %>
     </div>
 
-    <script :type={ColocatedHook} name=".Tabs" runtime>
+    <script :type={ColocatedHook} name=".Tabs" runtime nonce={@nonce}>
       {
         mounted() {
           this.keydownHandler = (e) => this.handleKeydown(e);

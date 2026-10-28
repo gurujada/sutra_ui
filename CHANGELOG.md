@@ -5,6 +5,26 @@ All notable changes to Sutra UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-10-28
+
+### Added
+
+- **theme_switcher**: `theme_script/1` renders the pre-paint theme script for the root layout, with an optional `nonce`
+- **csp**: Every component that renders a runtime hook script accepts a `nonce` attribute, so apps can use a nonce-based `script-src` instead of `'unsafe-inline'`; the JavaScript Hooks guide lists what still needs inline styles
+- **dropdown_menu**: `chevron` attribute (default `true`); `chevron={false}` omits the chevron for icon-only triggers, and an `sr-only` label beside an icon hides it in CSS
+- **avatar**: With an `id`, the image-failed fallback runs from a nonce-able hook instead of an inline `onerror` handler
+
+### Changed
+
+- **flash**: The message renders in a flex `div` (was a `<p>`), so icons and the reconnect spinner stay on one row and block content is valid
+- **flash**: Only the close button dismisses; clicking elsewhere on the message (selecting text, following a link) no longer does
+
+### Fixed
+
+- **popover, dropdown_menu**: A closed popover or menu takes no room (`display: none`, with `allow-discrete` and `@starting-style` keeping the animation); closed ones no longer widened phone pages near the right edge
+- **dialog**: A dialog taller than the screen scrolls inside the screen; the focus wrap now fills the dialog and the panel keeps its natural width up to its max width
+- **button**: Declares `popovertarget`, `popovertargetaction`, `formaction`, `formenctype`, `formmethod`, `formnovalidate`, `formtarget`, `command` and `commandfor` as global attributes, so they pass without compile warnings
+
 ## [0.4.0] - 2026-07-04
 
 ### Added

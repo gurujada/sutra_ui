@@ -146,6 +146,7 @@ defmodule SutraUI.Dialog do
     >
       <.focus_wrap
         id={"#{@id}-focus-wrap"}
+        class="dialog-focus"
         phx-window-keydown={@close_on_escape && close_action(@on_cancel, @id)}
         phx-key="escape"
       >

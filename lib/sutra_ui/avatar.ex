@@ -37,8 +37,14 @@ defmodule SutraUI.Avatar do
 
   use Phoenix.Component
 
+  alias Phoenix.LiveView.ColocatedHook
+
   @doc """
   Renders an avatar component.
+
+  When `src` fails to load the fallback is shown. With an `id`, a small hook does this and
+  works under a nonce-based Content-Security-Policy (pass `nonce`). Without an `id` the
+  image carries an inline `onerror` handler, which such a policy blocks.
   """
   attr(:src, :string, default: nil, doc: "The image source URL")
   attr(:alt, :string, default: "", doc: "Alternative text for the image")
@@ -61,6 +67,7 @@ defmodule SutraUI.Avatar do
   )
 
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script (needs `id`)")
 
   attr(:rest, :global,
     include: ~w(id),
@@ -74,13 +81,20 @@ defmodule SutraUI.Avatar do
 
   def avatar(assigns) do
     ~H"""
-    <span class={["avatar", "avatar-#{@size}", "avatar-#{@shape}", @class]} {@rest}>
+    <span
+      class={["avatar", "avatar-#{@size}", "avatar-#{@shape}", @class]}
+      phx-hook={@src && @rest[:id] && ".Avatar"}
+      {@rest}
+    >
       <%= if @src do %>
         <img
           src={@src}
           alt={@alt}
           class="avatar-image"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          onerror={
+            !@rest[:id] &&
+              "this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          }
         />
       <% end %>
       <span class={["avatar-fallback", @src && "avatar-fallback-hidden"]}>
@@ -107,6 +121,42 @@ defmodule SutraUI.Avatar do
           <% end %>
         <% end %>
       </span>
+      <script
+        :if={@src && @rest[:id]}
+        :type={ColocatedHook}
+        name=".Avatar"
+        runtime
+        nonce={@nonce}
+      >
+        {
+          mounted() {
+            this.img = this.el.querySelector('.avatar-image');
+            this.onError = () => this.showFallback();
+            this.img?.addEventListener('error', this.onError);
+            this.check();
+          },
+
+          updated() {
+            this.img?.removeEventListener('error', this.onError);
+            this.img = this.el.querySelector('.avatar-image');
+            this.img?.addEventListener('error', this.onError);
+            this.check();
+          },
+
+          destroyed() {
+            this.img?.removeEventListener('error', this.onError);
+          },
+
+          // The image may have failed before this hook mounted.
+          check() {
+            if (this.img && this.img.complete && this.img.naturalWidth === 0) this.showFallback();
+          },
+
+          showFallback() {
+            this.el.setAttribute('data-avatar-failed', '');
+          }
+        }
+      </script>
     </span>
     """
   end

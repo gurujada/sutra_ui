@@ -214,13 +214,16 @@ defmodule SutraUI.InteractiveComponent do
 end
 ```
 
+Runtime hooks render an inline `<script>`: every component that renders one accepts
+`nonce` for a nonce-based Content-Security-Policy (see the JavaScript Hooks guide).
+
 Most Sutra UI hooks are runtime colocated hooks. Extracted hook exceptions must
 document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 
 ## Available Components
 
 ### Foundation
-- `button/1` - Buttons with variants: primary, secondary, outline, ghost, link, destructive
+- `button/1` - Buttons with variants: primary, secondary, outline, ghost, link, destructive; passes `popovertarget`, `popovertargetaction`, `form*` attributes through
 - `badge/1` - Status badges
 - `spinner/1` - Loading indicators
 - `kbd/1` - Keyboard shortcut display
@@ -248,7 +251,7 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `skeleton/1` - Loading placeholder
 - `empty/1` - Empty state display
 - `alert/1` - Alert/callout messages
-- `flash/1` - Phoenix flash messages
+- `flash/1` - Phoenix flash messages (only the close button dismisses; the message is a `div`)
 - `progress/1` - Progress bar
 - `stepper/1` - Multi-step progress indicator
 - `stepper_wizard/1` - Multi-step wizard shell for large forms and flows
@@ -260,7 +263,7 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `pagination/1` - Page navigation
 - `accordion/1` - Collapsible content sections
 - `tabs/1` - Tab panels (JS hook)
-- `dropdown_menu/1` - Dropdown menu (JS hook)
+- `dropdown_menu/1` - Dropdown menu (JS hook); `chevron={false}` for icon-only triggers
 - `context_menu/1` - Right-click menu (JS hook)
 - `toast_container/1`, `toast/1` - Toast notifications (JS hook)
 
@@ -289,7 +292,7 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 ### Navigation
 - `drawer/1` - Collapsible drawer navigation
 - `tab_nav/1` - Responsive server-side routed tab navigation
-- `theme_switcher/1` - Light/dark theme event button
+- `theme_switcher/1` - Light/dark theme event button; `theme_script/1` - pre-paint theme script for the root layout (`nonce` attr)
 
 ## CSS Class Naming
 

@@ -133,6 +133,8 @@ defmodule SutraUI.FileUpload do
   slot(:drop_content, doc: "Custom content for the dropzone. Falls back to default icon + label.")
   slot(:entry, doc: "Custom preview for each selected file.")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def file_upload(assigns) do
     ref = (assigns.upload && assigns.upload.ref) || "no-upload"
     entries = (assigns.upload && assigns.upload.entries) || []
@@ -258,7 +260,7 @@ defmodule SutraUI.FileUpload do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".FileUpload" runtime>
+    <script :type={ColocatedHook} name=".FileUpload" runtime nonce={@nonce}>
       {
         mounted() {
           this.dropzone = this.el.querySelector('.file-upload-dropzone');

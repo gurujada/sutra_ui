@@ -61,6 +61,8 @@ defmodule SutraUI.Command do
 
   slot(:inner_block, required: true, doc: "Command items and groups")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def command(assigns) do
     ~H"""
     <div
@@ -105,7 +107,7 @@ defmodule SutraUI.Command do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".Command" runtime>
+    <script :type={ColocatedHook} name=".Command" runtime nonce={@nonce}>
       {
         mounted() {
           this.input = this.el.querySelector('input');
@@ -267,6 +269,8 @@ defmodule SutraUI.Command do
 
   slot(:inner_block, required: true, doc: "Command items and groups")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def command_dialog(assigns) do
     ~H"""
     <dialog
@@ -281,13 +285,14 @@ defmodule SutraUI.Command do
           id={"#{@id}-command"}
           placeholder={@placeholder}
           empty_text={@empty_text}
+          nonce={@nonce}
         >
           {render_slot(@inner_block)}
         </.command>
       </div>
     </dialog>
 
-    <script :type={ColocatedHook} name=".CommandDialog" runtime>
+    <script :type={ColocatedHook} name=".CommandDialog" runtime nonce={@nonce}>
       {
         mounted() {
           this.showHandler = () => {

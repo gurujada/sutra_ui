@@ -24,7 +24,7 @@ Add `sutra_ui` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:sutra_ui, "~> 0.4.0"}
+    {:sutra_ui, "~> 0.4.1"}
   ]
 end
 ```
@@ -218,8 +218,8 @@ check that `phoenix-colocated/sutra_ui` hooks are merged into your LiveSocket.
 
 **Cause:** Missing `dark` class on `<html>` element.
 
-**Fix:** Add the theme switcher with the root-layout listener from
-`SutraUI.ThemeSwitcher`, or manually toggle the class:
+**Fix:** Add the theme switcher and render `<SutraUI.ThemeSwitcher.theme_script />`
+in the root layout's `<head>`, or manually toggle the class:
 
 ```heex
 <.theme_switcher id="theme-toggle" />

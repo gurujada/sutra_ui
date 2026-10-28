@@ -174,6 +174,8 @@ defmodule SutraUI.RangeSlider do
 
   attr(:rest, :global, doc: "Additional HTML attributes")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def range_slider(assigns) do
     # Determine mode from step type
     float_mode = is_float(assigns.step)
@@ -303,7 +305,7 @@ defmodule SutraUI.RangeSlider do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".RangeSlider" runtime>
+    <script :type={ColocatedHook} name=".RangeSlider" runtime nonce={@nonce}>
       {
         mounted() {
           this.initializeState();

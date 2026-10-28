@@ -95,6 +95,9 @@ defmodule SutraUI.DropdownMenu do
   - `class` - Additional CSS classes for the container
   - `trigger_class` - Additional CSS classes for the trigger button
   - `menu_class` - Additional CSS classes for the menu
+  - `chevron` - Show the chevron beside the trigger content. Default: `true`. Pass `false`
+    for an icon-only trigger (a trigger whose only content is an icon and an `sr-only`
+    label also hides it through CSS)
 
   ## Slots
 
@@ -124,10 +127,17 @@ defmodule SutraUI.DropdownMenu do
 
   attr(:menu_class, :string, default: nil, doc: "Additional CSS classes for the menu")
 
+  attr(:chevron, :boolean,
+    default: true,
+    doc: "Show the chevron beside the trigger content (false for icon-only triggers)"
+  )
+
   attr(:rest, :global, doc: "Additional HTML attributes for the container")
 
   slot(:trigger, required: true, doc: "Content for the trigger button")
   slot(:inner_block, required: true, doc: "Menu items and content")
+
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
 
   def dropdown_menu(assigns) do
     ~H"""
@@ -147,6 +157,7 @@ defmodule SutraUI.DropdownMenu do
       >
         {render_slot(@trigger)}
         <svg
+          :if={@chevron}
           xmlns="http://www.w3.org/2000/svg"
           width="24"
           height="24"
@@ -181,7 +192,7 @@ defmodule SutraUI.DropdownMenu do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".DropdownMenu" runtime>
+    <script :type={ColocatedHook} name=".DropdownMenu" runtime nonce={@nonce}>
       {
         mounted() {
           this.initDropdownMenu();

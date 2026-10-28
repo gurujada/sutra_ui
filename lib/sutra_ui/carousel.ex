@@ -80,6 +80,8 @@ defmodule SutraUI.Carousel do
     attr(:class, :string, doc: "Additional CSS classes for this specific item")
   end
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def carousel(assigns) do
     item_count = length(assigns.item)
     assigns = assign(assigns, :item_count, item_count)
@@ -198,7 +200,7 @@ defmodule SutraUI.Carousel do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".Carousel" runtime>
+    <script :type={ColocatedHook} name=".Carousel" runtime nonce={@nonce}>
       {
         mounted() {
           this.viewport = this.el.querySelector('.carousel-viewport');

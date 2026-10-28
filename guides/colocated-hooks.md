@@ -60,6 +60,45 @@ Several Sutra UI components use colocated hooks for interactivity:
 Extracted hooks without `runtime` are exceptions. If you use one, merge the
 generated `phoenix-colocated/sutra_ui` hooks into your LiveSocket.
 
+## Content-Security-Policy
+
+Runtime hooks render an inline `<script>` that registers the hook, so a strict
+`script-src` blocks them unless the script carries a nonce. Every Sutra UI component that
+renders a runtime hook accepts a `nonce` attribute and puts it on that script:
+
+```heex
+<.dropdown_menu id="actions" nonce={@csp_nonce}>...</.dropdown_menu>
+<.tooltip id="tip" tooltip="Hi" nonce={@csp_nonce}>...</.tooltip>
+```
+
+Generate a nonce per request in a plug, put it in `conn.assigns`, send the same value in the
+`Content-Security-Policy` header, and render the theme script with it in the root layout:
+
+```heex
+<head>
+  <SutraUI.ThemeSwitcher.theme_script nonce={@csp_nonce} />
+</head>
+```
+
+With that, an app can use:
+
+```
+script-src 'self' 'nonce-<nonce>'; style-src 'self'; style-src-attr 'unsafe-inline'
+```
+
+`'unsafe-inline'` is not needed in `script-src`. What Sutra UI renders that a CSP sees:
+
+| Output | Where | Policy needed |
+|--------|-------|---------------|
+| Runtime hook `<script>` | every component with a runtime hook (`nonce` attribute) | `script-src` nonce |
+| Pre-paint theme script | `theme_script/1` (`nonce` attribute) | `script-src` nonce |
+| `onerror=` handler | `avatar` without an `id` | `script-src-attr 'unsafe-inline'`; pass an `id` instead |
+| `style=` attributes | `accordion`, `carousel`, `file_upload`, `popover`, `progress`, `range_slider`, `skeleton`, `slider` | `style-src-attr 'unsafe-inline'` |
+
+Inline `style=` attributes carry computed values (progress width, slider position, collapsed
+state) and are still needed; the hooks themselves set styles through the DOM, which a CSP allows.
+Extracted hooks (`dialog`, `response`) are bundled into your JavaScript and need no nonce.
+
 ## The Hook Name Convention
 
 Most Sutra UI colocated hook scripts use short dot names (e.g., `.Tabs`).

@@ -562,4 +562,41 @@ defmodule SutraUI.DropdownMenuTest do
       assert html =~ "dropdown-menu-separator"
     end
   end
+
+  describe "dropdown_menu/1 chevron" do
+    test "shows the chevron by default" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_menu id="chevron-menu">
+          <:trigger>Open</:trigger>
+          <DropdownMenu.dropdown_item><a href="/a">A</a></DropdownMenu.dropdown_item>
+        </DropdownMenu.dropdown_menu>
+        """)
+
+      assert html =~ "dropdown-menu-chevron"
+    end
+
+    test "chevron={false} omits it for icon-only triggers" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <DropdownMenu.dropdown_menu id="icon-menu" chevron={false}>
+          <:trigger><span class="sr-only">More</span></:trigger>
+          <DropdownMenu.dropdown_item><a href="/a">A</a></DropdownMenu.dropdown_item>
+        </DropdownMenu.dropdown_menu>
+        """)
+
+      refute html =~ "dropdown-menu-chevron"
+    end
+
+    test "CSS hides the chevron beside an sr-only label" do
+      css = File.read!("priv/static/sutra_ui.css")
+
+      assert css =~
+               ~r/\.dropdown-menu-trigger:has\(> \.sr-only\) > \.dropdown-menu-chevron \{\s*@apply hidden;/
+    end
+  end
 end

@@ -94,6 +94,8 @@ defmodule SutraUI.TreeView do
 
   slot(:inner_block, required: true)
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def tree_view(assigns) do
     assigns = assign(assigns, :hook, assigns.id && "SutraUI.TreeView.TreeView")
 
@@ -110,7 +112,7 @@ defmodule SutraUI.TreeView do
       {render_slot(@inner_block)}
     </div>
 
-    <script :type={ColocatedHook} name=".TreeView" runtime>
+    <script :type={ColocatedHook} name=".TreeView" runtime nonce={@nonce}>
       {
         mounted() {
           this.initTree();

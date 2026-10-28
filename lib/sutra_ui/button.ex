@@ -147,7 +147,7 @@ defmodule SutraUI.Button do
 
   attr(:rest, :global,
     include:
-      ~w(id name value form aria-label aria-pressed aria-describedby aria-expanded aria-controls aria-haspopup phx-click phx-target phx-value-id phx-disable-with download),
+      ~w(id name value form aria-label aria-pressed aria-describedby aria-expanded aria-controls aria-haspopup phx-click phx-target phx-value-id phx-disable-with download popovertarget popovertargetaction formaction formenctype formmethod formnovalidate formtarget command commandfor),
     doc: "Additional HTML attributes"
   )
 

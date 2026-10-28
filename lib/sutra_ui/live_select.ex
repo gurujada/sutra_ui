@@ -599,6 +599,7 @@ defmodule SutraUI.LiveSelect do
   def update(assigns, socket) do
     # Always update id
     socket = assign(socket, :id, assigns[:id])
+    socket = assign(socket, :nonce, assigns[:nonce])
 
     # Handle phx-target for routing events
     socket =
@@ -1104,7 +1105,7 @@ defmodule SutraUI.LiveSelect do
         <% end %>
       <% end %>
 
-      <script :type={ColocatedHook} name=".LiveSelect" runtime>
+      <script :type={ColocatedHook} name=".LiveSelect" runtime nonce={@nonce}>
         {
           // LiveSelect Hook - Client-side state management
           // Navigation (activeIndex, dropdownOpen) is entirely client-side

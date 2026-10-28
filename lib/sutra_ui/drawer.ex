@@ -201,6 +201,8 @@ defmodule SutraUI.Drawer do
   slot(:footer, doc: "Optional footer content")
   slot(:inner_block, required: true, doc: "Main drawer content")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def drawer(assigns) do
     ~H"""
     <div
@@ -231,7 +233,7 @@ defmodule SutraUI.Drawer do
       </aside>
     </div>
 
-    <script :type={ColocatedHook} name=".Drawer" runtime>
+    <script :type={ColocatedHook} name=".Drawer" runtime nonce={@nonce}>
       {
         mounted() {
           this.initializeDrawer();

@@ -110,6 +110,8 @@ defmodule SutraUI.Slider do
     doc: "Additional HTML attributes including ARIA"
   )
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def slider(assigns) do
     # Convert all numeric values to floats internally
     min = to_float(assigns.min)
@@ -158,7 +160,7 @@ defmodule SutraUI.Slider do
       {@rest}
     />
 
-    <script :type={ColocatedHook} name=".Slider" runtime>
+    <script :type={ColocatedHook} name=".Slider" runtime nonce={@nonce}>
       {
         mounted() {
           this.precision = parseInt(this.el.dataset.precision) || 0;

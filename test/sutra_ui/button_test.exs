@@ -342,4 +342,59 @@ defmodule SutraUI.ButtonTest do
       assert html =~ ~s(value="save")
     end
   end
+
+  describe "button/1 popover and form attributes" do
+    # `rest` collects undeclared attrs at runtime; the include list is what lets callers
+    # use them without a compile-time "undefined attribute" warning.
+    test "declares popover and form attributes as global" do
+      %{attrs: attrs} = Button.__components__()[:button]
+      %{opts: opts} = Enum.find(attrs, &(&1.name == :rest))
+
+      for name <- ~w(popovertarget popovertargetaction form formaction formenctype
+                     formmethod formnovalidate formtarget) do
+        assert name in opts[:include], "#{name} missing from the rest include list"
+      end
+    end
+
+    test "passes popovertarget and popovertargetaction through" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Button.button popovertarget="more" popovertargetaction="hide">Close</Button.button>
+        """)
+
+      assert html =~ ~s(popovertarget="more")
+      assert html =~ ~s(popovertargetaction="hide")
+    end
+
+    test "passes form submission attributes through" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Button.button form="f1" formaction="/other" formmethod="post" formnovalidate formtarget="_blank">
+          Go
+        </Button.button>
+        """)
+
+      assert html =~ ~s(form="f1")
+      assert html =~ ~s(formaction="/other")
+      assert html =~ ~s(formmethod="post")
+      assert html =~ "formnovalidate"
+      assert html =~ ~s(formtarget="_blank")
+    end
+
+    test "link variants keep global attributes" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Button.button href="/x" popovertarget="p" data-x="1">Link</Button.button>
+        """)
+
+      assert html =~ ~s(popovertarget="p")
+      assert html =~ ~s(data-x="1")
+    end
+  end
 end

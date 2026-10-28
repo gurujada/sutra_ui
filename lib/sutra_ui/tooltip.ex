@@ -56,6 +56,8 @@ defmodule SutraUI.Tooltip do
 
   slot(:inner_block, required: true, doc: "The element that triggers the tooltip on hover")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def tooltip(assigns) do
     ~H"""
     <span
@@ -79,7 +81,7 @@ defmodule SutraUI.Tooltip do
       </span>
     </span>
 
-    <script :type={ColocatedHook} name=".Tooltip" runtime>
+    <script :type={ColocatedHook} name=".Tooltip" runtime nonce={@nonce}>
       {
         mounted() {
           this.tooltipContent = this.el.querySelector('[role="tooltip"]');

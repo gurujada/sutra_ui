@@ -41,7 +41,7 @@ See the live demo and component examples at [sutraui.gurujada.com](https://sutra
 # mix.exs
 def deps do
   [
-    {:sutra_ui, "~> 0.4.0"}
+    {:sutra_ui, "~> 0.4.1"}
   ]
 end
 ```

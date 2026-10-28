@@ -77,6 +77,8 @@ defmodule SutraUI.Popover do
   slot(:trigger, required: true, doc: "The element that triggers the popover")
   slot(:inner_block, required: true, doc: "The popover content")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def popover(assigns) do
     ~H"""
     <div
@@ -114,7 +116,7 @@ defmodule SutraUI.Popover do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".Popover" runtime>
+    <script :type={ColocatedHook} name=".Popover" runtime nonce={@nonce}>
       {
         mounted() {
           this.trigger = this.el.querySelector('.popover-trigger');

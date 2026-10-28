@@ -417,6 +417,8 @@ end
 <.flash kind={:error} flash={@flash} title="Something went wrong" />
 ```
 
+Only the close button dismisses a flash; the message is a `div`, so it can hold block content.
+
 ### Progress
 
 ```heex
@@ -523,6 +525,12 @@ end
   <.dropdown_item phx-click="duplicate">Duplicate</.dropdown_item>
   <.dropdown_separator />
   <.dropdown_item phx-click="delete" variant="destructive">Delete</.dropdown_item>
+</.dropdown_menu>
+
+<%!-- Icon-only trigger: no chevron --%>
+<.dropdown_menu id="row-menu" chevron={false}>
+  <:trigger><.icon name="lucide:ellipsis" /><span class="sr-only">Row actions</span></:trigger>
+  ...
 </.dropdown_menu>
 ```
 

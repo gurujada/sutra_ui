@@ -87,6 +87,8 @@ defmodule SutraUI.InputOTP do
   slot(:group, doc: "Custom slot groups")
   slot(:separator, doc: "Visual separator between groups")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def input_otp(assigns) do
     chars = assigns.value |> to_string() |> String.graphemes()
     type = if assigns.mask, do: "password", else: "text"
@@ -145,7 +147,7 @@ defmodule SutraUI.InputOTP do
       <% end %>
     </div>
 
-    <script :type={ColocatedHook} name=".InputOTP" runtime>
+    <script :type={ColocatedHook} name=".InputOTP" runtime nonce={@nonce}>
       {
         mounted() {
           this.hidden = this.el.querySelector('[data-otp-value]');

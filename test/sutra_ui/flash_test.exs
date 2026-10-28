@@ -200,4 +200,44 @@ defmodule SutraUI.FlashTest do
       assert html =~ ~s(data-testid="test-flash")
     end
   end
+
+  describe "flash/1 layout and dismissal" do
+    test "renders the message in a div so block content is valid" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Flash.flash kind={:info}>
+          <div class="block-child">Reconnecting</div>
+        </Flash.flash>
+        """)
+
+      assert html =~ ~s(<div class="flash-description")
+      refute html =~ ~s(<p class="flash-description")
+    end
+
+    test "only the close button dismisses" do
+      assigns = %{flash: %{"info" => "Saved"}}
+
+      html =
+        rendered_to_string(~H"""
+        <Flash.flash kind={:info} flash={@flash} />
+        """)
+
+      [root_tag] = Regex.run(~r/<div[^>]*role="alert"[^>]*>/s, html)
+      refute root_tag =~ "phx-click"
+
+      [button_tag] = Regex.run(~r/<button[^>]*class="flash-close"[^>]*>/s, html)
+      assert button_tag =~ ~s(type="button")
+      assert button_tag =~ ~s(aria-label="Close")
+      assert button_tag =~ "lv:clear-flash"
+    end
+
+    test "CSS lays the description out as a flex row" do
+      css = File.read!("priv/static/sutra_ui.css")
+
+      assert css =~ ~r/\.flash-description \{\s*@apply flex items-center gap-1 text-sm;/
+      assert css =~ ~r/\.flash-description \{[^}]*> svg \{\s*@apply shrink-0;/s
+    end
+  end
 end

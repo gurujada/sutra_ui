@@ -60,7 +60,7 @@ defmodule SutraUI.Flash do
   | Role | `role="alert"` announces content to screen readers immediately |
   | Close button | `type="button"` with `aria-label="Close"` |
   | Icons | Decorative icons hidden from screen readers via `aria-hidden` |
-  | Dismissal | Click anywhere on flash or close button to dismiss |
+  | Dismissal | Only the close button dismisses, so text can be selected and links clicked |
 
   ## JS Helpers
 
@@ -87,8 +87,9 @@ defmodule SutraUI.Flash do
   @doc """
   Renders a flash message.
 
-  Flash messages automatically hide when clicked or when the close button
-  is pressed. They also clear the flash from the socket.
+  Flash messages hide when the close button is pressed (a click elsewhere on the
+  message, such as selecting text or following a link, does not dismiss it). Dismissing
+  also clears the flash from the socket.
 
   ## Attributes
 
@@ -148,7 +149,6 @@ defmodule SutraUI.Flash do
     <div
       :if={@has_inner_block || @flash_message}
       id={@id}
-      phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={["flash", flash_kind_class(@kind)]}
       {@rest}
@@ -192,15 +192,20 @@ defmodule SutraUI.Flash do
       </div>
       <div class="flash-content">
         <p :if={@title} class="flash-title">{@title}</p>
-        <p class="flash-description">
+        <div class="flash-description">
           <%= if @has_inner_block do %>
             {render_slot(@inner_block)}
           <% else %>
             {@flash_message}
           <% end %>
-        </p>
+        </div>
       </div>
-      <button type="button" class="flash-close" aria-label="Close">
+      <button
+        type="button"
+        class="flash-close"
+        aria-label="Close"
+        phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"

@@ -215,4 +215,31 @@ defmodule SutraUI.ThemeSwitcherTest do
       assert html =~ ~s(phx-hook="SutraUI.ThemeSwitcher.ThemeSwitcher")
     end
   end
+
+  describe "theme_script/1" do
+    test "renders the pre-paint script with the storage key" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <ThemeSwitcher.theme_script />
+        """)
+
+      assert html =~ "<script>"
+      assert html =~ "localStorage.getItem('sutra-ui:theme')"
+      assert html =~ "sutra-ui:set-theme"
+      assert html =~ "classList.add('dark')"
+    end
+
+    test "carries the nonce" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <ThemeSwitcher.theme_script nonce="abc123" />
+        """)
+
+      assert html =~ ~s(<script nonce="abc123">)
+    end
+  end
 end

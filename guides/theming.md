@@ -160,10 +160,15 @@ The easiest way to add dark mode is with the built-in theme switcher:
 <.theme_switcher id="theme-toggle" />
 ```
 
-This renders a button that dispatches `sutra-ui:set-theme`. Add the root-layout
-listener from `SutraUI.ThemeSwitcher` or your own listener to apply and persist
-the `dark` class. System preference can be used as the initial value in that
-root layout script.
+This renders a button that dispatches `sutra-ui:set-theme`. Render the pre-paint
+script in your root layout's `<head>` to apply and persist the `dark` class
+(it also uses the system preference as the initial value):
+
+```heex
+<SutraUI.ThemeSwitcher.theme_script nonce={@csp_nonce} />
+```
+
+`nonce` is only needed under a nonce-based Content-Security-Policy.
 
 ### Manual Control
 

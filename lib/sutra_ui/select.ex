@@ -184,6 +184,8 @@ defmodule SutraUI.Select do
   slot(:trigger, doc: "Custom content for the trigger button (optional)")
   slot(:inner_block, required: true, doc: "The select options and groups")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def select(assigns) do
     ~H"""
     <div
@@ -298,7 +300,7 @@ defmodule SutraUI.Select do
         data-select-input
       />
 
-      <script :type={ColocatedHook} name=".Select" runtime>
+      <script :type={ColocatedHook} name=".Select" runtime nonce={@nonce}>
         {
           mounted() {
             this.initSelect();

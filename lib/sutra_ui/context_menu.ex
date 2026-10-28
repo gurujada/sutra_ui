@@ -58,6 +58,8 @@ defmodule SutraUI.ContextMenu do
   slot(:trigger, required: true, doc: "Right-click target")
   slot(:inner_block, required: true, doc: "Menu content")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def context_menu(assigns) do
     ~H"""
     <div id={@id} class={["context-menu", @class]} phx-hook=".ContextMenu" {@rest}>
@@ -89,7 +91,7 @@ defmodule SutraUI.ContextMenu do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".ContextMenu" runtime>
+    <script :type={ColocatedHook} name=".ContextMenu" runtime nonce={@nonce}>
       {
         mounted() {
           this.trigger = this.el.querySelector('.context-menu-trigger');

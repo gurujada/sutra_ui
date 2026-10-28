@@ -84,6 +84,8 @@ defmodule SutraUI.HoverCard do
   slot(:trigger, required: true, doc: "Trigger content (hover/focus target)")
   slot(:inner_block, required: true, doc: "Hover card content")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def hover_card(assigns) do
     ~H"""
     <div
@@ -115,7 +117,7 @@ defmodule SutraUI.HoverCard do
       </div>
     </div>
 
-    <script :type={ColocatedHook} name=".HoverCard" runtime>
+    <script :type={ColocatedHook} name=".HoverCard" runtime nonce={@nonce}>
       {
         mounted() {
           this.trigger = this.el.querySelector('.hover-card-trigger');

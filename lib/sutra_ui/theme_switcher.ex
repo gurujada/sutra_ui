@@ -38,25 +38,14 @@ defmodule SutraUI.ThemeSwitcher do
 
   ## Theme Initialization
 
-  Add this script to your root layout's `<head>` to prevent flash of unstyled content:
+  Render `theme_script/1` in your root layout's `<head>` to prevent a flash of the wrong
+  theme before the page paints:
 
-      <script>
-        (function() {
-          const theme = localStorage.getItem('sutra-ui:theme') ||
-            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          if (theme === 'dark') document.documentElement.classList.add('dark');
-          
-          window.addEventListener('sutra-ui:set-theme', (e) => {
-            const newTheme = e.detail?.theme;
-            if (newTheme === 'dark') {
-              document.documentElement.classList.add('dark');
-            } else {
-              document.documentElement.classList.remove('dark');
-            }
-            localStorage.setItem('sutra-ui:theme', newTheme);
-          });
-        })();
-      </script>
+      <SutraUI.ThemeSwitcher.theme_script nonce={@csp_nonce} />
+
+  It sets the `dark` class from `localStorage` (key `sutra-ui:theme`, falling back to the
+  system preference) and saves the choice when the switcher dispatches `sutra-ui:set-theme`.
+  Pass `nonce` when your Content-Security-Policy uses nonces (see `usage_rules.md`).
   """
 
   use Phoenix.Component
@@ -121,6 +110,8 @@ defmodule SutraUI.ThemeSwitcher do
     doc: "Additional HTML attributes"
   )
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def theme_switcher(assigns) do
     ~H"""
     <button
@@ -169,7 +160,7 @@ defmodule SutraUI.ThemeSwitcher do
       </span>
     </button>
 
-    <script :type={ColocatedHook} name=".ThemeSwitcher" runtime>
+    <script :type={ColocatedHook} name=".ThemeSwitcher" runtime nonce={@nonce}>
       {
         mounted() {
           // Handle click events to toggle theme
@@ -208,5 +199,46 @@ defmodule SutraUI.ThemeSwitcher do
       {"icon", "primary"} -> "btn-icon"
       {"icon", variant} -> "btn-icon-#{variant}"
     end
+  end
+
+  @doc """
+  Renders the pre-paint theme script for the root layout's `<head>`.
+
+  It applies the saved theme (or the system preference) before first paint and
+  stores the theme the `theme_switcher/1` selects, under the `sutra-ui:theme` key.
+
+  ## Attributes
+
+  - `nonce` - CSP nonce for the inline script. Omit it when the policy allows
+    `'unsafe-inline'` scripts.
+
+  ## Examples
+
+      <head>
+        <SutraUI.ThemeSwitcher.theme_script nonce={@csp_nonce} />
+      </head>
+  """
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline script")
+
+  def theme_script(assigns) do
+    ~H"""
+    <script nonce={@nonce}>
+      (function() {
+        var theme = localStorage.getItem('sutra-ui:theme') ||
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+
+        window.addEventListener('sutra-ui:set-theme', function(e) {
+          var newTheme = e.detail && e.detail.theme;
+          if (newTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          localStorage.setItem('sutra-ui:theme', newTheme);
+        });
+      })();
+    </script>
+    """
   end
 end

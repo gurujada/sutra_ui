@@ -131,6 +131,8 @@ defmodule SutraUI.Toast do
   attr(:flash, :map, required: true, doc: "The flash map from the socket")
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
 
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+
   def toast_container(assigns) do
     ~H"""
     <div
@@ -146,7 +148,7 @@ defmodule SutraUI.Toast do
       </.toast>
     </div>
 
-    <script :type={ColocatedHook} name=".ToastContainer" runtime>
+    <script :type={ColocatedHook} name=".ToastContainer" runtime nonce={@nonce}>
       {
         mounted() {
           this.handleEvent("toast", ({variant, title, description, duration}) => {

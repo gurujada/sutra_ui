@@ -1268,12 +1268,18 @@
             }
         }
 
+        /* The focus wrap fills the screen so the panel's max-height resolves against it:
+           a dialog taller than the screen scrolls inside the panel. */
+        .dialog-focus {
+            @apply flex h-full w-full items-center justify-center;
+        }
+
         .dialog-backdrop {
             @apply fixed inset-0 bg-black/50 opacity-0 transition-opacity duration-200;
         }
 
         .dialog-panel {
-            @apply bg-background relative z-10 flex flex-col w-full max-w-[calc(100%_-_2rem)] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-lg max-h-[calc(100%_-_2rem)] overflow-y-auto;
+            @apply bg-background relative z-10 flex flex-col w-fit max-w-[calc(100%_-_2rem)] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-lg max-h-[calc(100%_-_2rem)] overflow-y-auto;
             @apply opacity-0 scale-95 transition-all duration-200;
 
             > header {
@@ -1314,6 +1320,11 @@
 
         .dropdown-menu-chevron {
             @apply shrink-0 opacity-50 transition-transform duration-200;
+        }
+
+        /* An icon-only trigger (its name in an `sr-only` label) shows no chevron. */
+        .dropdown-menu-trigger:has(> .sr-only) > .dropdown-menu-chevron {
+            @apply hidden;
         }
 
         &:has([aria-expanded="true"]) .dropdown-menu-chevron {
@@ -1511,9 +1522,20 @@
 @layer components {
     [data-popover] {
         @apply absolute bg-popover text-popover-foreground overflow-x-hidden overflow-y-auto rounded-md border shadow-md z-50 visible opacity-100 scale-100 min-w-full w-max transition-all;
+        transition-behavior: allow-discrete;
 
+        /* Open animation: a popover leaving `display: none` starts faded and scaled. */
+        &:not([aria-hidden="true"]) {
+            @starting-style {
+                opacity: 0;
+                scale: 0.95;
+            }
+        }
+
+        /* A closed popover takes no room (a hidden-but-laid-out one widened phone pages).
+           `allow-discrete` keeps the close animation: `display` flips when it ends. */
         &[aria-hidden="true"] {
-            @apply invisible opacity-0 scale-95;
+            @apply hidden invisible opacity-0 scale-95;
 
             &:not([data-side]),
             &[data-side="bottom"] {
@@ -2446,6 +2468,12 @@
     .avatar-fallback-hidden {
         @apply hidden;
     }
+    .avatar[data-avatar-failed] .avatar-image {
+        @apply hidden;
+    }
+    .avatar[data-avatar-failed] .avatar-fallback-hidden {
+        @apply flex;
+    }
     .avatar-group {
         @apply flex -space-x-3;
 
@@ -3287,7 +3315,7 @@
     }
 
     .flash {
-        @apply relative flex items-start gap-3 p-4 rounded-lg border shadow-lg cursor-pointer;
+        @apply relative flex items-start gap-3 p-4 rounded-lg border shadow-lg;
         @apply transition-all duration-200 ease-out;
         @apply hover:shadow-xl;
     }
@@ -3315,7 +3343,11 @@
     }
 
     .flash-description {
-        @apply text-sm;
+        @apply flex items-center gap-1 text-sm;
+
+        > svg {
+            @apply shrink-0;
+        }
     }
 
     .flash-close {

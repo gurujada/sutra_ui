@@ -1,7 +1,7 @@
 defmodule SutraUI.MixProject do
   use Mix.Project
 
-  @version "0.4.0"
+  @version "0.4.1"
   @source_url "https://github.com/gurujada/sutra_ui"
 
   def project do

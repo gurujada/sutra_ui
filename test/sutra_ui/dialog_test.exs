@@ -270,4 +270,29 @@ defmodule SutraUI.DialogTest do
       assert %Phoenix.LiveView.JS{} = js
     end
   end
+
+  describe "dialog/1 tall content" do
+    test "the focus wrap carries the dialog-focus class" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Dialog.dialog id="tall-dialog">
+          Content
+        </Dialog.dialog>
+        """)
+
+      assert html =~ ~r/id="tall-dialog-focus-wrap"[^>]*class="dialog-focus"/ or
+               html =~ ~r/class="dialog-focus"[^>]*id="tall-dialog-focus-wrap"/
+    end
+
+    test "the wrap fills the screen and the panel keeps its natural width" do
+      css = File.read!("priv/static/sutra_ui.css")
+
+      assert css =~ ~r/\.dialog-focus \{\s*@apply flex h-full w-full items-center justify-center;/
+
+      assert css =~
+               ~r/\.dialog-panel \{\s*@apply bg-background relative z-10 flex flex-col w-fit /
+    end
+  end
 end
