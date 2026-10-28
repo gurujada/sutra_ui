@@ -83,11 +83,15 @@ function navButton(label, paths, onClick) {
   return b;
 }
 
+const todayParts = (state) => parse(state.today);
+/** Whether `month` of the year being shown is the current month. */
+const thisMonth = (state, month) => todayParts(state).y === state.y && todayParts(state).m === month;
+
 function monthList(state, cb) {
   const short = monthNames(state.locale, "short");
   const list = h("div", { class: "dp-months", role: "group", "aria-label": `Months of ${state.y}` });
   short.forEach((name, i) => {
-    const b = h("button", { type: "button", class: "dp-cell", "data-current": i + 1 === state.m, "aria-pressed": i + 1 === state.m, text: name });
+    const b = h("button", { type: "button", class: "dp-cell", "data-current": i + 1 === state.m, "data-today": thisMonth(state, i + 1), "aria-current": thisMonth(state, i + 1) ? "date" : null, "aria-pressed": i + 1 === state.m, text: name });
     b.addEventListener("click", () => cb.month(i + 1));
     list.append(b);
   });
@@ -98,7 +102,7 @@ function yearList(state, cb) {
   const list = h("div", { class: "dp-years", role: "group", "aria-label": "Years" });
   for (let i = 0; i < 12; i++) {
     const year = state.yearPage + i;
-    const b = h("button", { type: "button", class: "dp-cell", "data-current": year === state.y, "aria-pressed": year === state.y, text: String(year) });
+    const b = h("button", { type: "button", class: "dp-cell", "data-current": year === state.y, "data-today": year === todayParts(state).y, "aria-current": year === todayParts(state).y ? "date" : null, "aria-pressed": year === state.y, text: String(year) });
     b.addEventListener("click", () => cb.year(year));
     list.append(b);
   }
