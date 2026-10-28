@@ -114,6 +114,51 @@ defmodule SutraUI.Tabs do
   > Tab panels have `tabindex="0"` allowing keyboard users to tab into
   > panel content after selecting a tab.
 
+  ## URL tabs
+
+  Give each `tab` a `patch` or a `navigate` and every tab has its own URL: it feels instant,
+  and a reload or a direct link lands on the right tab.
+
+  **`patch`: tabs as routes (or params) of one LiveView.** The app sets `value` from the URL in
+  `handle_params`. A click first switches on the client, in the same tick as the patch starts:
+  the tab turns active (`aria-selected`, `data-state`) and its panel shows at once, or, when the
+  server has not rendered that panel yet, a loading state; then the URL patches and the server
+  renders the active tab. The server's render is the same state, so nothing flickers back.
+
+      def handle_params(params, _uri, socket) do
+        tab = params["tab"] || "overview"
+        {:noreply, assign(socket, tab: tab, visited: SutraUI.Tabs.visit(socket.assigns.visited, tab))}
+      end
+
+      <.tabs id="course" value={@tab} label="Course" keep={@visited}>
+        <:tab value="overview" patch={~p"/courses/\#{@id}/overview"}>Overview</:tab>
+        <:tab value="notes" patch={~p"/courses/\#{@id}/notes"}>Notes</:tab>
+        <:panel value="overview">...</:panel>
+        <:panel value="notes">...</:panel>
+      </.tabs>
+
+  Only the active panel is rendered by default (the others are empty containers, so a panel's
+  slot content is not even evaluated). `keep` leaves visited panels on the page, hidden, so
+  returning is instant and what the user typed in them stays: pass `true` to render every given
+  panel, or the list of visited values (`visit/2` keeps it) to render those. With `keep`, the hook
+  also carries a typed value of a plain field over server patches (LiveView would reset it to the
+  server's value); fields in a form with `phx-change` or `phx-submit` are the server's own state
+  and are left alone.
+
+  **`navigate`: tabs that are separate LiveViews** of one `live_session`. The tab bar is a
+  navigation landmark of links with `aria-current="page"` on the active one; there are no panels.
+
+  **Neither: client-only tabs**, as before (`default_value`, no URL).
+
+  ### Why the roles differ
+
+  Patch tabs control panels on the same page, so they follow the ARIA tabs pattern: `tablist`,
+  `tab` (on the links, so open-in-new-tab and copy-link still work), `tabpanel`, a roving
+  `tabindex`, arrow keys and Home/End move focus, Enter or Space activates (manual activation, so
+  arrowing past a tab does not patch). Navigate tabs lead to other pages, which is navigation:
+  a `nav` with links and `aria-current`, not `tab` roles, since there is no panel on the page
+  for the tab to control.
+
   ## Segmented control and filter tabs
 
   Two more shapes share the tabs look but have no panels: they choose, and your LiveView
@@ -148,8 +193,33 @@ defmodule SutraUI.Tabs do
 
   @doc """
   Renders a tabs component.
+
+  Each `tab` takes `patch`, `navigate`, or neither; see "URL tabs" in the module doc.
   """
-  attr(:default_value, :string, required: true, doc: "The value of the initially active tab")
+  attr(:default_value, :string,
+    default: nil,
+    doc: "The initially active tab of client-only tabs (use `value` for URL tabs)"
+  )
+
+  attr(:value, :string,
+    default: nil,
+    doc: "The active tab, from the server (the app's assign, set from the URL)"
+  )
+
+  attr(:keep, :any,
+    default: false,
+    doc:
+      "Patch tabs: `true` renders every given panel (hidden when inactive); a list of values " <>
+        "(see `visit/2`) renders those panels as well as the active one. Default: only the active panel"
+  )
+
+  attr(:label, :string, default: nil, doc: "Accessible name of the tab list")
+
+  attr(:loading_label, :string,
+    default: "Loading",
+    doc: "Screen-reader word of the loading state"
+  )
+
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
   attr(:id, :string, required: true, doc: "Unique identifier for the tabs component")
 
@@ -158,54 +228,122 @@ defmodule SutraUI.Tabs do
   slot :tab, required: true, doc: "Tab triggers" do
     attr(:value, :string, required: true, doc: "Unique identifier for the tab")
     attr(:disabled, :boolean, doc: "Whether the tab is disabled")
+    attr(:patch, :string, doc: "A LiveView patch path: the tab switches at once, then patches")
+    attr(:navigate, :string, doc: "A path of another LiveView: the tab is a link")
   end
 
-  slot :panel, required: true, doc: "Tab panels" do
+  slot :panel, doc: "Tab panels (none for `navigate` tabs)" do
     attr(:value, :string, required: true, doc: "Value matching the corresponding tab")
   end
 
   attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
 
   def tabs(assigns) do
+    assigns = assign(assigns, :mode, mode(assigns.tab))
+    assigns = assign(assigns, :active, assigns.value || assigns.default_value)
+
+    if assigns.mode != :client and is_nil(assigns.value) do
+      raise ArgumentError,
+            "tabs #{inspect(assigns.id)} has patch or navigate tabs and needs `value`, " <>
+              "the active tab from the app's assign"
+    end
+
+    if assigns.mode == :client and is_nil(assigns.active) do
+      raise ArgumentError, "tabs #{inspect(assigns.id)} needs `default_value` (or `value`)"
+    end
+
+    render_tabs(assigns)
+  end
+
+  # navigate: a navigation bar of links (separate LiveViews), `aria-current` on the active one.
+  defp render_tabs(%{mode: :navigate} = assigns) do
+    ~H"""
+    <nav id={@id} class={["tabs", @class]} data-mode="navigate" aria-label={@label} {@rest}>
+      <div class="tabs-list">
+        <.choice
+          :for={tab <- @tab}
+          id={"#{@id}-tab-#{tab.value}"}
+          patch={tab[:patch]}
+          navigate={tab[:navigate]}
+          class="tabs-trigger"
+          aria-current={tab.value == @active && "page"}
+          data-state={if tab.value == @active, do: "active", else: "inactive"}
+          data-value={tab.value}
+        >
+          {render_slot([tab])}
+        </.choice>
+      </div>
+    </nav>
+    """
+  end
+
+  # client: today's behaviour; patch: the same with links that also patch the URL.
+  defp render_tabs(assigns) do
+    patch? = assigns.mode == :patch
+
+    assigns =
+      assign(assigns,
+        patch?: patch?,
+        panels: panels(assigns, patch?)
+      )
+
     ~H"""
     <div
       id={@id}
       class={["tabs", @class]}
       phx-hook=".Tabs"
-      data-default-value={@default_value}
+      data-mode={@mode}
+      data-default-value={@active}
+      data-activation={if @patch?, do: "manual", else: "automatic"}
+      data-keep={@patch? && @keep != false && "true"}
       {@rest}
     >
-      <div class="tabs-list" role="tablist" aria-orientation="horizontal">
-        <%= for tab <- @tab do %>
-          <button
-            type="button"
-            role="tab"
-            class={["tabs-trigger", tab.value == @default_value && "tabs-trigger-active"]}
-            id={"#{@id}-tab-#{tab.value}"}
-            aria-selected={to_string(tab.value == @default_value)}
-            aria-controls={"#{@id}-panel-#{tab.value}"}
-            tabindex={if tab.value == @default_value, do: "0", else: "-1"}
-            disabled={tab[:disabled]}
-            data-value={tab.value}
-            phx-click={switch_tab(@id, tab.value, @tab)}
-          >
-            {render_slot([tab])}
-          </button>
+      <div
+        class="tabs-list"
+        role="tablist"
+        aria-orientation="horizontal"
+        aria-label={@label}
+      >
+        <.choice
+          :for={tab <- @tab}
+          id={"#{@id}-tab-#{tab.value}"}
+          patch={tab[:patch]}
+          click={switch_tab(@id, tab.value, @tab, @patch?)}
+          class={["tabs-trigger", tab.value == @active && "tabs-trigger-active"]}
+          role="tab"
+          aria-selected={to_string(tab.value == @active)}
+          aria-controls={"#{@id}-panel-#{tab.value}"}
+          tabindex={if tab.value == @active, do: "0", else: "-1"}
+          disabled={tab[:disabled]}
+          data-state={if tab.value == @active, do: "active", else: "inactive"}
+          data-value={tab.value}
+        >
+          {render_slot([tab])}
+        </.choice>
+      </div>
+      <div
+        :for={panel <- @panels}
+        role="tabpanel"
+        class="tabs-panel"
+        id={"#{@id}-panel-#{panel.value}"}
+        aria-labelledby={"#{@id}-tab-#{panel.value}"}
+        tabindex="0"
+        hidden={panel.value != @active}
+        data-state={if panel.value == @active, do: "active", else: "inactive"}
+        data-empty={panel.slot == nil}
+        data-value={panel.value}
+      >
+        <%= if panel.slot do %>
+          {render_slot([panel.slot])}
+        <% else %>
+          <div class="tabs-loading" role="status">
+            <span class="sr-only">{@loading_label}</span>
+            <span class="tabs-loading-bar" aria-hidden="true"></span>
+            <span class="tabs-loading-bar" aria-hidden="true"></span>
+            <span class="tabs-loading-bar" aria-hidden="true"></span>
+          </div>
         <% end %>
       </div>
-      <%= for panel <- @panel do %>
-        <div
-          role="tabpanel"
-          class="tabs-panel"
-          id={"#{@id}-panel-#{panel.value}"}
-          aria-labelledby={"#{@id}-tab-#{panel.value}"}
-          tabindex="0"
-          hidden={panel.value != @default_value}
-          data-value={panel.value}
-        >
-          {render_slot([panel])}
-        </div>
-      <% end %>
     </div>
 
     <script :type={ColocatedHook} name=".Tabs" runtime nonce={@nonce}>
@@ -219,10 +357,50 @@ defmodule SutraUI.Tabs do
           this.el.removeEventListener('keydown', this.keydownHandler);
         },
 
+        // With `keep`, a server patch must not wipe what the user typed in a kept panel: LiveView
+        // sets a plain field back to the server's value. Fields in forms with phx-change or
+        // phx-submit are the server's own state and are left alone, as is a field whose
+        // server-rendered value changed.
+        beforeUpdate() {
+          if (this.el.dataset.keep !== 'true') return;
+          this.typed = [];
+          this.el.querySelectorAll('[role="tabpanel"]:not([data-empty]) :is(input, textarea, select)[name]').forEach((field) => {
+            if (field.type === 'file' || field.type === 'password' || field === document.activeElement) return;
+            if (field.closest('form[phx-change], form[phx-submit]')) return;
+            this.typed.push({
+              field,
+              value: field.value,
+              checked: field.checked,
+              defaultValue: field.defaultValue,
+              defaultChecked: field.defaultChecked
+            });
+          });
+        },
+
+        updated() {
+          (this.typed || []).forEach(({ field, value, checked, defaultValue, defaultChecked }) => {
+            if (!field.isConnected) return;
+            if (field.defaultValue === defaultValue && field.value !== value) field.value = value;
+            if (field.defaultChecked === defaultChecked && field.checked !== checked) field.checked = checked;
+          });
+          this.typed = [];
+        },
+
         handleKeydown(e) {
           const tabs = Array.from(this.el.querySelectorAll('[role="tab"]:not([disabled])'));
-          const currentIndex = tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true');
-          
+          if (!tabs.includes(document.activeElement) && e.target.closest('[role="tabpanel"]')) return;
+          const manual = this.el.dataset.activation === 'manual';
+          // Manual activation (URL tabs): arrows move focus, Enter or Space activates.
+          const currentIndex = manual
+            ? tabs.indexOf(document.activeElement)
+            : tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true');
+
+          if (manual && (e.key === ' ' || e.key === 'Spacebar') && currentIndex > -1) {
+            e.preventDefault();
+            tabs[currentIndex].click();
+            return;
+          }
+
           let newIndex;
           switch(e.key) {
             case 'ArrowLeft':
@@ -240,9 +418,13 @@ defmodule SutraUI.Tabs do
             default:
               return;
           }
-          
+
           e.preventDefault();
-          tabs[newIndex].click();
+          if (manual) {
+            tabs.forEach(tab => tab.setAttribute('tabindex', tab === tabs[newIndex] ? '0' : '-1'));
+          } else {
+            tabs[newIndex].click();
+          }
           tabs[newIndex].focus();
         }
       }
@@ -250,24 +432,111 @@ defmodule SutraUI.Tabs do
     """
   end
 
-  defp switch_tab(tabs_id, value, all_tabs) do
-    # Hide all other panels, show the selected one
-    all_tabs
-    |> Enum.reject(&(&1.value == value))
-    |> Enum.reduce(
-      JS.remove_class("tabs-trigger-active", to: "##{tabs_id} .tabs-trigger")
-      |> JS.add_class("tabs-trigger-active", to: "##{tabs_id}-tab-#{value}")
-      |> JS.set_attribute({"aria-selected", "false"}, to: "##{tabs_id} [role='tab']")
-      |> JS.set_attribute({"aria-selected", "true"}, to: "##{tabs_id}-tab-#{value}")
-      |> JS.set_attribute({"tabindex", "-1"}, to: "##{tabs_id} [role='tab']")
-      |> JS.set_attribute({"tabindex", "0"}, to: "##{tabs_id}-tab-#{value}"),
-      fn tab, js ->
-        JS.hide(js, to: "##{tabs_id}-panel-#{tab.value}")
-        |> JS.set_attribute({"hidden", "hidden"}, to: "##{tabs_id}-panel-#{tab.value}")
+  defp mode(tabs) do
+    cond do
+      Enum.any?(tabs, & &1[:navigate]) -> :navigate
+      Enum.any?(tabs, & &1[:patch]) -> :patch
+      true -> :client
+    end
+  end
+
+  # One entry per tab: the given panel slot, or none (rendered empty, with a loading state the
+  # click shows until the server sends the panel). Patch tabs render a panel's content only when
+  # it is active or kept; client-only tabs render every panel as before.
+  defp panels(assigns, patch?) do
+    Enum.map(assigns.tab, fn tab ->
+      slot = Enum.find(assigns.panel, &(&1.value == tab.value))
+
+      keep? =
+        not patch? or tab.value == assigns.active or assigns.keep == true or
+          (is_list(assigns.keep) and tab.value in assigns.keep) or
+          (is_struct(assigns.keep, MapSet) and MapSet.member?(assigns.keep, tab.value))
+
+      %{value: tab.value, slot: if(keep?, do: slot)}
+    end)
+  end
+
+  @doc """
+  Adds `value` to the list of visited tabs, for `keep`.
+
+      def handle_params(params, _uri, socket) do
+        tab = params["tab"] || "overview"
+        {:noreply, assign(socket, tab: tab, visited: SutraUI.Tabs.visit(socket.assigns.visited, tab))}
       end
-    )
-    |> JS.show(to: "##{tabs_id}-panel-#{value}")
-    |> JS.remove_attribute("hidden", to: "##{tabs_id}-panel-#{value}")
+  """
+  @spec visit([String.t()], String.t()) :: [String.t()]
+  def visit(visited, value) when is_list(visited), do: Enum.uniq(visited ++ [value])
+
+  # The tab link or button: a link for `patch` or `navigate`, else a button. `click` is the
+  # phx-click (on a link it runs after the navigation starts, in the same tick).
+  attr(:patch, :string, default: nil)
+  attr(:navigate, :string, default: nil)
+  attr(:click, :any, default: nil)
+
+  attr(:rest, :global,
+    include:
+      ~w(role aria-selected aria-current aria-pressed aria-controls tabindex disabled phx-value-filter phx-target)
+  )
+
+  slot(:inner_block, required: true)
+
+  defp choice(%{patch: patch} = assigns) when is_binary(patch) do
+    ~H"""
+    <.link patch={@patch} phx-click={@click} {@rest}>{render_slot(@inner_block)}</.link>
+    """
+  end
+
+  defp choice(%{navigate: navigate} = assigns) when is_binary(navigate) do
+    ~H"""
+    <.link navigate={@navigate} phx-click={@click} {@rest}>{render_slot(@inner_block)}</.link>
+    """
+  end
+
+  defp choice(assigns) do
+    ~H"""
+    <button type="button" phx-click={@click} {@rest}>{render_slot(@inner_block)}</button>
+    """
+  end
+
+  # The client's side of a click: the active tab and its panel switch at once. Patch tabs only
+  # set attributes (so the server's render of the same state changes nothing); client-only tabs
+  # also show and hide as before.
+  defp switch_tab(tabs_id, value, all_tabs, patch?) do
+    tab = "##{tabs_id}-tab-#{value}"
+    panel = "##{tabs_id}-panel-#{value}"
+
+    base =
+      JS.remove_class("tabs-trigger-active", to: "##{tabs_id} .tabs-trigger")
+      |> JS.add_class("tabs-trigger-active", to: tab)
+      |> JS.set_attribute({"aria-selected", "false"}, to: "##{tabs_id} [role='tab']")
+      |> JS.set_attribute({"aria-selected", "true"}, to: tab)
+      |> JS.set_attribute({"data-state", "inactive"}, to: "##{tabs_id} [role='tab']")
+      |> JS.set_attribute({"data-state", "active"}, to: tab)
+      |> JS.set_attribute({"tabindex", "-1"}, to: "##{tabs_id} [role='tab']")
+      |> JS.set_attribute({"tabindex", "0"}, to: tab)
+
+    others = Enum.reject(all_tabs, &(&1.value == value))
+
+    base =
+      Enum.reduce(others, base, fn other, js ->
+        other_panel = "##{tabs_id}-panel-#{other.value}"
+
+        js
+        |> JS.set_attribute({"hidden", "hidden"}, to: other_panel)
+        |> JS.set_attribute({"data-state", "inactive"}, to: other_panel)
+      end)
+
+    base = JS.set_attribute(base, {"data-state", "active"}, to: panel)
+
+    if patch? do
+      JS.remove_attribute(base, "hidden", to: panel)
+    else
+      Enum.reduce(others, base, fn other, js ->
+        JS.hide(js, to: "##{tabs_id}-panel-#{other.value}")
+      end)
+      |> JS.show(to: panel)
+      |> JS.remove_attribute("hidden", to: panel)
+    end
   end
 
   @doc """
@@ -372,38 +641,24 @@ defmodule SutraUI.Tabs do
       data-style="filter"
       {@rest}
     >
-      <%= for item <- @item do %>
-        <.link
-          :if={item[:patch] || item[:navigate]}
-          id={item[:id]}
-          patch={item[:patch]}
-          navigate={item[:navigate]}
-          aria-current={item[:active] && "page"}
-          data-state={if item[:active], do: "active", else: "idle"}
-          class="filter-tab"
-        >
-          {item.inner_block && render_slot([item])}{item.label}<span
-            :if={item[:count]}
-            class="filter-tab-count"
-          >{item.count}</span>
-        </.link>
-        <button
-          :if={!(item[:patch] || item[:navigate])}
-          id={item[:id]}
-          type="button"
-          phx-click={item[:click]}
-          phx-value-filter={item[:value]}
-          phx-target={@target}
-          aria-pressed={to_string(!!item[:active])}
-          data-state={if item[:active], do: "active", else: "idle"}
-          class="filter-tab"
-        >
-          {item.inner_block && render_slot([item])}{item.label}<span
-            :if={item[:count]}
-            class="filter-tab-count"
-          >{item.count}</span>
-        </button>
-      <% end %>
+      <.choice
+        :for={item <- @item}
+        id={item[:id]}
+        patch={item[:patch]}
+        navigate={item[:navigate]}
+        click={item[:click]}
+        phx-value-filter={item[:value]}
+        phx-target={@target}
+        aria-current={(item[:patch] || item[:navigate]) && item[:active] && "page"}
+        aria-pressed={!(item[:patch] || item[:navigate]) && to_string(!!item[:active])}
+        data-state={if item[:active], do: "active", else: "idle"}
+        class="filter-tab"
+      >
+        {item.inner_block && render_slot([item])}{item.label}<span
+          :if={item[:count]}
+          class="filter-tab-count"
+        >{item.count}</span>
+      </.choice>
     </div>
     """
   end

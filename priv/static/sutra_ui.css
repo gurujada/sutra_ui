@@ -2134,19 +2134,36 @@
     .tabs {
         @apply flex flex-col gap-2;
 
-        [role="tablist"] {
+        :is([role="tablist"], .tabs-list) {
             @apply bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px];
 
-            [role="tab"] {
-                @apply focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring text-foreground dark:text-muted-foreground inline-flex h-[calc(100%_-_1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 cursor-pointer;
+            :is([role="tab"], .tabs-trigger) {
+                @apply no-underline focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring text-foreground dark:text-muted-foreground inline-flex h-[calc(100%_-_1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 cursor-pointer;
 
-                &[aria-selected="true"] {
+                &:is([aria-selected="true"], [aria-current="page"]) {
                     @apply bg-background dark:text-foreground dark:border-input dark:bg-input/30 shadow-sm;
                 }
             }
         }
         [role="tabpanel"] {
             @apply flex-1 outline-none;
+        }
+        /* URL tabs: a panel the server has not rendered yet shows a loading state until it does. */
+        [role="tabpanel"][data-empty]:not([hidden]) .tabs-loading {
+            @apply flex;
+        }
+        .tabs-loading {
+            @apply hidden flex-col gap-3 py-2;
+        }
+        .tabs-loading-bar {
+            @apply bg-muted block h-4 w-full animate-pulse rounded-md;
+
+            &:nth-child(2) {
+                @apply w-4/5;
+            }
+            &:nth-child(3) {
+                @apply w-3/5;
+            }
         }
     }
 }

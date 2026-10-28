@@ -263,7 +263,7 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `breadcrumb/1` - Breadcrumb navigation
 - `pagination/1` - Page navigation
 - `accordion/1` - Collapsible content sections
-- `tabs/1` - Tab panels (JS hook)
+- `tabs/1` - Tab panels (JS hook); per tab `patch` (URL tabs of one LiveView: set `value` from `handle_params`, optional `keep`), `navigate` (a nav of links, separate LiveViews) or neither (client-only)
 - `segmented/1` - Single choice out of 2-6 (radio group; form `field`/`name` or standalone `click`)
 - `filter_tabs/1` - "All · Mine · Waiting" links or buttons with counts
 - `dropdown_menu/1` - Dropdown menu (JS hook); `chevron={false}` for icon-only triggers
