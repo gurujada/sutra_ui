@@ -6,7 +6,9 @@
   "type": "module",
   "exports": {
     "./commands": "./priv/static/commands.js",
-    "./time": "./priv/static/time.js"
+    "./time": "./priv/static/time.js",
+    "./fit": "./priv/static/fit.js",
+    "./select": "./priv/static/select.js"
   },
   "files": [
     "priv/static/*.js"

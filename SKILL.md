@@ -82,7 +82,8 @@ writing HEEx.
 ## Component Map
 
 - Foundation: `button`, `badge`, `spinner`, `kbd`
-- Forms: `input`, `textarea`, `checkbox`, `switch`, `radio_group`, `select`,
+- Forms: `input`, `textarea`, `checkbox`, `switch`, `radio_group`, `select` (real
+  `<select>` + SutraUI list; `options`, `field`, `multiple`, `searchable`, `native`),
   `slider`, `range_slider`, `live_select` (LiveComponent), `input_otp`, `file_upload`,
   `simple_form`, `input_group`, `filter_bar`, `label`
 - Layout/data: `card`, `header`, `table`, `item`, `separator`, `marquee`,

@@ -165,12 +165,8 @@ Formats: `:date :short :long :day :time :date_time :day_time :full :month`. 24-h
 ### Select
 
 ```heex
-<.select id="country" name="country" value={@country}>
-  <:trigger>{@country_label || "Select country"}</:trigger>
-  <.select_option value="us" label="United States" />
-  <.select_option value="uk" label="United Kingdom" />
-  <.select_option value="ca" label="Canada" />
-</.select>
+<.select field={@form[:country]} label="Country" prompt="Choose"
+         options={[{"United States", "us"}, {"United Kingdom", "uk"}]} />
 ```
 
 ### Slider

@@ -231,13 +231,13 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 
 ### Form Controls
 - `label/1` - Form labels
-- `input/1` - Unified form fields with label, description, native select, and error support
+- `input/1` - Unified form fields with label, description, select (`SutraUI.Select`) and error support
 - `textarea/1` - Multi-line text input
 - `checkbox/1` - Checkbox input
 - `switch/1` - Toggle switch
 - `radio_group/1`, `radio/1` - Radio button groups
 - `simple_form/1` - Styled plain form shell; use Phoenix `<.form class="form">` for changeset-backed LiveView forms
-- `select/1` - Custom select dropdown (JS hook)
+- `select/1` - Form select: a real `<select>` plus SutraUI's list (JS hook, extracted; bottom sheet on phones). Use `options`/`field`; `select_option` only for custom option content
 - `slider/1` - Range slider (JS hook)
 - `range_slider/1` - Dual-handle range slider (JS hook)
 - `SutraUI.LiveSelect` - LiveComponent async searchable select; render with `<.live_component module={SutraUI.LiveSelect} ... />`
@@ -606,18 +606,19 @@ end
 
 2. **Check component ID** - many hook-based components require unique IDs:
    ```heex
-   <%# Wrong - missing ID %>
-   <.select name="country">
-     <.select_option value="us" label="United States" />
-   </.select>
-   
+   <%# Wrong - no id, name or field %>
+   <.select options={["us"]} />
+
    <%# Correct %>
-   <.select id="country-select" name="country">
-     <.select_option value="us" label="United States" />
-   </.select>
+   <.select id="country-select" name="country" options={[{"United States", "us"}]} />
    ```
 
-3. **Check rendered hook markup** - Runtime hooks are emitted with the
+3. **Merge the extracted hooks** - `select` (like `dialog`) is an extracted hook:
+   `import {hooks as sutraHooks} from "phoenix-colocated/sutra_ui"` and pass
+   `hooks: {...sutraHooks}` to the LiveSocket. Without it the browser's own `<select>`
+   still works.
+
+4. **Check rendered hook markup** - Runtime hooks are emitted with the
    component. If the hook script is missing, recompile the app:
    ```bash
    mix compile --force
@@ -657,9 +658,7 @@ end
 
 1. **Check name attribute** - Ensure `name` matches the form field:
    ```heex
-   <.select id="role-select" name={@form[:role].name} value={@form[:role].value}>
-     <.select_option value="admin" label="Administrator" />
-   </.select>
+   <.select field={@form[:role]} label="Role" options={[{"Administrator", "admin"}]} />
    ```
 
 2. **Check phx-change** - Form needs `phx-change` for live validation:

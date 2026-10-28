@@ -220,38 +220,35 @@ Browse live form and component examples at [sutraui.gurujada.com](https://sutrau
 
 ### Basic Select
 
+A real `<select>` underneath, SutraUI's list on top (a bottom sheet on phones).
+
 ```heex
-<.select id="country" name="country" value={@country}>
-  <:trigger>{@country_label || "Select a country"}</:trigger>
-  <.select_option value="us" label="United States" />
-  <.select_option value="ca" label="Canada" />
-  <.select_option value="mx" label="Mexico" />
-</.select>
+<.select field={@form[:country]} label="Country" prompt="Choose a country"
+         options={[{"United States", "us"}, {"Canada", "ca"}]} />
+
+<%!-- with label, description and errors --%>
+<.input field={@form[:country]} type="select" label="Country" options={@countries} />
 ```
 
-### Select with Groups
+### Groups, disabled, multiple, search
 
 ```heex
-<.select id="timezone" name="timezone" value={@timezone} searchable>
-  <:trigger>{@timezone_label || "Select timezone"}</:trigger>
-  <.select_group label="Americas">
-    <.select_option value="America/New_York" label="New York" />
-    <.select_option value="America/Los_Angeles" label="Los Angeles" />
-  </.select_group>
-  <.select_separator />
-  <.select_group label="Europe">
-    <.select_option value="Europe/London" label="London" />
-    <.select_option value="Europe/Paris" label="Paris" />
-  </.select_group>
-</.select>
+<.select id="stack" name="stack" label="Stack" options={[
+  {"Backend", [{"Phoenix", "phoenix"}, {"Rails", "rails", disabled: true}]},
+  {"Frontend", [{"React", "react"}]}
+]} />
+
+<.select field={@form[:tags]} label="Tags" multiple options={@tags} />
+<.select field={@form[:tz]} label="Zone" searchable options={@zones} />  <%!-- auto from 10 options --%>
+<.select field={@form[:x]} label="X" native options={@xs} />            <%!-- browser control only --%>
 ```
 
-### Select with Default Value
+### Custom option content
 
 ```heex
-<.select id="status" name="status" value={@status} selected_label={@status_label}>
+<.select id="status" name="status" value={@status}>
+  <:trigger><.badge>{@status}</.badge></:trigger>
   <.select_option value="active" label="Active" />
-  <.select_option value="inactive" label="Inactive" />
   <.select_option value="pending" label="Pending" />
 </.select>
 ```
