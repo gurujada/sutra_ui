@@ -1,4 +1,4 @@
-/* sutra_ui dates source-hash:39356d14d1fdc889 (built by mix assets.build; do not edit) */
+/* sutra_ui dates source-hash:fba71211b156688f (built by mix assets.build; do not edit) */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -526,7 +526,8 @@ function monthList(state, cb) {
   const short = monthNames(state.locale, "short");
   const list = h("div", { class: "dp-months", role: "group", "aria-label": `Months of ${state.y}` });
   short.forEach((name, i) => {
-    const b = h("button", { type: "button", class: "dp-cell", "data-current": i + 1 === state.m, "aria-pressed": i + 1 === state.m, text: name });
+    const isToday = state.today.slice(0, 7) === `${String(state.y).padStart(4, "0")}-${String(i + 1).padStart(2, "0")}`;
+    const b = h("button", { type: "button", class: "dp-cell", "data-current": i + 1 === state.m, "data-today": isToday, "aria-pressed": i + 1 === state.m, "aria-current": isToday ? "date" : null, text: name });
     b.addEventListener("click", () => cb.month(i + 1));
     list.append(b);
   });
@@ -536,7 +537,8 @@ function yearList(state, cb) {
   const list = h("div", { class: "dp-years", role: "group", "aria-label": "Years" });
   for (let i = 0; i < 12; i++) {
     const year = state.yearPage + i;
-    const b = h("button", { type: "button", class: "dp-cell", "data-current": year === state.y, "aria-pressed": year === state.y, text: String(year) });
+    const isToday = Number(state.today.slice(0, 4)) === year;
+    const b = h("button", { type: "button", class: "dp-cell", "data-current": year === state.y, "data-today": isToday, "aria-pressed": year === state.y, "aria-current": isToday ? "date" : null, text: String(year) });
     b.addEventListener("click", () => cb.year(year));
     list.append(b);
   }

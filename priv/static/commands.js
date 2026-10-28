@@ -1,4 +1,4 @@
-/* sutra_ui commands source-hash:d1ecd821f7d45272 (built by mix assets.build; do not edit) */
+/* sutra_ui commands source-hash:30521bf1a8c9500d (built by mix assets.build; do not edit) */
 
 // assets/js/commands/match.js
 var PREFIX = 6;
@@ -554,7 +554,6 @@ var CommandPalette = {
     this.statusEl = this.el.querySelector("[role='status']");
     this.defaultPlaceholder = this.input.getAttribute("placeholder") || "";
     this.state = initial();
-    this.trigger = null;
     this.timers = {};
     this.sequence = sequence();
     this.readData();
@@ -656,8 +655,6 @@ var CommandPalette = {
   // ---- opening and closing ---------------------------------------------------------------
   opened() {
     if (this.state.open) return;
-    const active = document.activeElement;
-    this.trigger = active && active !== document.body && !this.dialog.contains(active) ? active : this.trigger;
     this.recent = this.loadRecent();
     this.state = reduce(initial(), { type: "open", page: this.pendingPage }, this.ctx()).state;
     this.pendingPage = void 0;
@@ -672,11 +669,6 @@ var CommandPalette = {
     this.state = initial();
     this.root.dataset.state = "closed";
     this.input.value = "";
-    const trigger = this.trigger;
-    this.trigger = null;
-    requestAnimationFrame(() => {
-      if (trigger && trigger.isConnected) trigger.focus();
-    });
   },
   open(page2) {
     this.pendingPage = page2;

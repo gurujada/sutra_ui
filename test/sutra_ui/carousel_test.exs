@@ -311,22 +311,7 @@ defmodule SutraUI.CarouselTest do
     end
   end
 
-  describe "carousel/1 deprecated CSS lengths (removed in 0.5)" do
-    test "width, height and gap given as CSS lengths still render inline styles" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Carousel.carousel id="legacy" gap="1rem" width="400px" height="300px">
-          <:item>One</:item>
-        </Carousel.carousel>
-        """)
-
-      assert html =~ ~s(style="width: 400px; height: 300px")
-      assert html =~ "gap: 1rem"
-      refute html =~ ~r/class="[^"]*(400px|1rem)/
-    end
-
+  describe "carousel/1 sizes" do
     test "classes render as classes with no inline style" do
       assigns = %{}
 

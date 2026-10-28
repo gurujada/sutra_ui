@@ -83,7 +83,6 @@ export const CommandPalette = {
     this.defaultPlaceholder = this.input.getAttribute("placeholder") || "";
 
     this.state = initial();
-    this.trigger = null;
     this.timers = {};
     this.sequence = keys.sequence();
     this.readData();
@@ -202,8 +201,6 @@ export const CommandPalette = {
 
   opened() {
     if (this.state.open) return;
-    const active = document.activeElement;
-    this.trigger = active && active !== document.body && !this.dialog.contains(active) ? active : this.trigger;
     this.recent = this.loadRecent();
     this.state = reduce(initial(), { type: "open", page: this.pendingPage }, this.ctx()).state;
     this.pendingPage = undefined;
@@ -219,11 +216,7 @@ export const CommandPalette = {
     this.state = initial();
     this.root.dataset.state = "closed";
     this.input.value = "";
-    const trigger = this.trigger;
-    this.trigger = null;
-    requestAnimationFrame(() => {
-      if (trigger && trigger.isConnected) trigger.focus();
-    });
+    // Focus goes back to what opened the palette in the dialog hook, on every hide.
   },
 
   open(page) {

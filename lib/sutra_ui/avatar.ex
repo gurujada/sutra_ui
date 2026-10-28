@@ -47,6 +47,15 @@ defmodule SutraUI.Avatar do
   screen reader hears all of them, including the hidden ones; each face also shows its name
   as a tooltip on hover. Pass an `id` (it is also used for the faces' image fallbacks, so
   `nonce` applies when you use a Content-Security-Policy).
+
+  ## Presence
+
+  `status` (`"online"`, `"away"`, `"offline"`; default none) adds a small dot cut into the
+  avatar's edge with a ring in the background colour, in the `--success`, `--warning` and muted
+  tokens, and a screen-reader word, so the state is never colour alone. SutraUI holds no
+  presence logic: the app supplies the state, for example from `Phoenix.Presence`.
+
+      <.avatar initials="AR" status="online" />
   """
 
   use Phoenix.Component
@@ -80,6 +89,17 @@ defmodule SutraUI.Avatar do
     doc: "The shape of the avatar"
   )
 
+  attr(:status, :string,
+    default: nil,
+    doc:
+      "Presence: a small dot at the avatar's edge plus a screen-reader word. The app supplies it (for example from `Phoenix.Presence`)"
+  )
+
+  attr(:announce_status, :boolean,
+    default: true,
+    doc: "Render the screen-reader word; `avatar_group` turns it off and names the status itself"
+  )
+
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
   attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script (needs `id`)")
 
@@ -98,6 +118,7 @@ defmodule SutraUI.Avatar do
     <span
       class={["avatar", "avatar-#{@size}", "avatar-#{@shape}", @class]}
       phx-hook={@src && @rest[:id] && ".Avatar"}
+      data-status={@status}
       {@rest}
     >
       <%= if @src do %>
@@ -135,6 +156,8 @@ defmodule SutraUI.Avatar do
           <% end %>
         <% end %>
       </span>
+      <span :if={@status} class="avatar-status" aria-hidden="true"></span>
+      <span :if={@status && @announce_status} class="sr-only">{@status}</span>
       <script
         :if={@src && @rest[:id]}
         :type={ColocatedHook}
@@ -178,8 +201,9 @@ defmodule SutraUI.Avatar do
   @doc """
   A stack of avatars with "+n" for the people beyond `max`.
 
-  Each person is a map with a `:name` and optional `:src` and `:initials` (default: the first
-  letters of the first two words of the name).
+  Each person is a map with a `:name` and optional `:src`, `:initials` (default: the first
+  letters of the first two words of the name) and `:status` (`"online"`, `"away"` or
+  `"offline"`, shown as a dot and named in the group's accessible name: "Asha Rao (online)").
   """
   attr(:id, :string, required: true, doc: "Unique identifier")
   attr(:people, :list, required: true, doc: "Maps with `:name` and optional `:src`, `:initials`")
@@ -197,7 +221,7 @@ defmodule SutraUI.Avatar do
 
   def avatar_group(assigns) do
     {shown, hidden} = Enum.split(assigns.people, max(assigns.max, 0))
-    names = Enum.map_join(assigns.people, ", ", & &1.name)
+    names = Enum.map_join(assigns.people, ", ", &person_label/1)
 
     assigns =
       assign(assigns,
@@ -226,6 +250,8 @@ defmodule SutraUI.Avatar do
           src={person[:src]}
           alt=""
           initials={person[:initials] || initials(person.name)}
+          status={person[:status]}
+          announce_status={false}
         />
       </span>
       <span
@@ -239,6 +265,11 @@ defmodule SutraUI.Avatar do
     </div>
     """
   end
+
+  defp person_label(%{status: status} = person) when status in ["online", "away", "offline"],
+    do: "#{person.name} (#{status})"
+
+  defp person_label(person), do: person.name
 
   defp initials(name) do
     name

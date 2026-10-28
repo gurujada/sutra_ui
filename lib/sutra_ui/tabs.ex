@@ -239,6 +239,12 @@ defmodule SutraUI.Tabs do
   attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
 
   def tabs(assigns) do
+    if Enum.any?(assigns.tab, & &1[:patch]) and Enum.any?(assigns.tab, & &1[:navigate]) do
+      raise ArgumentError,
+            "tabs #{inspect(assigns.id)} mixes `patch` and `navigate` tabs; " <>
+              "use `patch` for tabs of one LiveView or `navigate` for separate LiveViews, not both"
+    end
+
     assigns = assign(assigns, :mode, mode(assigns.tab))
     assigns = assign(assigns, :active, assigns.value || assigns.default_value)
 

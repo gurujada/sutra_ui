@@ -121,6 +121,19 @@ defmodule SutraUI.TabsURLTest do
       end
     end
 
+    test "mixing patch and navigate tabs raises" do
+      assigns = %{}
+
+      assert_raise ArgumentError, ~r/mixes `patch` and `navigate`/, fn ->
+        rendered_to_string(~H"""
+        <Tabs.tabs id="t" value="a">
+          <:tab value="a" patch="/a">A</:tab>
+          <:tab value="b" navigate="/b">B</:tab>
+        </Tabs.tabs>
+        """)
+      end
+    end
+
     test "a disabled tab is disabled" do
       assigns = %{}
 

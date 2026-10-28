@@ -1,5 +1,8 @@
 defmodule SutraUI.FilterBar do
   @moduledoc """
+  **Deprecated.** Filtering moves to LiveTable 0.5 (filter chips); `SutraUI.FilterBar` and
+  `filter_bar/1` are removed in SutraUI 0.6. Use LiveTable's filters for list pages.
+
   A filter bar component for index pages with consistent styling and layout.
 
   The filter bar provides a standardized way to add filter controls to list pages,
@@ -47,6 +50,8 @@ defmodule SutraUI.FilterBar do
   @doc """
   Renders a filter bar with consistent layout and styling.
 
+  **Deprecated:** filtering moves to LiveTable 0.5 (filter chips). Removed in SutraUI 0.6.
+
   ## Attributes
 
   * `on_change` - Required. The phx-change event name.
@@ -89,6 +94,7 @@ defmodule SutraUI.FilterBar do
     doc: "Filter input elements"
   )
 
+  @deprecated "Filtering moves to LiveTable 0.5 (filter chips); filter_bar is removed in SutraUI 0.6"
   def filter_bar(assigns) do
     grid_class = grid_cols_class(assigns.cols)
     assigns = assign(assigns, :grid_class, grid_class)

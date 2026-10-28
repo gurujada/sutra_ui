@@ -198,6 +198,7 @@ defmodule SutraUI.Dialog do
       data-placement={@placement}
       data-size={@placement == "side" && @size}
       data-anchor={@placement == "popover" && @anchor}
+      data-show={to_string(@show)}
       data-alert={@alert && "true"}
       data-initial-focus={@initial_focus}
       data-inert-page={@inert_page && "true"}
@@ -286,6 +287,7 @@ defmodule SutraUI.Dialog do
             this.trigger = active && !this.el.contains(active) && active !== document.body ? active : this.trigger;
             this.place();
             this.el.classList.add("is-open");
+            this.opened = true;
             this.setInert(true);
             // Focus the requested element, else the first focusable one
             requestAnimationFrame(() => {
@@ -301,6 +303,7 @@ defmodule SutraUI.Dialog do
           this.hideHandler = () => {
             const wasOpen = this.el.classList.contains("is-open");
             this.el.classList.remove("is-open");
+            this.opened = false;
             this.setInert(false);
             // Focus goes back to what opened the dialog
             if (wasOpen && this.trigger && this.trigger.isConnected) this.trigger.focus();
@@ -331,12 +334,19 @@ defmodule SutraUI.Dialog do
             }
           };
 
+          this.opened = this.el.dataset.show === "true";
+          this.serverShow = this.el.dataset.show;
           this.el.addEventListener("phx:show-dialog", this.showHandler);
           this.el.addEventListener("phx:hide-dialog", this.hideHandler);
           window.addEventListener("resize", this.place);
         },
 
         updated() {
+          // A parent re-render resets the class attribute to the server's; an open dialog stays open.
+          // When the server itself changed `show`, the server wins.
+          if (this.el.dataset.show !== this.serverShow) this.opened = this.el.dataset.show === "true";
+          this.serverShow = this.el.dataset.show;
+          if (this.opened) this.el.classList.add("is-open");
           if (this.el.classList.contains("is-open")) this.place();
         },
 

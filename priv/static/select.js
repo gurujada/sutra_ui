@@ -1,4 +1,4 @@
-/* sutra_ui select source-hash:74d4f8fa4fffd733 (built by mix assets.build; do not edit) */
+/* sutra_ui select source-hash:372fff46fc94471f (built by mix assets.build; do not edit) */
 
 // assets/js/fit/index.js
 function fit(content, trigger, wanted) {
@@ -144,6 +144,13 @@ var Select = {
       if (this.popover.contains(e.target) && e.target !== this.search) e.preventDefault();
     };
     this.onDocClick = (e) => this.documentClick(e);
+    this.onInvalid = (e) => {
+      if (e.target !== this.select) return;
+      e.preventDefault();
+      this.invalidMessage = this.select.validationMessage;
+      this.showInvalid();
+      this.trigger?.focus();
+    };
     this.onReset = () => requestAnimationFrame(() => this.sync());
     this.onResize = () => this.place();
     this.onScroll = (e) => {
@@ -156,6 +163,7 @@ var Select = {
     this.el.addEventListener("change", this.onInput);
     this.el.addEventListener("mousemove", this.onMove);
     this.el.addEventListener("mousedown", this.onDown);
+    this.el.addEventListener("invalid", this.onInvalid, true);
     document.addEventListener("click", this.onDocClick);
     window.addEventListener("resize", this.onResize);
     window.addEventListener("scroll", this.onScroll, { capture: true, passive: true });
@@ -168,6 +176,7 @@ var Select = {
     this.refs();
     this.enhance();
     this.sync();
+    if (this.invalidMessage) this.showInvalid();
     if (this.isOpen) {
       this.show();
       this.filter();
@@ -182,6 +191,7 @@ var Select = {
     this.el.removeEventListener("change", this.onInput);
     this.el.removeEventListener("mousemove", this.onMove);
     this.el.removeEventListener("mousedown", this.onDown);
+    this.el.removeEventListener("invalid", this.onInvalid, true);
     document.removeEventListener("click", this.onDocClick);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("scroll", this.onScroll, { capture: true });
@@ -217,6 +227,33 @@ var Select = {
       this.select.tabIndex = -1;
       this.select.setAttribute("aria-hidden", "true");
     }
+  },
+  /** Marks the trigger invalid and shows the validation message under it. */
+  showInvalid() {
+    if (!this.trigger) return;
+    let note = this.el.querySelector(":scope > [data-select-invalid]");
+    if (!note) {
+      note = document.createElement("p");
+      note.setAttribute("data-select-invalid", "");
+      note.id = `${this.el.id}-invalid`;
+      note.className = "select-invalid";
+      note.setAttribute("role", "alert");
+      this.trigger.after(note);
+    }
+    note.textContent = this.invalidMessage;
+    const server = (this.trigger.getAttribute("aria-describedby") || "").split(" ").filter((id) => id && id !== note.id);
+    this.serverDescribedBy = server.join(" ");
+    this.serverInvalid = this.trigger.getAttribute("aria-invalid");
+    this.trigger.setAttribute("aria-invalid", "true");
+    this.trigger.setAttribute("aria-describedby", [...server, note.id].join(" "));
+  },
+  clearInvalid() {
+    if (!this.invalidMessage) return;
+    this.invalidMessage = null;
+    this.el.querySelector(":scope > [data-select-invalid]")?.remove();
+    const set = (name, value) => value ? this.trigger?.setAttribute(name, value) : this.trigger?.removeAttribute(name);
+    set("aria-invalid", this.serverInvalid);
+    set("aria-describedby", this.serverDescribedBy);
   },
   /** In custom-option mode a select starts on its first option. */
   ensureFirst() {
@@ -433,7 +470,10 @@ var Select = {
     if (opt && opt !== this.active && this.enabled().includes(opt)) this.setActive(opt, false);
   },
   input(e) {
-    if (e.target === this.select) return this.sync();
+    if (e.target === this.select) {
+      if (this.select.validity.valid) this.clearInvalid();
+      return this.sync();
+    }
     if (e.target !== this.search) return;
     e.stopPropagation();
     if (e.type === "input") {
