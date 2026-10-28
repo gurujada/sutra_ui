@@ -118,12 +118,18 @@ defmodule SutraUI.Commands.ActionTest do
             tone: :danger,
             disabled: "Not yet",
             confirm: "Sure?",
+            confirm_label: "Yes, delete",
             event: "go",
             args: [%{name: :who, type: :choice, choices: ["a", {"b", "Bee"}]}]
           )
         )
 
-      assert %{tone: "danger", disabled: "Not yet", confirm: "Sure?"} = wire
+      assert %{
+               tone: "danger",
+               disabled: "Not yet",
+               confirm: "Sure?",
+               confirm_label: "Yes, delete"
+             } = wire
 
       assert [
                %{

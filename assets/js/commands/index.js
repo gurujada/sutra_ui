@@ -34,6 +34,33 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 
+const SVG = "http://www.w3.org/2000/svg";
+
+/** The lucide triangle-alert glyph, drawn here because SutraUI has no icon component. */
+function alertIcon(className) {
+  const svg = document.createElementNS(SVG, "svg");
+  for (const [name, value] of Object.entries({
+    class: className,
+    width: "24",
+    height: "24",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "aria-hidden": "true",
+  })) {
+    svg.setAttribute(name, value);
+  }
+  for (const d of ["m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3", "M12 9v4", "M12 17h.01"]) {
+    const path = document.createElementNS(SVG, "path");
+    path.setAttribute("d", d);
+    svg.append(path);
+  }
+  return svg;
+}
+
 function kbd(spec) {
   const group = el("span", { class: "command-palette-keys", "aria-hidden": "true" });
   for (const chord of keys.label(spec)) {
@@ -76,7 +103,7 @@ export const CommandPalette = {
     this.onListMove = (e) => {
       const option = e.target.closest("[role='option']");
       const index = option ? Number(option.dataset.index) : -1;
-      if (index >= 0 && index !== this.state.active) {
+      if (index >= 0 && index !== this.state.active && option.getAttribute("aria-disabled") !== "true") {
         this.state = { ...this.state, active: index };
         this.paintActive(false);
       }
@@ -86,6 +113,16 @@ export const CommandPalette = {
     this.dialog.addEventListener("phx:hide-dialog", this.onHide);
     this.input.addEventListener("input", this.onInput);
     this.input.addEventListener("keydown", this.onKeydown);
+    this.onConfirmDown = (e) => {
+      if (e.target.closest("button")) e.preventDefault(); // focus stays where it is
+    };
+    this.onConfirmClick = (e) => {
+      const key = e.target.closest("[data-palette-confirm-yes]") ? "Enter" : e.target.closest("[data-palette-confirm-no]") ? "Escape" : null;
+      if (key) this.apply(reduce(this.state, { type: "key", key }, this.ctx()));
+      if (key === "Escape") this.input.focus();
+    };
+    this.confirmEl.addEventListener("pointerdown", this.onConfirmDown);
+    this.confirmEl.addEventListener("click", this.onConfirmClick);
     this.list.addEventListener("pointerdown", this.onListDown);
     this.list.addEventListener("click", this.onListClick);
     this.list.addEventListener("pointermove", this.onListMove);
@@ -109,6 +146,8 @@ export const CommandPalette = {
     this.dialog?.removeEventListener("phx:hide-dialog", this.onHide);
     this.input?.removeEventListener("input", this.onInput);
     this.input?.removeEventListener("keydown", this.onKeydown);
+    this.confirmEl?.removeEventListener("pointerdown", this.onConfirmDown);
+    this.confirmEl?.removeEventListener("click", this.onConfirmClick);
     this.list?.removeEventListener("pointerdown", this.onListDown);
     this.list?.removeEventListener("click", this.onListClick);
     this.list?.removeEventListener("pointermove", this.onListMove);
@@ -342,11 +381,27 @@ export const CommandPalette = {
     this.list.hidden = confirming;
     this.input.setAttribute("aria-expanded", String(!confirming));
     if (confirming) {
-      const message = typeof state.confirm.action.confirm === "string" ? state.confirm.action.confirm : `${state.confirm.action.title}?`;
-      this.confirmEl.replaceChildren(
-        el("p", { text: message }),
-        el("p", { class: "command-palette-confirm-keys" }, [kbd("enter"), document.createTextNode(" confirm "), kbd("escape"), document.createTextNode(" go back")]),
-      );
+      const action = state.confirm.action;
+      const danger = action.tone === "danger";
+      const message = typeof action.confirm === "string" ? action.confirm : `${action.title}?`;
+      const yes = el("button", {
+        type: "button",
+        class: danger ? "btn-destructive" : "btn",
+        "data-palette-confirm-yes": true,
+        text: action.confirm_label || action.title,
+      });
+      const no = el("button", { type: "button", class: "btn-outline", "data-palette-confirm-no": true, text: "Cancel" });
+      const line = el("p", { class: "command-palette-confirm-message", "data-tone": action.tone }, [
+        danger ? alertIcon("command-palette-icon") : null,
+        el("span", { text: message }),
+      ]);
+      const keys = el("p", { class: "command-palette-confirm-keys" }, [
+        kbd("enter"),
+        document.createTextNode(" confirm "),
+        kbd("escape"),
+        document.createTextNode(" go back"),
+      ]);
+      this.confirmEl.replaceChildren(line, el("div", { class: "command-palette-confirm-buttons" }, [no, yes]), keys);
     }
 
     const p = state.stack[state.stack.length - 1];
@@ -395,11 +450,17 @@ export const CommandPalette = {
       },
       [],
     );
-    if (action.icon) node.append(el("span", { class: `command-palette-icon ${action.icon}`, "aria-hidden": "true" }));
+    if (action.tone === "danger") node.append(alertIcon("command-palette-icon"));
+    else if (action.icon) node.append(el("span", { class: `command-palette-icon ${action.icon}`, "aria-hidden": "true" }));
     const body = el("span", { class: "command-palette-title" }, [el("span", { text: action.title })]);
-    if (typeof action.disabled === "string") body.append(el("span", { class: "command-palette-reason", text: action.disabled }));
+    if (typeof action.disabled === "string") {
+      const reasonId = `${node.id}-reason`;
+      body.append(el("span", { id: reasonId, class: "command-palette-reason", text: action.disabled }));
+      node.setAttribute("aria-describedby", reasonId);
+    }
     else if (row.recent && action.section) body.append(el("span", { class: "command-palette-reason", text: action.section }));
     node.append(body);
+    if (action.tone === "danger") node.append(el("span", { class: "sr-only", text: "(destructive)" }));
     if (action.badge) node.append(el("span", { class: "command-palette-badge", text: action.badge }));
     if (action.shortcut) node.append(kbd(action.shortcut));
     if (action.children?.length) node.append(el("span", { class: "command-palette-more", text: "›", "aria-hidden": "true" }));

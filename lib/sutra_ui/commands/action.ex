@@ -27,7 +27,8 @@ defmodule SutraUI.Commands.Action do
   | `badge` | Short text at the right (a count, "New") |
   | `tone` | `:danger` for a destructive action |
   | `disabled` | `true`, or the reason as a string, shown under the title |
-  | `confirm` | `true` or a question; the palette asks before running |
+  | `confirm` | `true` or a question; the palette asks before running, with a button and Cancel |
+  | `confirm_label` | Text of the confirm button (default: the title) |
   | `children` | Actions of a next page, opened instead of running |
   | `args` | Values asked in turn before running (see below) |
   | `allow` | `fn socket -> boolean end`, checked again before a server action runs |
@@ -76,6 +77,7 @@ defmodule SutraUI.Commands.Action do
             tone: nil,
             disabled: nil,
             confirm: nil,
+            confirm_label: nil,
             children: [],
             args: [],
             allow: nil,
@@ -196,6 +198,7 @@ defmodule SutraUI.Commands.Action do
       tone: action.tone && to_string(action.tone),
       disabled: wire_disabled(action.disabled),
       confirm: wire_confirm(action.confirm),
+      confirm_label: action.confirm_label,
       kind: kind,
       target: target,
       children: Enum.map(action.children, &to_wire/1),

@@ -153,10 +153,24 @@ export function announcement(state, ctx) {
   return count === 1 ? "1 result" : `${count} results`;
 }
 
-function withActive(state, ctx, active) {
-  const count = items(state, ctx).length;
-  const wrapped = count === 0 ? 0 : ((active % count) + count) % count;
-  return { ...state, active: wrapped };
+/** Moves the cursor by `delta` over the items that can be chosen (disabled ones are skipped). */
+function move(state, ctx, delta) {
+  const list = items(state, ctx);
+  const enabled = list.map((r, i) => (r.action.disabled ? -1 : i)).filter((i) => i >= 0);
+  if (enabled.length === 0) return { ...state, active: 0 };
+  const at = enabled.indexOf(state.active);
+  const next = at === -1 ? (delta > 0 ? 0 : enabled.length - 1) : (at + delta + enabled.length) % enabled.length;
+  return { ...state, active: enabled[next] };
+}
+
+/** The cursor never rests on a disabled item while another can be chosen. */
+function settle(state, ctx) {
+  const list = items(state, ctx);
+  if (list.length === 0) return { ...state, active: 0 };
+  const active = Math.min(state.active, list.length - 1);
+  if (!list[active].action.disabled) return { ...state, active };
+  const first = list.findIndex((r) => !r.action.disabled);
+  return { ...state, active: first === -1 ? 0 : first };
 }
 
 /** Starts a search of every source for the query (root page) and returns the new state and effects. */
@@ -245,7 +259,7 @@ function drill(state, ctx) {
  * @param {object} ctx
  * @returns {{state: object, effects: object[], handled?: boolean}}
  */
-export function reduce(state, event, ctx) {
+function step(state, event, ctx) {
   switch (event.type) {
     case "open": {
       const base = { ...initial(), open: true };
@@ -280,7 +294,7 @@ export function reduce(state, event, ctx) {
         [event.source]: { ...current, loading: false, items: event.error ? [] : event.items ?? [], error: event.error ?? null },
       };
       const next = { ...state, results };
-      return { state: withActive(next, ctx, Math.min(state.active, Math.max(items(next, ctx).length - 1, 0))), effects: [] };
+      return { state: next, effects: [] };
     }
 
     case "pick": {
@@ -318,13 +332,9 @@ function key(state, e, ctx) {
 
   switch (e.key) {
     case "ArrowDown":
-      return handled({ state: withActive(state, ctx, state.active + 1), effects: [] });
+      return handled({ state: move(state, ctx, 1), effects: [] });
     case "ArrowUp":
-      return handled({ state: withActive(state, ctx, state.active - 1), effects: [] });
-    case "PageDown":
-      return handled({ state: withActive(state, ctx, Math.min(state.active + 5, items(state, ctx).length - 1)), effects: [] });
-    case "PageUp":
-      return handled({ state: withActive(state, ctx, Math.max(state.active - 5, 0)), effects: [] });
+      return handled({ state: move(state, ctx, -1), effects: [] });
     case "Enter": {
       if (p?.type === "ask" && p.arg.type === "text") {
         const value = state.query.trim();
@@ -354,4 +364,9 @@ function key(state, e, ctx) {
     default:
       return none;
   }
+}
+
+export function reduce(state, event, ctx) {
+  const result = step(state, event, ctx);
+  return { ...result, state: settle(result.state, ctx) };
 }

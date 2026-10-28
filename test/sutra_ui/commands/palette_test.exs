@@ -88,8 +88,18 @@ defmodule SutraUI.Commands.PaletteTest do
       assert attr(html, "#pal-opt-0", "data-state") == ["idle"]
     end
 
-    test "a danger action has the danger tone", %{html: html} do
+    test "a danger action has the danger tone, an icon and a word, not colour alone", %{
+      html: html
+    } do
       assert attr(html, "#pal-opt-2", "data-tone") == ["danger"]
+      assert attr(html, "#pal-opt-2 svg", "aria-hidden") == ["true"]
+      assert text(html, "#pal-opt-2") =~ "(destructive)"
+      assert attr(html, "#pal-opt-0 svg", "aria-hidden") == []
+    end
+
+    test "a disabled action's reason describes it", %{html: html} do
+      assert attr(html, "#pal-opt-3", "aria-describedby") == ["pal-opt-3-reason"]
+      assert text(html, "#pal-opt-3-reason") =~ "Add a title first"
     end
 
     test "a shortcut shows key caps hidden from screen readers", %{html: html} do

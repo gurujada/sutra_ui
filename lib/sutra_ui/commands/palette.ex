@@ -205,12 +205,38 @@ defmodule SutraUI.Commands.Palette do
       data-tone={@action.tone}
       aria-selected="false"
       aria-disabled={@action.disabled && "true"}
+      aria-describedby={is_binary(@action.disabled) && "#{@id}-opt-#{@index}-reason"}
     >
-      <span :if={@action.icon} class={["command-palette-icon", @action.icon]} aria-hidden="true"></span>
+      <svg
+        :if={@action.tone == :danger}
+        class="command-palette-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" />
+      </svg>
+      <span
+        :if={@action.icon && @action.tone != :danger}
+        class={["command-palette-icon", @action.icon]}
+        aria-hidden="true"
+      ></span>
       <span class="command-palette-title">
         <span>{@action.title}</span>
-        <span :if={is_binary(@action.disabled)} class="command-palette-reason">{@action.disabled}</span>
+        <span
+          :if={is_binary(@action.disabled)}
+          id={"#{@id}-opt-#{@index}-reason"}
+          class="command-palette-reason"
+        >{@action.disabled}</span>
       </span>
+      <span :if={@action.tone == :danger} class="sr-only">(destructive)</span>
       <span :if={@action.badge} class="command-palette-badge">{@action.badge}</span>
       <span :if={@action.shortcut} class="command-palette-keys" aria-hidden="true">
         <kbd :for={cap <- shortcut_caps(@action.shortcut)}>{cap}</kbd>

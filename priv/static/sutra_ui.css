@@ -1408,7 +1408,9 @@
    top of the screen so the keyboard on a phone leaves the list in view. */
 @layer components {
     .dialog-panel:is(.command-dialog, .command-palette) {
-        @apply w-full max-w-lg gap-0 overflow-hidden p-0 sm:max-w-lg self-start;
+        /* A 16 px gutter on phones; the panel sits near the top so the input stays above the
+           on-screen keyboard. */
+        @apply w-[calc(100%_-_2rem)] max-w-lg gap-0 overflow-hidden p-0 sm:max-w-lg self-start;
         margin-top: 8dvh;
         max-height: min(36rem, 84dvh);
 
@@ -1474,6 +1476,10 @@
             }
             &[data-tone="danger"] {
                 @apply text-destructive;
+
+                .command-palette-icon {
+                    @apply text-destructive;
+                }
             }
             .command-palette-icon {
                 @apply size-4 shrink-0 text-muted-foreground;
@@ -1493,6 +1499,11 @@
             }
             .command-palette-keys {
                 @apply ml-auto flex shrink-0 gap-1;
+
+                /* Keyboard hints are noise on phones and touch screens (the `?` page keeps them). */
+                @media (max-width: 639px), (pointer: coarse) {
+                    display: none;
+                }
 
                 kbd {
                     @apply rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground;
@@ -1516,8 +1527,24 @@
             &[hidden] {
                 @apply hidden;
             }
+            .command-palette-confirm-message {
+                @apply flex items-start gap-2 text-base font-medium;
+
+                &[data-tone="danger"] {
+                    @apply text-destructive;
+                }
+                .command-palette-icon {
+                    @apply mt-0.5 size-5 shrink-0;
+                }
+            }
+            .command-palette-confirm-buttons {
+                @apply flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row;
+            }
             .command-palette-confirm-keys {
-                @apply text-xs text-muted-foreground;
+                @apply hidden text-xs text-muted-foreground sm:block;
+                @media (pointer: coarse) {
+                    display: none;
+                }
 
                 kbd {
                     @apply rounded border bg-muted px-1.5 py-0.5 font-mono;

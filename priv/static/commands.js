@@ -1,4 +1,4 @@
-/* sutra_ui commands source-hash:7ebbefbe29664953 (built by mix assets.build; do not edit) */
+/* sutra_ui commands source-hash:d1ecd821f7d45272 (built by mix assets.build; do not edit) */
 
 // assets/js/commands/match.js
 var PREFIX = 6;
@@ -205,10 +205,21 @@ function announcement(state, ctx) {
   if (count === 0) return "No results";
   return count === 1 ? "1 result" : `${count} results`;
 }
-function withActive(state, ctx, active) {
-  const count = items(state, ctx).length;
-  const wrapped = count === 0 ? 0 : (active % count + count) % count;
-  return { ...state, active: wrapped };
+function move(state, ctx, delta) {
+  const list = items(state, ctx);
+  const enabled = list.map((r, i) => r.action.disabled ? -1 : i).filter((i) => i >= 0);
+  if (enabled.length === 0) return { ...state, active: 0 };
+  const at = enabled.indexOf(state.active);
+  const next = at === -1 ? delta > 0 ? 0 : enabled.length - 1 : (at + delta + enabled.length) % enabled.length;
+  return { ...state, active: enabled[next] };
+}
+function settle(state, ctx) {
+  const list = items(state, ctx);
+  if (list.length === 0) return { ...state, active: 0 };
+  const active = Math.min(state.active, list.length - 1);
+  if (!list[active].action.disabled) return { ...state, active };
+  const first = list.findIndex((r) => !r.action.disabled);
+  return { ...state, active: first === -1 ? 0 : first };
 }
 function searchAll(state, ctx) {
   const query = state.query.trim();
@@ -277,7 +288,7 @@ function drill(state, ctx) {
   if (!action?.children?.length || action.disabled) return null;
   return { state: push(state, { type: "actions", title: action.title, actions: action.children }), effects: [] };
 }
-function reduce(state, event, ctx) {
+function step(state, event, ctx) {
   switch (event.type) {
     case "open": {
       const base = { ...initial(), open: true };
@@ -307,7 +318,7 @@ function reduce(state, event, ctx) {
         [event.source]: { ...current, loading: false, items: event.error ? [] : event.items ?? [], error: event.error ?? null }
       };
       const next = { ...state, results };
-      return { state: withActive(next, ctx, Math.min(state.active, Math.max(items(next, ctx).length - 1, 0))), effects: [] };
+      return { state: next, effects: [] };
     }
     case "pick": {
       const row = items(state, ctx)[event.index];
@@ -338,13 +349,9 @@ function key(state, e, ctx) {
   }
   switch (e.key) {
     case "ArrowDown":
-      return handled({ state: withActive(state, ctx, state.active + 1), effects: [] });
+      return handled({ state: move(state, ctx, 1), effects: [] });
     case "ArrowUp":
-      return handled({ state: withActive(state, ctx, state.active - 1), effects: [] });
-    case "PageDown":
-      return handled({ state: withActive(state, ctx, Math.min(state.active + 5, items(state, ctx).length - 1)), effects: [] });
-    case "PageUp":
-      return handled({ state: withActive(state, ctx, Math.max(state.active - 5, 0)), effects: [] });
+      return handled({ state: move(state, ctx, -1), effects: [] });
     case "Enter": {
       if (p?.type === "ask" && p.arg.type === "text") {
         const value = state.query.trim();
@@ -375,6 +382,10 @@ function key(state, e, ctx) {
     default:
       return none;
   }
+}
+function reduce(state, event, ctx) {
+  const result = step(state, event, ctx);
+  return { ...result, state: settle(result.state, ctx) };
 }
 
 // assets/js/commands/keys.js
@@ -500,6 +511,30 @@ function el(tag, attrs = {}, children = []) {
   for (const child of children) if (child) node.append(child);
   return node;
 }
+var SVG = "http://www.w3.org/2000/svg";
+function alertIcon(className) {
+  const svg = document.createElementNS(SVG, "svg");
+  for (const [name, value] of Object.entries({
+    class: className,
+    width: "24",
+    height: "24",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-width": "2",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "aria-hidden": "true"
+  })) {
+    svg.setAttribute(name, value);
+  }
+  for (const d of ["m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3", "M12 9v4", "M12 17h.01"]) {
+    const path = document.createElementNS(SVG, "path");
+    path.setAttribute("d", d);
+    svg.append(path);
+  }
+  return svg;
+}
 function kbd(spec) {
   const group = el("span", { class: "command-palette-keys", "aria-hidden": "true" });
   for (const chord of label(spec)) {
@@ -538,7 +573,7 @@ var CommandPalette = {
     this.onListMove = (e) => {
       const option = e.target.closest("[role='option']");
       const index = option ? Number(option.dataset.index) : -1;
-      if (index >= 0 && index !== this.state.active) {
+      if (index >= 0 && index !== this.state.active && option.getAttribute("aria-disabled") !== "true") {
         this.state = { ...this.state, active: index };
         this.paintActive(false);
       }
@@ -547,6 +582,16 @@ var CommandPalette = {
     this.dialog.addEventListener("phx:hide-dialog", this.onHide);
     this.input.addEventListener("input", this.onInput);
     this.input.addEventListener("keydown", this.onKeydown);
+    this.onConfirmDown = (e) => {
+      if (e.target.closest("button")) e.preventDefault();
+    };
+    this.onConfirmClick = (e) => {
+      const key2 = e.target.closest("[data-palette-confirm-yes]") ? "Enter" : e.target.closest("[data-palette-confirm-no]") ? "Escape" : null;
+      if (key2) this.apply(reduce(this.state, { type: "key", key: key2 }, this.ctx()));
+      if (key2 === "Escape") this.input.focus();
+    };
+    this.confirmEl.addEventListener("pointerdown", this.onConfirmDown);
+    this.confirmEl.addEventListener("click", this.onConfirmClick);
     this.list.addEventListener("pointerdown", this.onListDown);
     this.list.addEventListener("click", this.onListClick);
     this.list.addEventListener("pointermove", this.onListMove);
@@ -566,6 +611,8 @@ var CommandPalette = {
     this.dialog?.removeEventListener("phx:hide-dialog", this.onHide);
     this.input?.removeEventListener("input", this.onInput);
     this.input?.removeEventListener("keydown", this.onKeydown);
+    this.confirmEl?.removeEventListener("pointerdown", this.onConfirmDown);
+    this.confirmEl?.removeEventListener("click", this.onConfirmClick);
     this.list?.removeEventListener("pointerdown", this.onListDown);
     this.list?.removeEventListener("click", this.onListClick);
     this.list?.removeEventListener("pointermove", this.onListMove);
@@ -771,11 +818,27 @@ var CommandPalette = {
     this.list.hidden = confirming;
     this.input.setAttribute("aria-expanded", String(!confirming));
     if (confirming) {
-      const message = typeof state.confirm.action.confirm === "string" ? state.confirm.action.confirm : `${state.confirm.action.title}?`;
-      this.confirmEl.replaceChildren(
-        el("p", { text: message }),
-        el("p", { class: "command-palette-confirm-keys" }, [kbd("enter"), document.createTextNode(" confirm "), kbd("escape"), document.createTextNode(" go back")])
-      );
+      const action = state.confirm.action;
+      const danger = action.tone === "danger";
+      const message = typeof action.confirm === "string" ? action.confirm : `${action.title}?`;
+      const yes = el("button", {
+        type: "button",
+        class: danger ? "btn-destructive" : "btn",
+        "data-palette-confirm-yes": true,
+        text: action.confirm_label || action.title
+      });
+      const no = el("button", { type: "button", class: "btn-outline", "data-palette-confirm-no": true, text: "Cancel" });
+      const line = el("p", { class: "command-palette-confirm-message", "data-tone": action.tone }, [
+        danger ? alertIcon("command-palette-icon") : null,
+        el("span", { text: message })
+      ]);
+      const keys = el("p", { class: "command-palette-confirm-keys" }, [
+        kbd("enter"),
+        document.createTextNode(" confirm "),
+        kbd("escape"),
+        document.createTextNode(" go back")
+      ]);
+      this.confirmEl.replaceChildren(line, el("div", { class: "command-palette-confirm-buttons" }, [no, yes]), keys);
     }
     const p = state.stack[state.stack.length - 1];
     const text = p?.type === "ask" && p.arg.type === "text";
@@ -819,11 +882,16 @@ var CommandPalette = {
       },
       []
     );
-    if (action.icon) node.append(el("span", { class: `command-palette-icon ${action.icon}`, "aria-hidden": "true" }));
+    if (action.tone === "danger") node.append(alertIcon("command-palette-icon"));
+    else if (action.icon) node.append(el("span", { class: `command-palette-icon ${action.icon}`, "aria-hidden": "true" }));
     const body = el("span", { class: "command-palette-title" }, [el("span", { text: action.title })]);
-    if (typeof action.disabled === "string") body.append(el("span", { class: "command-palette-reason", text: action.disabled }));
-    else if (row.recent && action.section) body.append(el("span", { class: "command-palette-reason", text: action.section }));
+    if (typeof action.disabled === "string") {
+      const reasonId = `${node.id}-reason`;
+      body.append(el("span", { id: reasonId, class: "command-palette-reason", text: action.disabled }));
+      node.setAttribute("aria-describedby", reasonId);
+    } else if (row.recent && action.section) body.append(el("span", { class: "command-palette-reason", text: action.section }));
     node.append(body);
+    if (action.tone === "danger") node.append(el("span", { class: "sr-only", text: "(destructive)" }));
     if (action.badge) node.append(el("span", { class: "command-palette-badge", text: action.badge }));
     if (action.shortcut) node.append(kbd(action.shortcut));
     if (action.children?.length) node.append(el("span", { class: "command-palette-more", text: "\u203A", "aria-hidden": "true" }));

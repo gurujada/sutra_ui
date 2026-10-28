@@ -237,3 +237,25 @@ test("start from a shortcut asks for the first argument, or runs a simple action
 test("activeItem is the row under the cursor", () => {
   assert.equal(activeItem(opened(), ctx).action.id, "home");
 });
+
+test("arrows skip disabled items and the cursor never rests on one", () => {
+  const list = [A("a", "Alpha"), A("b", "Beta", { disabled: "No" }), A("c", "Gamma")];
+  const c = { ...ctx, actions: list, sources: [] };
+  let s = reduce(initial(), { type: "open" }, c).state;
+  assert.equal(s.active, 0);
+  s = reduce(s, { type: "key", key: "ArrowDown" }, c).state;
+  assert.equal(items(s, c)[s.active].action.id, "c");
+  s = reduce(s, { type: "key", key: "ArrowDown" }, c).state;
+  assert.equal(items(s, c)[s.active].action.id, "a");
+  s = reduce(s, { type: "key", key: "ArrowUp" }, c).state;
+  assert.equal(items(s, c)[s.active].action.id, "c");
+
+  const first = reduce(initial(), { type: "open" }, { ...c, actions: [list[1], list[0]] }).state;
+  assert.equal(first.active, 1, "starts on the first item that can be chosen");
+});
+
+test("a confirm action keeps its label and tone for the buttons", () => {
+  const s = type(opened(), "delete").state;
+  const asked = press(s, "Enter").state;
+  assert.equal(asked.confirm.action.tone, "danger");
+});
