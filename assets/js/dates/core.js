@@ -3,6 +3,8 @@
 
 /** @typedef {{ today?: string, min?: string | null, max?: string | null, disabledDates?: string[], disabledWeekdays?: number[], minLength?: number | null, maxLength?: number | null, step?: number | null }} Rules */
 
+import { formatDay } from "../time/index.js";
+
 export const pad = (n, width = 2) => String(n).padStart(width, "0");
 
 /**
@@ -125,11 +127,6 @@ export function checkTime(rules, hhmm) {
   return (h * 60 + m) % step === 0 ? null : "step";
 }
 
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-
 /** Words for a refusal, as the field's note. */
 export function reasonWords(reason, rules) {
   switch (reason) {
@@ -145,13 +142,8 @@ export function reasonWords(reason, rules) {
   }
 }
 
-/** "5 Oct 2026" */
-export function shortDate(iso) {
-  const p = parse(iso);
-  return p ? `${p.d} ${MONTHS[p.m - 1].slice(0, 3)} ${p.y}` : "";
-}
-
-export const monthName = (m) => MONTHS[m - 1];
+/** "5 Oct 2026", the wording of `SutraUI.Time`. */
+export const shortDate = (iso) => formatDay(iso, "date");
 
 // ── Presets ────────────────────────────────────────────────────────────────
 

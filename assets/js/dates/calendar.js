@@ -3,6 +3,7 @@
 // keeps the keyboard, the range preview and the rules in one place.
 
 import { addDays, checkDate, endRefused, monthGrid, monthNames, parse, rangeLength, reasonWords, toISO, weekdayNames } from "./core.js";
+import { formatDay } from "../time/index.js";
 import { ICONS, h, icon } from "./dom.js";
 
 /**
@@ -18,10 +19,8 @@ import { ICONS, h, icon } from "./dom.js";
  *   focus: (iso: string) => void }} CalendarHandlers
  */
 
-const dayLabel = (iso, locale) => {
-  const { y, m, d } = parse(iso);
-  return new Intl.DateTimeFormat(locale, { dateStyle: "full", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
-};
+/** "Mon 5 Oct 2026": the weekday and the date in the words of `SutraUI.Time`. */
+const dayLabel = (iso) => `${formatDay(iso, "day")} ${parse(iso).y}`;
 
 /** The inclusive range being shown: the chosen one, or the pending start up to the hovered day. */
 export function shownRange(state) {
@@ -40,11 +39,10 @@ export function summary(state) {
   if (state.mode === "range") {
     if (!range) return "Pick the first day";
     const length = rangeLength(range.start, range.end);
-    const fmt = (iso) => dayLabel(iso, state.locale).replace(/^[^ ]+ /, "");
-    if (state.pending && !state.hover) return `${fmt(range.start)}, pick the last day`;
-    return `${fmt(range.start)} to ${fmt(range.end)} · ${length} ${length === 1 ? "day" : "days"}`;
+    if (state.pending && !state.hover) return `${formatDay(range.start)}, pick the last day`;
+    return `${formatDay(range.start)} – ${formatDay(range.end)} · ${length} ${length === 1 ? "day" : "days"}`;
   }
-  return state.selected.start ? dayLabel(state.selected.start, state.locale) : "";
+  return state.selected.start ? dayLabel(state.selected.start) : "";
 }
 
 /**
@@ -137,7 +135,7 @@ function dayGrid(state, cb, title) {
         "data-refused": !!reason,
         "aria-disabled": reason ? "true" : null,
         "aria-current": iso === state.today ? "date" : null,
-        "aria-label": dayLabel(iso, state.locale) + (reason ? `, ${reasonWords(reason, state.rules).toLowerCase()}` : ""),
+        "aria-label": dayLabel(iso) + (reason ? `, ${reasonWords(reason, state.rules).toLowerCase()}` : ""),
         text: String(d),
       });
       button.addEventListener("click", () => !reason && cb.pick(iso));

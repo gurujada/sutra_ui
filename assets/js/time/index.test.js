@@ -6,6 +6,7 @@ import {
   SLOW_MS,
   Ticker,
   applyViewerHint,
+  formatDay,
   refreshRelative,
   relativeWords,
   viewerTime,
@@ -155,4 +156,13 @@ test("applyViewerHint sets the title and, with hint on, the visible words", () =
   applyViewerHint(quiet, "en", "America/Los_Angeles");
   assert.equal(quiet.getAttribute("title"), "x · 02:00 your time");
   assert.equal(quiet.children.length, 0);
+});
+
+test("formatDay writes a day in the words of SutraUI.Time", () => {
+  assert.equal(formatDay("2026-10-05"), "5 Oct 2026");
+  assert.equal(formatDay("2026-10-05", "short"), "5 Oct");
+  assert.equal(formatDay("2026-10-05", "long"), "5 October 2026");
+  assert.equal(formatDay("2026-10-05", "day"), "Mon 5 Oct");
+  assert.equal(formatDay("2026-10-05", "month"), "October 2026");
+  assert.equal(formatDay("nonsense"), "");
 });

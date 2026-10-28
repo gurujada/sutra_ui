@@ -7,7 +7,7 @@ defmodule SutraUI.DatePickerLiveTest do
 
   import Phoenix.LiveViewTest
   import Phoenix.Component
-  import SutraUI.Test.Dates
+  import SutraUI.Test
 
   import SutraUI.ComponentCase, only: [assert_selector: 2, refute_selector: 2, get_attribute: 3]
 

@@ -20,7 +20,8 @@ defmodule SutraUI.DatePicker do
   inside the wrapper, so forms post and tests read the value with no JavaScript. The extracted
   `.DatePicker` hook (it imports `sutra_ui/dates`) hides that input and draws:
 
-    * a **segmented field** in the locale's order ("15 / 03 / 2027" or "03 / 15 / 2027"):
+    * a **segmented field** in the app's locale order, day-month-year unless you set another
+      (see "Locale" below), "15 / 03 / 2027":
       digits fill a segment and move on, the arrow keys step it, `Backspace` clears it,
       paste reads a whole value, and phones get the number keyboard
     * a **calendar** in a div-based popover (so it shows in a screen share): arrow keys, `Home`,
@@ -32,6 +33,21 @@ defmodule SutraUI.DatePicker do
   The posted input gets its own `input` and `change` events, so `phx-change` and
   `used_input?` work as with any input. Merge the generated `phoenix-colocated/sutra_ui` hooks
   into your LiveSocket, as for `SutraUI.Dialog`.
+
+  ## Locale
+
+  The segment order ("15 / 03 / 2027" or "03 / 15 / 2027") and the month and weekday names
+  come from a locale you choose, never from the viewer's browser, so every viewer of an app
+  sees one order. Set it for the app and override it per picker:
+
+      # config/config.exs
+      config :sutra_ui, locale: "en-IN"
+
+      <.date_picker field={@form[:due]} locale="en-US" />
+
+  With neither set the order is day-month-year. The words a picker writes (a range's
+  summary, the clock-change messages, day labels) use the wording of `SutraUI.Time`:
+  "20 Oct 2026 – 26 Oct 2026 · 7 days", on a 24-hour clock.
 
   ## Rules
 
@@ -123,6 +139,13 @@ defmodule SutraUI.DatePicker do
 
   attr(:zone, :string, default: "Etc/UTC", doc: "The place's zone: decides what today is")
   attr(:week_start, :integer, default: 1, doc: "First weekday, 1 Monday to 7 Sunday")
+
+  attr(:locale, :string,
+    default: nil,
+    doc:
+      "Segment order and names, like \"en-IN\"; the app default is `config :sutra_ui, locale: ...`, then day-month-year"
+  )
+
   attr(:disabled, :boolean, default: false)
   attr(:class, :any, default: nil, doc: "Extra classes on the wrapper")
   attr(:rest, :global, include: ~w(required form phx-change aria-invalid aria-describedby))
@@ -180,6 +203,7 @@ defmodule SutraUI.DatePicker do
   attr(:presets, :any, default: :default)
   attr(:zone, :string, default: "Etc/UTC")
   attr(:week_start, :integer, default: 1)
+  attr(:locale, :string, default: nil)
   attr(:start_key, :string, default: "start", doc: "The posted key of the first day")
   attr(:end_key, :string, default: "end", doc: "The posted key of the last day")
 
@@ -329,6 +353,7 @@ defmodule SutraUI.DatePicker do
   attr(:presets, :any, default: :default)
   attr(:step, :integer, default: nil, doc: "Minute step of the time part")
   attr(:week_start, :integer, default: 1)
+  attr(:locale, :string, default: nil)
   attr(:hint_label, :string, default: "your time", doc: "The words after the viewer's time")
   attr(:disabled, :boolean, default: false)
   attr(:class, :any, default: nil)
@@ -416,6 +441,7 @@ defmodule SutraUI.DatePicker do
         :"data-presets" => encode(presets(assigns[:presets] || :default, kind)),
         :"data-label" => assigns.label,
         :"data-week-start" => assigns[:week_start] || 1,
+        :"data-locale" => assigns[:locale] || Application.get_env(:sutra_ui, :locale) || "en-GB",
         :"data-step" => assigns[:step] || rules.step,
         :"data-hint-label" => assigns[:hint_label]
       }

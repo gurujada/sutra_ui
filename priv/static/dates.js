@@ -1,4 +1,4 @@
-/* sutra_ui dates source-hash:f9868ea04b8e653a (built by mix assets.build; do not edit) */
+/* sutra_ui dates source-hash:39356d14d1fdc889 (built by mix assets.build; do not edit) */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -78,6 +78,40 @@ function unfit(content) {
 }
 
 // assets/js/time/index.js
+var MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+];
+var WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function formatDay(iso, format = "date") {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? "");
+  if (!m) return "";
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const month = MONTHS[mo - 1];
+  const weekday2 = WEEKDAYS[new Date(Date.UTC(y, mo - 1, d)).getUTCDay()];
+  switch (format) {
+    case "short":
+      return `${d} ${month.slice(0, 3)}`;
+    case "long":
+      return `${d} ${month} ${y}`;
+    case "day":
+      return `${weekday2} ${d} ${month.slice(0, 3)}`;
+    case "month":
+      return `${month} ${y}`;
+    default:
+      return `${d} ${month.slice(0, 3)} ${y}`;
+  }
+}
 var MINUTE = 60;
 var HOUR = 3600;
 var DAY = 86400;
@@ -214,7 +248,6 @@ __export(core_exports, {
   diffDays: () => diffDays,
   endRefused: () => endRefused,
   monthGrid: () => monthGrid,
-  monthName: () => monthName,
   monthNames: () => monthNames,
   moveFocus: () => moveFocus,
   pad: () => pad,
@@ -292,20 +325,6 @@ function checkTime(rules, hhmm) {
   const [h2, m] = hhmm.split(":").map(Number);
   return (h2 * 60 + m) % step2 === 0 ? null : "step";
 }
-var MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December"
-];
 function reasonWords(reason, rules) {
   switch (reason) {
     case "before_min":
@@ -328,11 +347,7 @@ function reasonWords(reason, rules) {
       return "";
   }
 }
-function shortDate(iso) {
-  const p = parse(iso);
-  return p ? `${p.d} ${MONTHS[p.m - 1].slice(0, 3)} ${p.y}` : "";
-}
-var monthName = (m) => MONTHS[m - 1];
+var shortDate = (iso) => formatDay(iso, "date");
 var PRESET_LABELS = {
   today: "Today",
   tomorrow: "Tomorrow",
@@ -450,6 +465,7 @@ var ICONS = {
   prev: ["m15 18-6-6 6-6"],
   next: ["m9 18 6-6-6-6"],
   close: ["M18 6 6 18", "m6 6 12 12"],
+  warning: ["m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3", "M12 9v4", "M12 17h.01"],
   chevron: ["m6 9 6 6 6-6"]
 };
 function emit(input) {
@@ -458,10 +474,7 @@ function emit(input) {
 }
 
 // assets/js/dates/calendar.js
-var dayLabel = (iso, locale) => {
-  const { y, m, d } = parse(iso);
-  return new Intl.DateTimeFormat(locale, { dateStyle: "full", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
-};
+var dayLabel = (iso) => `${formatDay(iso, "day")} ${parse(iso).y}`;
 function shownRange(state) {
   if (state.mode !== "range") return null;
   const { start, end } = state.selected;
@@ -476,11 +489,10 @@ function summary(state) {
   if (state.mode === "range") {
     if (!range) return "Pick the first day";
     const length = rangeLength(range.start, range.end);
-    const fmt = (iso) => dayLabel(iso, state.locale).replace(/^[^ ]+ /, "");
-    if (state.pending && !state.hover) return `${fmt(range.start)}, pick the last day`;
-    return `${fmt(range.start)} to ${fmt(range.end)} \xB7 ${length} ${length === 1 ? "day" : "days"}`;
+    if (state.pending && !state.hover) return `${formatDay(range.start)}, pick the last day`;
+    return `${formatDay(range.start)} \u2013 ${formatDay(range.end)} \xB7 ${length} ${length === 1 ? "day" : "days"}`;
   }
-  return state.selected.start ? dayLabel(state.selected.start, state.locale) : "";
+  return state.selected.start ? dayLabel(state.selected.start) : "";
 }
 function renderCalendar(state, cb) {
   const root = h("div", { class: "dp-cal", "data-view": state.view });
@@ -559,7 +571,7 @@ function dayGrid(state, cb, title) {
         "data-refused": !!reason,
         "aria-disabled": reason ? "true" : null,
         "aria-current": iso === state.today ? "date" : null,
-        "aria-label": dayLabel(iso, state.locale) + (reason ? `, ${reasonWords(reason, state.rules).toLowerCase()}` : ""),
+        "aria-label": dayLabel(iso) + (reason ? `, ${reasonWords(reason, state.rules).toLowerCase()}` : ""),
         text: String(d)
       });
       button.addEventListener("click", () => !reason && cb.pick(iso));
@@ -954,6 +966,8 @@ function parseWall(value) {
 }
 
 // assets/js/dates/index.js
+var wallText = (w) => `${String(w.h).padStart(2, "0")}:${String(w.mi).padStart(2, "0")}`;
+var shownOffset = (minutes) => formatOffset(minutes).replace("-", "\u2212");
 var SHEET_QUERY = "(max-width: 639px)";
 var json = (text, fallback) => {
   try {
@@ -1193,11 +1207,11 @@ var Picker = class {
     const time = this.timeOf(this.groups.time.values);
     this.resolution = { kind: "empty" };
     let posted = "";
-    let wallText = "";
+    let wallText2 = "";
     if (date && time) {
       const d = parse(date);
       const wall2 = { y: d.y, m: d.m, d: d.d, h: Number(time.slice(0, 2)), mi: Number(time.slice(3, 5)) };
-      wallText = wallValue(wall2);
+      wallText2 = wallValue(wall2);
       const r = resolveWall(this.zone, wall2);
       if (r.kind === "ok") {
         this.resolution = { kind: "ok", wall: wall2, at: r.at };
@@ -1214,9 +1228,9 @@ var Picker = class {
         this.resolution = { kind: "gap", wall: wall2, before: r.before, after: r.after };
       }
     }
-    this.lastWall = wallText;
+    this.lastWall = wallText2;
     if (notify) {
-      this.write(this.main, wallText, true);
+      this.write(this.main, wallText2, true);
       this.write(this.posted, posted);
     } else {
       this.known = this.snapshot();
@@ -1275,22 +1289,24 @@ var Picker = class {
         if (zonesDiffer(at, this.zone, viewer)) hint = ` \xB7 ${viewerTime(at, this.zone, viewer, this.hintLabel, locale)}`;
         parts.push(h("span", { class: "dp-zone", "data-viewer-hint": Boolean(hint), text: `${name} (${this.zone})${hint}` }));
       } else if (r.kind === "gap") {
-        const t = `${String(r.wall.h).padStart(2, "0")}:${String(r.wall.mi).padStart(2, "0")}`;
+        const day = formatDay(toISO(r.wall.y, r.wall.m, r.wall.d));
         parts.push(
-          h("span", { class: "dp-clock", role: "alert", "data-clock": "gap", text: `${t} does not exist on this day in ${this.zone}: clocks jump forward (${formatOffset(r.before)} to ${formatOffset(r.after)}). Pick another time.` })
+          h("span", { class: "dp-clock", role: "alert", "data-clock": "gap", text: `${wallText(r.wall)} does not exist on ${day} in ${this.zone}: clocks jump forward (${shownOffset(r.before)} to ${shownOffset(r.after)}). Pick another time.` })
         );
       } else if (r.kind === "ambiguous") {
-        const t = `${String(r.wall.h).padStart(2, "0")}:${String(r.wall.mi).padStart(2, "0")}`;
-        const choose = (c, which) => {
-          const b = h("button", { type: "button", class: "dp-offset", "data-offset": c.offset, text: `${which}: ${zoneName(this.zone, c.ms)} (${formatOffset(c.offset)})` });
+        const day = formatDay(toISO(r.wall.y, r.wall.m, r.wall.d));
+        const choose = (c) => {
+          const b = h("button", { type: "button", class: "dp-offset", "data-offset": c.offset, text: `${wallText(r.wall)} ${zoneName(this.zone, c.ms)} (${shownOffset(c.offset)})` });
           b.addEventListener("click", () => this.chooseOffset(c.offset));
           return b;
         };
         parts.push(
-          h("span", { class: "dp-clock", role: "alert", "data-clock": "ambiguous" }, [
-            `${t} happens twice on this day in ${this.zone}: clocks go back. Which one? `,
-            choose(r.first, "First"),
-            choose(r.second, "Second")
+          h("span", { class: "dp-choice", role: "alert", "data-clock": "ambiguous" }, [
+            icon(ICONS.warning),
+            h("span", { class: "dp-choice-body" }, [
+              h("span", { text: `${wallText(r.wall)} happens twice on ${day} in ${this.zone}: clocks go back. Which one?` }),
+              h("span", { class: "dp-choice-buttons" }, [choose(r.first), choose(r.second)])
+            ])
           ])
         );
       }
@@ -1627,9 +1643,9 @@ var index_default = DatePicker;
 export {
   DatePicker,
   Picker,
-  SHEET_QUERY,
   core_exports as core,
   index_default as default,
   segments_exports as segments,
+  wallText,
   zone_exports as zone
 };

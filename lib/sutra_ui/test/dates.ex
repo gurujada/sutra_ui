@@ -2,7 +2,7 @@ defmodule SutraUI.Test.Dates do
   @moduledoc """
   Pick dates and times in `Phoenix.LiveViewTest`, the way the picker posts them.
 
-      import SutraUI.Test.Dates
+      import SutraUI.Test
 
       test "due date", %{conn: conn} do
         {:ok, view, _html} = live(conn, ~p"/tasks/new")

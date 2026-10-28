@@ -9,7 +9,7 @@
 // events, so phx-change, used_input? and validation work as with any input.
 
 import { fit, unfit } from "../fit/index.js";
-import { pageLocale, viewerTime, zonesDiffer } from "../time/index.js";
+import { formatDay, pageLocale, viewerTime, zonesDiffer } from "../time/index.js";
 import { renderCalendar, summary } from "./calendar.js";
 import {
   PRESET_LABELS,
@@ -34,7 +34,11 @@ export * as core from "./core.js";
 export * as segments from "./segments.js";
 export * as zone from "./zone.js";
 
-export const SHEET_QUERY = "(max-width: 639px)";
+export const wallText = (w) => `${String(w.h).padStart(2, "0")}:${String(w.mi).padStart(2, "0")}`;
+/** "-04:00" with a true minus, for reading (the posted value keeps the ASCII one). */
+const shownOffset = (minutes) => formatOffset(minutes).replace("-", "\u2212");
+
+const SHEET_QUERY = "(max-width: 639px)";
 
 const json = (text, fallback) => {
   try {
@@ -395,22 +399,25 @@ export class Picker {
         if (zonesDiffer(at, this.zone, viewer)) hint = ` · ${viewerTime(at, this.zone, viewer, this.hintLabel, locale)}`;
         parts.push(h("span", { class: "dp-zone", "data-viewer-hint": Boolean(hint), text: `${name} (${this.zone})${hint}` }));
       } else if (r.kind === "gap") {
-        const t = `${String(r.wall.h).padStart(2, "0")}:${String(r.wall.mi).padStart(2, "0")}`;
+        const day = formatDay(toISO(r.wall.y, r.wall.m, r.wall.d));
         parts.push(
-          h("span", { class: "dp-clock", role: "alert", "data-clock": "gap", text: `${t} does not exist on this day in ${this.zone}: clocks jump forward (${formatOffset(r.before)} to ${formatOffset(r.after)}). Pick another time.` }),
+          h("span", { class: "dp-clock", role: "alert", "data-clock": "gap", text: `${wallText(r.wall)} does not exist on ${day} in ${this.zone}: clocks jump forward (${shownOffset(r.before)} to ${shownOffset(r.after)}). Pick another time.` }),
         );
       } else if (r.kind === "ambiguous") {
-        const t = `${String(r.wall.h).padStart(2, "0")}:${String(r.wall.mi).padStart(2, "0")}`;
-        const choose = (c, which) => {
-          const b = h("button", { type: "button", class: "dp-offset", "data-offset": c.offset, text: `${which}: ${zoneName(this.zone, c.ms)} (${formatOffset(c.offset)})` });
+        const day = formatDay(toISO(r.wall.y, r.wall.m, r.wall.d));
+        const choose = (c) => {
+          const b = h("button", { type: "button", class: "dp-offset", "data-offset": c.offset, text: `${wallText(r.wall)} ${zoneName(this.zone, c.ms)} (${shownOffset(c.offset)})` });
           b.addEventListener("click", () => this.chooseOffset(c.offset));
           return b;
         };
+        // A choice, not an error: a warning tone, and real buttons.
         parts.push(
-          h("span", { class: "dp-clock", role: "alert", "data-clock": "ambiguous" }, [
-            `${t} happens twice on this day in ${this.zone}: clocks go back. Which one? `,
-            choose(r.first, "First"),
-            choose(r.second, "Second"),
+          h("span", { class: "dp-choice", role: "alert", "data-clock": "ambiguous" }, [
+            icon(ICONS.warning),
+            h("span", { class: "dp-choice-body" }, [
+              h("span", { text: `${wallText(r.wall)} happens twice on ${day} in ${this.zone}: clocks go back. Which one?` }),
+              h("span", { class: "dp-choice-buttons" }, [choose(r.first), choose(r.second)]),
+            ]),
           ]),
         );
       }

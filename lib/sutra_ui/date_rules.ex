@@ -25,8 +25,8 @@ defmodule SutraUI.DateRules do
 
   A rule that is nil or empty does not apply. `check_date/3`, `check_range/4`, `check_time/2`
   and `errors/3` are pure and need no Ecto; `validate/4` and `validate_range/5` add the
-  errors to a changeset (they call `Ecto.Changeset`, so your app needs Ecto, which Phoenix
-  apps have).
+  errors to a changeset (they are defined when Ecto is in your app, which Phoenix apps
+  have; Ecto is an optional dependency of Sutra UI).
   """
 
   alias SutraUI.Time, as: SutraTime
@@ -181,57 +181,65 @@ defmodule SutraUI.DateRules do
       to_errors(check_time(rules, time), rules, today)
   end
 
-  @doc """
-  Adds the errors for a range given as two dates to `changeset` (on `end_field`; a reversed
-  range on `end_field` too). Options as `errors/3`, plus `:changeset` (the module to call,
-  `Ecto.Changeset`).
-  """
-  @spec validate_range(term(), atom(), atom(), t() | keyword() | map() | nil, keyword()) ::
-          term()
-  def validate_range(changeset, start_field, end_field, rules, opts \\ []) do
-    mod = Keyword.get(opts, :changeset, Ecto.Changeset)
-    rules = new(rules)
-    today = Keyword.get_lazy(opts, :today, fn -> today(opts[:zone]) end)
-    from = normalize(apply(mod, :get_field, [changeset, start_field]), opts[:zone])
-    to = normalize(apply(mod, :get_field, [changeset, end_field]), opts[:zone])
+  # `validate/4` and `validate_range/5` exist only where Ecto does (it is an optional
+  # dependency: the rest of this module needs none).
+  if Code.ensure_loaded?(Ecto.Changeset) do
+    @doc """
+    Adds the errors for a range given as two dates to `changeset` (on `end_field`; a
+    reversed range on `end_field` too). Options as `errors/3`.
+    """
+    @spec validate_range(
+            Ecto.Changeset.t(),
+            atom(),
+            atom(),
+            t() | keyword() | map() | nil,
+            keyword()
+          ) ::
+            Ecto.Changeset.t()
+    def validate_range(changeset, start_field, end_field, rules, opts \\ []) do
+      rules = new(rules)
+      today = Keyword.get_lazy(opts, :today, fn -> today(opts[:zone]) end)
+      from = normalize(Ecto.Changeset.get_field(changeset, start_field), opts[:zone])
+      to = normalize(Ecto.Changeset.get_field(changeset, end_field), opts[:zone])
 
-    case {from, to} do
-      {%Date{} = from, %Date{} = to} ->
-        case check_range(rules, from, to, today) do
-          :ok ->
-            changeset
+      case {from, to} do
+        {%Date{} = from, %Date{} = to} ->
+          case check_range(rules, from, to, today) do
+            :ok ->
+              changeset
 
-          {:error, reason}
-          when reason in [:before_min, :after_max, :disabled_date, :disabled_weekday] ->
-            field = if check_date(rules, from, today) == :ok, do: end_field, else: start_field
-            add_errors(mod, changeset, field, to_errors({:error, reason}, rules, today))
+            {:error, reason}
+            when reason in [:before_min, :after_max, :disabled_date, :disabled_weekday] ->
+              field = if check_date(rules, from, today) == :ok, do: end_field, else: start_field
+              add_errors(changeset, field, to_errors({:error, reason}, rules, today))
 
-          {:error, reason} ->
-            add_errors(mod, changeset, end_field, to_errors({:error, reason}, rules, today))
-        end
+            {:error, reason} ->
+              add_errors(changeset, end_field, to_errors({:error, reason}, rules, today))
+          end
 
-      _ ->
-        changeset
+        _ ->
+          changeset
+      end
     end
-  end
 
-  @doc """
-  Adds the picker's errors for `field` to `changeset`: the same checks the calendar makes,
-  so the server refuses what the picker refused. See `errors/3` for the options.
+    @doc """
+    Adds the picker's errors for `field` to `changeset`: the same checks the calendar
+    makes, so the server refuses what the picker refused. See `errors/3` for the options.
 
-      changeset |> SutraUI.DateRules.validate(:starts_at, rules, zone: "Asia/Kolkata")
-  """
-  @spec validate(term(), atom(), t() | keyword() | map() | nil, keyword()) :: term()
-  def validate(changeset, field, rules, opts \\ []) do
-    mod = Keyword.get(opts, :changeset, Ecto.Changeset)
-    value = apply(mod, :get_field, [changeset, field])
-    add_errors(mod, changeset, field, errors(rules, value, opts))
-  end
+        changeset |> SutraUI.DateRules.validate(:starts_at, rules, zone: "Asia/Kolkata")
+    """
+    @spec validate(Ecto.Changeset.t(), atom(), t() | keyword() | map() | nil, keyword()) ::
+            Ecto.Changeset.t()
+    def validate(changeset, field, rules, opts \\ []) do
+      value = Ecto.Changeset.get_field(changeset, field)
+      add_errors(changeset, field, errors(rules, value, opts))
+    end
 
-  defp add_errors(mod, changeset, field, errors) do
-    Enum.reduce(errors, changeset, fn {message, opts}, acc ->
-      apply(mod, :add_error, [acc, field, message, opts])
-    end)
+    defp add_errors(changeset, field, errors) do
+      Enum.reduce(errors, changeset, fn {message, opts}, acc ->
+        Ecto.Changeset.add_error(acc, field, message, opts)
+      end)
+    end
   end
 
   defp to_errors(:ok, _rules, _today), do: []

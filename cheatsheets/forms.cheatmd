@@ -270,7 +270,7 @@ changeset |> SutraUI.DateRules.validate(:due, rules, zone: "Asia/Kolkata")
 {:ok, dt} = SutraUI.Time.parse_datetime(params["starts_at"], "Asia/Kolkata")
 
 # in a test
-SutraUI.Test.Dates.pick(view, "task[due]", ~D[2027-03-15], form: "#task-form")
+pick(view, "task[due]", ~D[2027-03-15], form: "#task-form")
 ```
 
 ### Live Select (Async Search)

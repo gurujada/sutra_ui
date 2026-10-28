@@ -5,15 +5,10 @@ defmodule SutraUI.DateRulesTest do
 
   @today ~D[2026-10-28]
 
-  defmodule Changeset do
-    # A stand-in for Ecto.Changeset: the same calls, over a map.
-    def get_field(%{changes: changes}, field), do: Map.get(changes, field)
+  # Schemaless changesets: real Ecto, no schema module.
+  @types %{due: :date, from: :date, to: :date, at: :utc_datetime}
 
-    def add_error(%{errors: errors} = cs, field, message, opts),
-      do: %{cs | errors: errors ++ [{field, {message, opts}}]}
-  end
-
-  defp changeset(changes), do: %{changes: changes, errors: []}
+  defp changeset(changes), do: Ecto.Changeset.cast({%{}, @types}, changes, Map.keys(@types))
 
   describe "check_date/3" do
     test "min and max, absolute and relative to today" do
@@ -139,31 +134,40 @@ defmodule SutraUI.DateRulesTest do
       rules = %DateRules{min: :today}
 
       cs =
-        DateRules.validate(changeset(%{due: ~D[2026-10-01]}), :due, rules,
-          today: @today,
-          changeset: Changeset
-        )
+        DateRules.validate(changeset(%{due: ~D[2026-10-01]}), :due, rules, today: @today)
 
-      assert [{:due, {"must be on or after %{date}", opts}}] = cs.errors
+      assert [due: {"must be on or after %{date}", opts}] = cs.errors
+      refute cs.valid?
       assert opts[:validation] == :date_rules
+    end
+
+    test "a datetime is checked as its day in the zone" do
+      rules = %DateRules{disabled_weekdays: [7]}
+      # 2026-11-01 20:00 UTC is Monday 02:00 in Kolkata, but Sunday in UTC.
+      at = ~U[2026-11-01 20:00:00Z]
+
+      kolkata =
+        DateRules.validate(changeset(%{at: at}), :at, rules, zone: "Asia/Kolkata", today: @today)
+
+      assert kolkata.errors == []
+
+      utc = DateRules.validate(changeset(%{at: at}), :at, rules, zone: "Etc/UTC", today: @today)
+      assert [at: {"is not available on a %{weekday}", _}] = utc.errors
     end
 
     test "a valid or missing value adds nothing" do
       rules = %DateRules{min: :today}
 
       ok =
-        DateRules.validate(changeset(%{due: ~D[2026-11-01]}), :due, rules,
-          today: @today,
-          changeset: Changeset
-        )
+        DateRules.validate(changeset(%{due: ~D[2026-11-01]}), :due, rules, today: @today)
 
-      none = DateRules.validate(changeset(%{}), :due, rules, today: @today, changeset: Changeset)
+      none = DateRules.validate(changeset(%{}), :due, rules, today: @today)
       assert ok.errors == [] and none.errors == []
     end
 
     test "a range: length errors go on the end, a refused day on the day" do
       rules = %DateRules{max_length: 3, min: :today}
-      opts = [today: @today, changeset: Changeset]
+      opts = [today: @today]
 
       too_long =
         DateRules.validate_range(
@@ -174,8 +178,8 @@ defmodule SutraUI.DateRulesTest do
           opts
         )
 
-      assert [{:to, {"must be at most %{count} days", count: 3} = _}] =
-               Enum.map(too_long.errors, fn {f, {m, o}} -> {f, {m, Keyword.take(o, [:count])}} end)
+      assert [to: {"must be at most %{count} days", opts}] = too_long.errors
+      assert opts[:count] == 3
 
       past =
         DateRules.validate_range(
@@ -186,7 +190,7 @@ defmodule SutraUI.DateRulesTest do
           opts
         )
 
-      assert [{:from, {"must be on or after %{date}", _}}] = past.errors
+      assert [from: {"must be on or after %{date}", _}] = past.errors
     end
   end
 
