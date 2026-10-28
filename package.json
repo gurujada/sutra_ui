@@ -6,10 +6,12 @@
   "type": "module",
   "exports": {
     "./commands": "./priv/static/commands.js",
-    "./time": "./priv/static/time.js",
+    "./confirm": "./priv/static/confirm.js",
     "./fit": "./priv/static/fit.js",
     "./select": "./priv/static/select.js",
-    "./dates": "./priv/static/dates.js"
+    "./dates": "./priv/static/dates.js",
+    "./time": "./priv/static/time.js",
+    "./toast": "./priv/static/toast.js"
   },
   "files": [
     "priv/static/*.js"

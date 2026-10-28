@@ -6,262 +6,223 @@ defmodule SutraUI.ToastTest do
 
   alias SutraUI.Toast
 
-  describe "toast/1 rendering" do
-    test "renders toast container" do
-      assigns = %{}
+  defp html_of(html), do: LazyHTML.from_fragment(html)
 
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="test-toast">
-          <:title>Hello</:title>
-        </Toast.toast>
-        """)
+  defp attr_of(html, selector, attr) do
+    html |> html_of() |> LazyHTML.query(selector) |> LazyHTML.attribute(attr)
+  end
 
-      assert html =~ ~s(class="toast)
+  describe "default_duration/2" do
+    test "info and success leave after 5 s, warnings after 8 s" do
+      assert Toast.default_duration(:info) == 5000
+      assert Toast.default_duration(:success) == 5000
+      assert Toast.default_duration(:warning) == 8000
     end
 
-    test "renders title slot" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="test-toast">
-          <:title>Success Message</:title>
-        </Toast.toast>
-        """)
-
-      assert html =~ "Success Message"
-      assert html =~ "toast-title"
-    end
-
-    test "renders description slot" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="test-toast">
-          <:title>Title</:title>
-          <:description>Your changes have been saved.</:description>
-        </Toast.toast>
-        """)
-
-      assert html =~ "Your changes have been saved."
-      assert html =~ "toast-description"
-    end
-
-    test "renders action slot" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="test-toast">
-          <:title>Title</:title>
-          <:action>
-            <button>Undo</button>
-          </:action>
-        </Toast.toast>
-        """)
-
-      assert html =~ "toast-action"
-      assert html =~ "<button>Undo</button>"
-    end
-
-    test "renders close button" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="test-toast">
-          <:title>Title</:title>
-        </Toast.toast>
-        """)
-
-      assert html =~ "toast-close"
-      assert html =~ ~s(aria-label="Close")
+    test "errors and toasts with an action stay until dismissed" do
+      assert Toast.default_duration(:error) == 0
+      assert Toast.default_duration(:info, %{label: "Undo", event: "undo"}) == 0
     end
   end
 
-  describe "toast/1 variants" do
-    test "renders default variant" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="test-toast">
-          <:title>Default</:title>
-        </Toast.toast>
-        """)
-
-      assert html =~ ~s(class="toast)
-      refute html =~ "toast-success"
-      refute html =~ "toast-destructive"
+  describe "build/3" do
+    test "defaults the duration by kind and gives every toast an id" do
+      a = Toast.build(:info, "One", [])
+      b = Toast.build(:info, "Two", [])
+      assert a.id != b.id
+      assert a.duration == 5000
+      assert Toast.build(:error, "Bad", []).duration == 0
     end
 
-    test "renders success variant" do
-      assigns = %{}
+    test "an explicit duration wins, also with an action" do
+      toast =
+        Toast.build(:info, "Deleted", duration: 8000, action: %{label: "Undo", event: "undo"})
 
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="test-toast" variant="success">
-          <:title>Success</:title>
-        </Toast.toast>
-        """)
-
-      assert html =~ "toast-success"
+      assert toast.duration == 8000
+      assert toast.action == %{label: "Undo", event: "undo", values: %{}, target: nil}
     end
 
-    test "renders destructive variant" do
-      assigns = %{}
+    test "an unknown kind raises" do
+      assert_raise ArgumentError, ~r/unknown toast kind/, fn -> Toast.build(:loud, "x", []) end
+    end
 
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="test-toast" variant="destructive">
-          <:title>Error</:title>
-        </Toast.toast>
-        """)
-
-      assert html =~ "toast-destructive"
+    test "an action needs a label and an event" do
+      assert_raise ArgumentError, ~r/:label and :event/, fn ->
+        Toast.build(:info, "x", action: %{label: "Undo"})
+      end
     end
   end
 
-  describe "toast/1 custom class" do
-    test "includes custom class" do
+  describe "toast/1" do
+    for {kind, role, live, word} <- [
+          {"info", "status", "polite", "info"},
+          {"success", "status", "polite", "success"},
+          {"warning", "alert", "assertive", "warning"},
+          {"error", "alert", "assertive", "error"}
+        ] do
+      test "kind #{kind}: role #{role}, aria-live #{live}, data-kind and a named close button" do
+        assigns = %{kind: unquote(kind)}
+
+        html =
+          rendered_to_string(~H"""
+          <Toast.toast id="t" kind={@kind}>
+            <:title>Heads up</:title>
+            <:description>Some detail.</:description>
+          </Toast.toast>
+          """)
+
+        assert attr_of(html, "#t", "data-kind") == [unquote(word)]
+        assert attr_of(html, "#t", "role") == [unquote(role)]
+        assert attr_of(html, "#t", "aria-live") == [unquote(live)]
+        assert attr_of(html, "#t button", "aria-label") == ["Close"]
+        assert html =~ "Heads up"
+        assert html =~ "Some detail."
+      end
+    end
+
+    test "variant is a deprecated alias of kind" do
+      assigns = %{}
+
+      destructive =
+        rendered_to_string(~H"""
+        <Toast.toast id="t" variant="destructive">
+          <:title>x</:title>
+        </Toast.toast>
+        """)
+
+      success =
+        rendered_to_string(~H"""
+        <Toast.toast id="t" variant="success">
+          <:title>x</:title>
+        </Toast.toast>
+        """)
+
+      assert attr_of(destructive, "#t", "data-kind") == ["error"]
+      assert attr_of(success, "#t", "data-kind") == ["success"]
+    end
+
+    test "an unmanaged toast closes itself with a JS command; the icon is hidden from screen readers" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Toast.toast id="test-toast" class="my-toast">
-          <:title>Title</:title>
+        <Toast.toast id="t">
+          <:title>Hi</:title>
         </Toast.toast>
         """)
 
-      assert html =~ "my-toast"
+      assert [click] = attr_of(html, "#t button", "phx-click")
+      assert click =~ "hide"
+      assert attr_of(html, "#t .toast-icon", "aria-hidden") == ["true"]
+    end
+
+    test "the inner block replaces the inside and keeps the shell" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Toast.toast id="t" kind="success">My own <b>content</b></Toast.toast>
+        """)
+
+      assert html =~ "My own"
+      assert attr_of(html, "#t", "data-kind") == ["success"]
+      assert attr_of(html, "#t button", "aria-label") == ["Close"]
+      refute html =~ "toast-title"
+    end
+
+    test "the action slot renders" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Toast.toast id="t">
+          <:title>Uploaded</:title><:action><button>View</button></:action>
+        </Toast.toast>
+        """)
+
+      assert html_of(html) |> LazyHTML.query("#t .toast-action button") |> LazyHTML.text() =~
+               "View"
     end
   end
 
-  describe "toast/1 accessibility" do
-    test "has role=status" do
+  describe "toast_group/1 without LiveView" do
+    test "shows flash messages as toasts with a word and an icon, and no live component" do
+      assigns = %{flash: %{"info" => "Saved", "error" => "Could not save"}}
+
+      html =
+        rendered_to_string(~H"""
+        <Toast.toast_group flash={@flash} />
+        """)
+
+      assert attr_of(html, "section", "data-live") == ["false"]
+      assert attr_of(html, "section", "aria-label") == ["Notifications"]
+      assert attr_of(html, "section", "phx-hook") != []
+      assert attr_of(html, "[data-toast][data-kind=info]", "role") == ["status"]
+      assert attr_of(html, "[data-toast][data-kind=error]", "role") == ["alert"]
+      assert attr_of(html, "[data-toast][data-kind=error]", "data-duration") == ["0"]
+      assert attr_of(html, "[data-toast][data-kind=info]", "data-duration") == ["5000"]
+      assert html =~ "Saved"
+      assert html =~ "Could not save"
+      # state as a word (for screen readers) next to the icon; no visible title repeating the kind
+      message = html_of(html) |> LazyHTML.query("[data-kind=error] .toast-message")
+      assert LazyHTML.text(message) =~ "Error: Could not save"
+      assert attr_of(html, "[data-kind=error] .toast-message .sr-only", "class") == ["sr-only"]
+
+      assert html_of(html) |> LazyHTML.query("[data-kind=error] .toast-title") |> Enum.count() ==
+               0
+
+      refute html =~ "data-toast-notice"
+    end
+
+    test "queued toasts (put_toast) are shown too" do
+      queued = Toast.build(:success, "Course published", id: "queued-1")
+      assigns = %{flash: %{"sutra_toasts" => [queued]}}
+
+      html =
+        rendered_to_string(~H"""
+        <Toast.toast_group flash={@flash} />
+        """)
+
+      assert html =~ "Course published"
+      assert attr_of(html, "[data-toast]", "data-kind") == ["success"]
+    end
+
+    test "an empty flash renders an empty stack" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Toast.toast id="test-toast">
-          <:title>Title</:title>
-        </Toast.toast>
+        <Toast.toast_group flash={%{}} />
         """)
 
-      assert html =~ ~s(role="status")
+      assert html_of(html) |> LazyHTML.query("[data-toast]") |> Enum.count() == 0
     end
 
-    test "has aria-live=polite" do
-      assigns = %{}
+    test "labels can be overridden and the corner is rendered" do
+      assigns = %{flash: %{"error" => "Mala"}}
 
       html =
         rendered_to_string(~H"""
-        <Toast.toast id="test-toast">
-          <:title>Title</:title>
-        </Toast.toast>
+        <Toast.toast_group
+          flash={@flash}
+          corner="top-center"
+          labels={%{close: "Cerrar", error: "Fallo", region: "Avisos"}}
+        />
         """)
 
-      assert html =~ ~s(aria-live="polite")
+      assert attr_of(html, "section", "data-corner") == ["top-center"]
+      assert attr_of(html, "section", "aria-label") == ["Avisos"]
+      assert attr_of(html, "[data-toast] button", "aria-label") == ["Cerrar"]
+      assert html =~ "Fallo"
     end
 
-    test "close button has aria-label" do
-      assigns = %{}
+    test "toast_container is a wrapper of the group" do
+      # deprecated: called by name so the test does not warn
+      assigns = %{flash: %{"info" => "Hello"}, class: nil, nonce: nil, __changed__: nil}
+      html = rendered_to_string(apply(Toast, :toast_container, [assigns]))
 
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="test-toast">
-          <:title>Title</:title>
-        </Toast.toast>
-        """)
-
-      assert html =~ ~s(aria-label="Close")
-    end
-  end
-
-  describe "toast/1 with id" do
-    test "uses provided id" do
-      assigns = %{}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast id="my-toast">
-          <:title>Title</:title>
-        </Toast.toast>
-        """)
-
-      assert html =~ ~s(id="my-toast")
-    end
-  end
-
-  describe "toast_container/1 rendering" do
-    test "renders toast container" do
-      assigns = %{flash: %{}}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast_container flash={@flash} />
-        """)
-
-      assert html =~ ~s(id="toast-container")
-      assert html =~ "toast-container"
-    end
-
-    test "renders info flash as toast" do
-      assigns = %{flash: %{"info" => "Operation successful"}}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast_container flash={@flash} />
-        """)
-
-      assert html =~ "Operation successful"
-      assert html =~ ~s(id="toast-info")
-    end
-
-    test "renders error flash as destructive toast" do
-      assigns = %{flash: %{"error" => "Something went wrong"}}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast_container flash={@flash} />
-        """)
-
-      assert html =~ "Something went wrong"
-      assert html =~ ~s(id="toast-error")
-      assert html =~ "toast-destructive"
-    end
-
-    test "includes custom class" do
-      assigns = %{flash: %{}}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast_container flash={@flash} class="my-container" />
-        """)
-
-      assert html =~ "my-container"
-    end
-
-    test "has phx-hook for dynamic toasts" do
-      assigns = %{flash: %{}}
-
-      html =
-        rendered_to_string(~H"""
-        <Toast.toast_container flash={@flash} />
-        """)
-
-      assert html =~ ~s(phx-hook="SutraUI.Toast.ToastContainer")
-    end
-
-    test "programmatic toast hook renders pushed text with textContent" do
-      source = File.read!("lib/sutra_ui/toast.ex")
-
-      assert source =~ "titleEl.textContent = title"
-      assert source =~ "descriptionEl.textContent = description"
-      refute source =~ "${title ?"
-      refute source =~ "${description ?"
+      assert html =~ "Hello"
+      assert attr_of(html, "section", "data-live") == ["false"]
     end
   end
 end
