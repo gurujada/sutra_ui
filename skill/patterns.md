@@ -119,6 +119,10 @@ and removed in 0.5.
 - A `dialog` takes `placement`: `center`, `side` (docked right from 768 px), `sheet`
   (bottom sheet on phones) or `popover` (a card under its `anchor` from 640 px).
   All are the same div-based dialog.
+- `command_palette` (shortcuts, pages, arguments, server search) and `command_dialog` are
+  div-based dialogs too. Put the palette once in the layout, set it up with
+  `on_mount: [{SutraUI.Commands.Live, MyAppWeb.Commands}]`, and define actions in a
+  `use SutraUI.Commands` module; never hand-write the filtering in a hook.
 - A closed `popover`, `dropdown_menu` or `select` list takes no layout room. An open
   `popover` or `dropdown_menu` flips or shifts to stay inside the viewport.
 - Pass `chevron={false}` to a `dropdown_menu` whose trigger is only an icon (with

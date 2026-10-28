@@ -30,7 +30,7 @@ defmodule SutraUI.Command do
   ## Accessibility
 
   - Keyboard navigation for Arrow keys, Home/End, and Enter selection
-  - Escape closes `command_dialog` through native dialog cancellation
+  - Escape closes `command_dialog` (a div-based `SutraUI.Dialog`, with focus trapped inside)
   - Search/filter functionality with live updates
   - ARIA roles and attributes for combobox-style search and menu items
   - Focus management
@@ -249,9 +249,14 @@ defmodule SutraUI.Command do
   end
 
   @doc """
-  Renders a modal command dialog (Cmd+K style).
+  Renders a modal command dialog (Cmd+K style) on the div-based `SutraUI.Dialog`, so it shows
+  in a screen share. Open and close it with `show_command_dialog/2` and `hide_command_dialog/2`.
+
+  For a palette with shortcuts, pages, arguments and server search, see
+  `SutraUI.Commands.Palette`.
   """
   attr(:id, :string, required: true, doc: "Unique identifier for the command dialog")
+  attr(:show, :boolean, default: false, doc: "Whether the dialog starts open")
 
   attr(:placeholder, :string,
     default: "Type a command or search...",
@@ -273,65 +278,21 @@ defmodule SutraUI.Command do
 
   def command_dialog(assigns) do
     ~H"""
-    <dialog
+    <SutraUI.Dialog.dialog
       id={@id}
-      class="command-dialog"
-      aria-label="Command palette"
-      phx-hook=".CommandDialog"
+      show={@show}
+      class={Enum.join(["command-dialog", @class], " ")}
       {@rest}
     >
-      <div class={@class}>
-        <.command
-          id={"#{@id}-command"}
-          placeholder={@placeholder}
-          empty_text={@empty_text}
-          nonce={@nonce}
-        >
-          {render_slot(@inner_block)}
-        </.command>
-      </div>
-    </dialog>
-
-    <script :type={ColocatedHook} name=".CommandDialog" runtime nonce={@nonce}>
-      {
-        mounted() {
-          this.showHandler = () => {
-            if (typeof this.el.showModal === "function" && !this.el.open) {
-              this.el.showModal();
-            } else {
-              this.el.setAttribute("open", "");
-            }
-
-            requestAnimationFrame(() => {
-              this.el.querySelector("input")?.focus();
-            });
-          };
-
-          this.hideHandler = () => {
-            if (this.el.open && typeof this.el.close === "function") {
-              this.el.close();
-            } else {
-              this.el.removeAttribute("open");
-            }
-          };
-
-          this.cancelHandler = (event) => {
-            event.preventDefault();
-            this.hideHandler();
-          };
-
-          this.el.addEventListener("phx:show-dialog", this.showHandler);
-          this.el.addEventListener("phx:hide-dialog", this.hideHandler);
-          this.el.addEventListener("cancel", this.cancelHandler);
-        },
-
-        destroyed() {
-          this.el.removeEventListener("phx:show-dialog", this.showHandler);
-          this.el.removeEventListener("phx:hide-dialog", this.hideHandler);
-          this.el.removeEventListener("cancel", this.cancelHandler);
-        }
-      }
-    </script>
+      <.command
+        id={"#{@id}-command"}
+        placeholder={@placeholder}
+        empty_text={@empty_text}
+        nonce={@nonce}
+      >
+        {render_slot(@inner_block)}
+      </.command>
+    </SutraUI.Dialog.dialog>
     """
   end
 

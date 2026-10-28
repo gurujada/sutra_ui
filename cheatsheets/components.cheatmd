@@ -600,6 +600,21 @@ Only the close button dismisses a flash; the message is a `div`, so it can hold 
 </.command>
 ```
 
+### Command Palette
+
+```heex
+<.command_palette id="command-palette" commands={@sutra_commands} />
+<.button phx-click={show_palette("command-palette")}>Search</.button>
+```
+
+```elixir
+use SutraUI.Commands                                  # actions/1, sources/0, search/3
+live_session :app, on_mount: [{SutraUI.Commands.Live, MyAppWeb.Commands}]
+SutraUI.Commands.put_page_actions(socket, [Action.new(id: "x", title: "X", navigate: "/x")])
+```
+
+Keys: `mod+k` opens, arrows move, Enter runs, Escape steps back then closes, `?` lists shortcuts.
+
 ### Hover Card
 
 ```heex
