@@ -14,7 +14,7 @@ Use these from application code:
 
 - `use SutraUI` in the Phoenix web module's `html_helpers`.
 - Render components as function components such as `<.button>`, `<.input>`,
-  `<.popover>`, `<.calendar>`, `<.activity>`, and `<.response>`.
+  `<.popover>`, `<.calendar>`, `<.activity>`, `<.relative_time>`, and `<.response>`.
 - Pass Phoenix globals (`phx-*`, `data-*`, `aria-*`) through component attrs.
 - Use documented slots for custom content instead of inventing many narrow attrs.
 - Use exposed JS helper functions only when the component module documents them.
@@ -91,8 +91,10 @@ writing HEEx.
   `loading_state`, `toast`
 - Overlays/actions: `dialog`, `popover`, `tooltip`, `hover_card`,
   `dropdown_menu`, `context_menu`, `command`
-- Navigation: `tabs`, `accordion`, `breadcrumb`, `pagination`, `tab_nav`
-- Display: `avatar`, `carousel`, `theme_switcher`
+- Navigation: `tabs`, `segmented`, `filter_tabs`, `accordion`, `breadcrumb`, `pagination`,
+  `tab_nav`
+- Display: `avatar`, `avatar_group`, `carousel`, `theme_switcher`, `relative_time`,
+  `local_time`
 - AI: `response`, `activity`
 
 ## Minimal Form Shape

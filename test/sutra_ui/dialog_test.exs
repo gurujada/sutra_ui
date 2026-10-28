@@ -295,4 +295,84 @@ defmodule SutraUI.DialogTest do
                ~r/\.dialog-panel \{\s*@apply bg-background relative z-10 flex flex-col w-fit /
     end
   end
+
+  describe "dialog/1 placement" do
+    import SutraUI.HTMLHelpers
+
+    test "center is the default and stays div-based" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Dialog.dialog id="d"><:title>T</:title>Body</Dialog.dialog>
+        """)
+
+      assert attribute(html, "#d", "data-placement") == "center"
+      assert attribute(html, "#d", "data-size") == nil
+      assert attribute(html, "#d", "data-anchor") == nil
+      refute html =~ "<dialog"
+      refute html =~ "popover="
+    end
+
+    test "side takes a size" do
+      for size <- ~w(md lg xl) do
+        assigns = %{size: size}
+
+        html =
+          rendered_to_string(~H"""
+          <Dialog.dialog id="d" placement="side" size={@size}><:title>T</:title>Body</Dialog.dialog>
+          """)
+
+        assert attribute(html, "#d", "data-placement") == "side"
+        assert attribute(html, "#d", "data-size") == size
+        assert attribute(html, "#d-panel", "role") == "dialog"
+      end
+    end
+
+    test "sheet" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Dialog.dialog id="d" placement="sheet"><:title>T</:title>Body</Dialog.dialog>
+        """)
+
+      assert attribute(html, "#d", "data-placement") == "sheet"
+      assert attribute(html, "#d", "data-size") == nil
+    end
+
+    test "popover carries its anchor" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Dialog.dialog id="d" placement="popover" anchor="#course-bar">
+          <:title>T</:title>Body
+        </Dialog.dialog>
+        """)
+
+      assert attribute(html, "#d", "data-placement") == "popover"
+      assert attribute(html, "#d", "data-anchor") == "#course-bar"
+    end
+
+    test "every placement keeps its title, description and close wiring" do
+      for placement <- ~w(center side sheet popover) do
+        assigns = %{placement: placement}
+
+        html =
+          rendered_to_string(~H"""
+          <Dialog.dialog id="d" placement={@placement} on_cancel="close">
+            <:title>Why</:title>
+            <:description>Because</:description>
+            Body
+          </Dialog.dialog>
+          """)
+
+        assert attribute(html, "#d-panel", "aria-labelledby") == "d-title"
+        assert attribute(html, "#d-panel", "aria-describedby") == "d-description"
+        assert attribute(html, "#d-panel button", "aria-label") == "Close"
+        assert text(html, "#d-title") == "Why"
+      end
+    end
+  end
 end

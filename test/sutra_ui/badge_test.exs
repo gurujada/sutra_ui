@@ -125,4 +125,82 @@ defmodule SutraUI.BadgeTest do
       assert html =~ ~s(id="status-badge")
     end
   end
+
+  describe "badge/1 tones and appearances" do
+    import SutraUI.HTMLHelpers
+
+    test "the new tones render with data-variant" do
+      for variant <- ~w(info warning brand ai) do
+        assigns = %{variant: variant}
+
+        html =
+          rendered_to_string(~H"""
+          <Badge.badge variant={@variant}>Tone</Badge.badge>
+          """)
+
+        assert attribute(html, "span", "data-variant") == variant
+        assert attribute(html, "span", "data-appearance") == "solid"
+        assert text(html, "span") == "Tone"
+      end
+    end
+
+    test "soft and dashed appearances" do
+      for appearance <- ~w(soft dashed) do
+        assigns = %{appearance: appearance}
+
+        html =
+          rendered_to_string(~H"""
+          <Badge.badge variant="warning" appearance={@appearance}>Due</Badge.badge>
+          """)
+
+        assert attribute(html, "span", "data-appearance") == appearance
+        assert attribute(html, "span", "data-variant") == "warning"
+      end
+    end
+
+    test "every variant takes every appearance" do
+      for variant <- ~w(default secondary destructive success outline info warning brand ai),
+          appearance <- ~w(solid soft dashed) do
+        assigns = %{variant: variant, appearance: appearance}
+
+        html =
+          rendered_to_string(~H"""
+          <Badge.badge variant={@variant} appearance={@appearance}>x</Badge.badge>
+          """)
+
+        assert attribute(html, "span", "data-variant") == variant
+        assert attribute(html, "span", "data-appearance") == appearance
+      end
+    end
+
+    test "the icon slot renders before the content, hidden from assistive technology" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Badge.badge variant="success">
+          <:icon><svg data-icon="check"></svg></:icon>
+          Verified
+        </Badge.badge>
+        """)
+
+      assert count(html, "span.badge-icon svg[data-icon=check]") == 1
+      assert attribute(html, "span.badge-icon", "aria-hidden") == "true"
+      assert text(html, "span[data-variant]") == "Verified"
+    end
+
+    test "no icon wrapper without the slot, and links keep tone and appearance" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Badge.badge href="/n" variant="ai" appearance="soft">5 new</Badge.badge>
+        """)
+
+      assert count(html, ".badge-icon") == 0
+      assert attribute(html, "a", "href") == "/n"
+      assert attribute(html, "a", "data-variant") == "ai"
+      assert attribute(html, "a", "data-appearance") == "soft"
+    end
+  end
 end

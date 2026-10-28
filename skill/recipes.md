@@ -232,9 +232,12 @@ Compose page states from primitives instead of bespoke markup each time:
 
 <.empty :if={@records == []}>
   <:title>No records</:title>
-  <:description>Create the first record to get started.</:description>
-  <:actions><.button phx-click="new">New record</.button></:actions>
+  Create the first record to get started.
+  <:action><.button phx-click="new">New record</.button></:action>
 </.empty>
+
+<%!-- One quiet line inside a panel or list --%>
+<.empty :if={@comments == []} variant="inline"><:title>No comments</:title></.empty>
 
 <.alert :if={@error} variant="destructive">
   <:title>Unable to load records</:title>

@@ -59,7 +59,29 @@ has one, otherwise use inline accessible SVG.
 <.badge variant="secondary">Secondary</.badge>
 <.badge variant="destructive">Error</.badge>
 <.badge variant="outline">Outline</.badge>
+<.badge variant="info">Info</.badge>
+<.badge variant="warning" appearance="soft">Due soon</.badge>
+<.badge variant="ai" appearance="dashed">Suggested</.badge>
+<.badge variant="success"><:icon><.my_icon name="check" /></:icon>Verified</.badge>
 ```
+
+Variants: `default secondary destructive success outline info warning brand ai`. Styles: `solid` (default), `soft`, `dashed`.
+
+### Time
+
+```heex
+<.relative_time at={@post.inserted_at} />            <%!-- 3 hours ago --%>
+<.relative_time at={@due} length={:short} until={86_400} zone="Asia/Kolkata" />
+<.local_time at={@due} format={:day_time} zone={@workbook.time_zone} />
+<.local_time at={@due} format={:time} zone="Asia/Kolkata" hint={false} />
+```
+
+```elixir
+SutraUI.Time.format(~U[2026-10-05 09:00:00Z], :day_time, "Asia/Kolkata")
+#=> "Mon 5 Oct, 14:30 IST"
+```
+
+Formats: `:date :short :long :day :time :date_time :day_time :full :month`. 24-hour clock. Needs `config :elixir, :time_zone_database, Tz.TimeZoneDatabase`.
 
 ### Spinner
 
@@ -444,6 +466,14 @@ Only the close button dismisses a flash; the message is a `div`, so it can hold 
   <:description>Get started by sending your first message.</:description>
   <:actions><.button>Send Message</.button></:actions>
 </.empty>
+
+<.empty>
+  <:title>No projects yet</:title>
+  Create one to get started.
+  <:action><.button>New project</.button></:action>
+</.empty>
+
+<.empty variant="inline"><:title>No comments</:title>Be the first to reply.</.empty>
 ```
 
 ### Loading State
@@ -487,6 +517,16 @@ Only the close button dismisses a flash; the message is a `div`, so it can hold 
   </:footer>
 </.dialog>
 ```
+
+### Dialog Placement
+
+```heex
+<.dialog id="filters" placement="side" size="lg" show={@show} on_cancel="close">...</.dialog>
+<.dialog id="share" placement="sheet" show={@show} on_cancel="close">...</.dialog>
+<.dialog id="why" placement="popover" anchor="#course-bar" show={@show} on_cancel="close">...</.dialog>
+```
+
+`center` (default); `side` docks right from 768 px, a bottom sheet below; `sheet` is a bottom sheet on phones and a centred card above; `popover` hangs under `anchor` (or its trigger) from 640 px, a bottom sheet below.
 
 ### Dialog JS Commands
 
@@ -588,6 +628,20 @@ Only the close button dismisses a flash; the message is a `div`, so it can hold 
 </.tabs>
 ```
 
+### Segmented And Filter Tabs
+
+```heex
+<.segmented id="view" label="View" name="view" value={@view} click="set_view">
+  <:option value="list" label="List" />
+  <:option value="grid" title="Grid view"><.my_icon name="grid" /></:option>
+</.segmented>
+
+<.filter_tabs id="inbox-filter" label="Filter inbox">
+  <:item label="All" count={42} active={@filter == "all"} click="filter" value="all" />
+  <:item label="Mine" count={3} active={@filter == "mine"} patch={~p"/inbox?filter=mine"} />
+</.filter_tabs>
+```
+
 ### Accordion
 
 ```heex
@@ -648,6 +702,8 @@ Use `collapse="never"` when the tab row should stay visible on small screens.
 <.avatar src={nil} initials="JD" />
 <.avatar size="sm" src="/avatar.jpg" />
 <.avatar size="lg" src="/avatar.jpg" />
+
+<.avatar_group id="reviewers" label="Reviewers" max={3} people={[%{name: "Asha Rao"}, %{name: "Ravi Teja", src: "/r.png"}, %{name: "Mei Lin"}, %{name: "Sam Cole"}]} />
 ```
 
 ### Carousel

@@ -187,4 +187,120 @@ defmodule SutraUI.AvatarTest do
       refute html =~ "avatar-fallback-hidden"
     end
   end
+
+  describe "avatar_group/1" do
+    import SutraUI.HTMLHelpers
+
+    @people [
+      %{name: "Asha Rao"},
+      %{name: "Ravi Teja", initials: "RT"},
+      %{name: "Mei Lin Wong"},
+      %{name: "Sam Cole"},
+      %{name: "Dev Patel"}
+    ]
+
+    test "stacks up to max faces and collapses the rest to +n" do
+      assigns = %{people: @people}
+
+      html =
+        rendered_to_string(~H"""
+        <Avatar.avatar_group id="g" people={@people} max={3} />
+        """)
+
+      assert count(html, ".avatar-group-item") == 3
+      assert text(html, ".avatar-group-more") == "+2"
+      assert attribute(html, ".avatar-group", "data-total") == "5"
+      assert attribute(html, ".avatar-group", "data-hidden") == "2"
+      assert attribute(html, ".avatar-group-more", "title") == "Sam Cole, Dev Patel"
+    end
+
+    test "no +n when everyone fits" do
+      assigns = %{people: Enum.take(@people, 2)}
+
+      html =
+        rendered_to_string(~H"""
+        <Avatar.avatar_group id="g" people={@people} />
+        """)
+
+      assert count(html, ".avatar-group-item") == 2
+      assert count(html, ".avatar-group-more") == 0
+    end
+
+    test "the group is named by its label and every name, hidden ones included" do
+      assigns = %{people: @people}
+
+      html =
+        rendered_to_string(~H"""
+        <Avatar.avatar_group id="g" people={@people} max={2} label="Reviewers" />
+        """)
+
+      assert attribute(html, "#g", "role") == "group"
+
+      assert attribute(html, "#g", "aria-label") ==
+               "Reviewers: Asha Rao, Ravi Teja, Mei Lin Wong, Sam Cole, Dev Patel"
+
+      assert attribute(html, ".avatar-group-more", "aria-hidden") == "true"
+    end
+
+    test "without a label the names alone name the group" do
+      assigns = %{people: Enum.take(@people, 2)}
+
+      html =
+        rendered_to_string(~H"""
+        <Avatar.avatar_group id="g" people={@people} />
+        """)
+
+      assert attribute(html, "#g", "aria-label") == "Asha Rao, Ravi Teja"
+    end
+
+    test "each face carries its name and initials default to the name's first letters" do
+      assigns = %{people: @people}
+
+      html =
+        rendered_to_string(~H"""
+        <Avatar.avatar_group id="g" people={@people} max={3} />
+        """)
+
+      titles =
+        html
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query(".avatar-group-item")
+        |> LazyHTML.attribute("title")
+
+      assert titles == ["Asha Rao", "Ravi Teja", "Mei Lin Wong"]
+
+      initials =
+        html
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query(".avatar-fallback")
+        |> Enum.map(&(&1 |> LazyHTML.text() |> String.trim()))
+
+      assert initials == ["AR", "RT", "ML", "+2"]
+    end
+
+    test "faces with an image get ids so the fallback hook runs under a CSP" do
+      assigns = %{people: [%{name: "Asha Rao", src: "/a.png"}]}
+
+      html =
+        rendered_to_string(~H"""
+        <Avatar.avatar_group id="g" people={@people} nonce="n0nce" />
+        """)
+
+      assert attribute(html, "span.avatar", "id") == "g-0"
+      assert html =~ ~r/<script[^>]*nonce="n0nce"/
+      refute html =~ "onerror"
+    end
+
+    test "size applies to every face" do
+      assigns = %{people: @people}
+
+      html =
+        rendered_to_string(~H"""
+        <Avatar.avatar_group id="g" people={@people} max={1} size="lg" />
+        """)
+
+      assert attribute(html, "#g", "data-size") == "lg"
+      assert count(html, ".avatar-lg") == 2
+    end
+  end
 end

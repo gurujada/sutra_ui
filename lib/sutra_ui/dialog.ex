@@ -45,6 +45,26 @@ defmodule SutraUI.Dialog do
         </.form>
       </.dialog>
 
+  ## Placement
+
+  `placement` says where the panel sits. All of them are the same div-based dialog (focus
+  trapped, Escape and the backdrop close it):
+
+  | Placement | Phone (under 640 px; `side` under 768 px) | Wider |
+  |-----------|--------------------------------------------|-------|
+  | `center` (default) | centred card | centred card |
+  | `side` | bottom sheet | docked right, full height, from 768 px; `size` sets the width |
+  | `sheet` | bottom sheet | centred card |
+  | `popover` | bottom sheet | a card hanging under its `anchor` (or the trigger that opened it) from 640 px, the page visible behind it |
+
+      <.dialog id="filters" placement="side" size="lg" show={@show} on_cancel="close">...</.dialog>
+      <.dialog id="why" placement="popover" anchor="#course-bar" show={@show} on_cancel="close">...</.dialog>
+
+  A `popover` placement measures `anchor` (a CSS selector) when it opens and sets the card's
+  top through the CSSOM (`--popover-top`), so no `style` attribute is rendered. Without
+  `anchor` it hangs under the element that had focus when the dialog opened (the trigger).
+  The card is centred; use `SutraUI.Popover` for a small card next to a button.
+
   ## Opening and Closing
 
   **Server-controlled (recommended):**
@@ -127,6 +147,23 @@ defmodule SutraUI.Dialog do
     doc: "Whether clicking the backdrop closes the dialog"
   )
 
+  attr(:placement, :string,
+    default: "center",
+    values: ~w(center side sheet popover),
+    doc: "Where the panel sits; see the Placement section"
+  )
+
+  attr(:size, :string,
+    default: "md",
+    values: ~w(md lg xl),
+    doc: "Width of a `side` panel from 768 px: md 26rem, lg 44rem, xl 64rem"
+  )
+
+  attr(:anchor, :string,
+    default: nil,
+    doc: "CSS selector of the element a `popover` placement hangs under"
+  )
+
   attr(:rest, :global, doc: "Additional HTML attributes")
 
   slot(:inner_block, required: true, doc: "The main dialog content")
@@ -142,6 +179,9 @@ defmodule SutraUI.Dialog do
       phx-mounted={@show && show_dialog(@id)}
       class={["dialog", @show && "is-open"]}
       data-close-on-backdrop={to_string(@close_on_backdrop)}
+      data-placement={@placement}
+      data-size={@placement == "side" && @size}
+      data-anchor={@placement == "popover" && @anchor}
       {@rest}
     >
       <.focus_wrap
@@ -210,7 +250,22 @@ defmodule SutraUI.Dialog do
     <script :type={Phoenix.LiveView.ColocatedHook} name=".Dialog">
       export default {
         mounted() {
+          // A popover placement hangs under its anchor (or the trigger that had focus): the card's
+          // top is set through the CSSOM, never a style attribute.
+          this.place = () => {
+            if (this.el.dataset.placement !== "popover") return;
+            const anchor = this.el.dataset.anchor
+              ? document.querySelector(this.el.dataset.anchor)
+              : this.trigger;
+            if (!anchor) return;
+            const bottom = anchor.getBoundingClientRect().bottom + 8;
+            this.el.style.setProperty("--popover-top", Math.max(8, Math.round(bottom)) + "px");
+          };
+
           this.showHandler = () => {
+            const active = document.activeElement;
+            this.trigger = active && !this.el.contains(active) && active !== document.body ? active : this.trigger;
+            this.place();
             this.el.classList.add("is-open");
             // Focus first focusable element
             requestAnimationFrame(() => {
@@ -228,11 +283,17 @@ defmodule SutraUI.Dialog do
 
           this.el.addEventListener("phx:show-dialog", this.showHandler);
           this.el.addEventListener("phx:hide-dialog", this.hideHandler);
+          window.addEventListener("resize", this.place);
+        },
+
+        updated() {
+          if (this.el.classList.contains("is-open")) this.place();
         },
 
         destroyed() {
           this.el.removeEventListener("phx:show-dialog", this.showHandler);
           this.el.removeEventListener("phx:hide-dialog", this.hideHandler);
+          window.removeEventListener("resize", this.place);
         }
       }
     </script>

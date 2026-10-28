@@ -120,6 +120,18 @@ const liveSocket = new LiveSocket("/live", Socket, {
 })
 ```
 
+Extracted hooks that import a Sutra UI module (`relative_time` and `local_time` import
+`sutra_ui/time`) need your esbuild to find `deps` through `NODE_PATH`, the way it finds
+`phoenix` and `phoenix_live_view`. A Phoenix app already has this:
+
+```elixir
+# config/config.exs
+env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
+```
+
+`relative_time` and `local_time` also need a time zone database for any zone but "Etc/UTC":
+add `{:tz, "~> 0.28"}` and `config :elixir, :time_zone_database, Tz.TimeZoneDatabase`.
+
 > #### Deployment Note {: .warning}
 >
 > Runtime hooks are still compiled with your app code. Ensure your deployment runs `mix compile` **before** `assets.deploy`:

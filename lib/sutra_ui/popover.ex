@@ -140,6 +140,16 @@ defmodule SutraUI.Popover do
           };
           document.addEventListener('keydown', this.escapeHandler);
           
+          // Fit the card inside the viewport each time it opens (and when the window changes).
+          this.fitObserver = new MutationObserver(() => {
+            if (this.isOpen()) this.fit(this.content, this.trigger, this.side);
+          });
+          this.fitObserver.observe(this.content, { attributes: true, attributeFilter: ['aria-hidden'] });
+          this.resizeHandler = () => {
+            if (this.isOpen()) this.fit(this.content, this.trigger, this.side);
+          };
+          window.addEventListener('resize', this.resizeHandler);
+
           if (this.side === 'auto') {
             // Calculate optimal position before showing
             this.positionClickHandler = () => {
@@ -149,12 +159,74 @@ defmodule SutraUI.Popover do
           }
         },
         
+        updated() {
+          if (this.isOpen()) this.fit(this.content, this.trigger, this.side);
+        },
+
         destroyed() {
+          this.fitObserver?.disconnect();
+          window.removeEventListener('resize', this.resizeHandler);
           document.removeEventListener('click', this.outsideClickHandler);
           document.removeEventListener('keydown', this.escapeHandler);
           this.trigger?.removeEventListener('click', this.positionClickHandler);
         },
         
+        // fit:start (the same code is in popover.ex and dropdown_menu.ex; a test keeps them equal)
+        // Keep the open card inside the viewport: flip to the other side when it would run
+        // off, then shift it back in. Positions come from the CSSOM (margins), never a style
+        // attribute.
+        fit(content, trigger, wanted) {
+          if (!content || !trigger) return;
+          const margin = 8;
+          const gap = 4;
+          const vw = document.documentElement.clientWidth;
+          const vh = window.innerHeight;
+          content.style.marginLeft = '';
+          content.style.marginRight = '';
+          content.style.marginTop = '';
+          content.style.marginBottom = '';
+          content.style.maxWidth = (vw - 2 * margin) + 'px';
+          content.style.maxHeight = '';
+          if (wanted && wanted !== 'auto') content.setAttribute('data-side', wanted);
+
+          const t = trigger.getBoundingClientRect();
+          const w = content.offsetWidth;
+          const h = content.offsetHeight;
+          let side = content.getAttribute('data-side') || 'bottom';
+          if (side === 'bottom' && t.bottom + gap + h > vh - margin && t.top - gap - h >= margin) side = 'top';
+          else if (side === 'top' && t.top - gap - h < margin && t.bottom + gap + h <= vh - margin) side = 'bottom';
+          else if (side === 'right' && t.right + gap + w > vw - margin && t.left - gap - w >= margin) side = 'left';
+          else if (side === 'left' && t.left - gap - w < margin && t.right + gap + w <= vw - margin) side = 'right';
+          content.setAttribute('data-side', side);
+
+          if (side === 'bottom') content.style.maxHeight = Math.max(vh - margin - t.bottom - gap, 120) + 'px';
+          if (side === 'top') content.style.maxHeight = Math.max(t.top - gap - margin, 120) + 'px';
+
+          // The box without its open animation's scale, around its centre.
+          const r = content.getBoundingClientRect();
+          const left = r.left + (r.width - content.offsetWidth) / 2;
+          const top = r.top + (r.height - content.offsetHeight) / 2;
+          const width = content.offsetWidth;
+          const height = content.offsetHeight;
+          let dx = 0;
+          let dy = 0;
+          if (left + width > vw - margin) dx = vw - margin - (left + width);
+          if (left + dx < margin) dx = margin - left;
+          if (side === 'left' || side === 'right') {
+            if (top + height > vh - margin) dy = vh - margin - (top + height);
+            if (top + dy < margin) dy = margin - top;
+          }
+          if (dx) {
+            content.style.marginLeft = dx + 'px';
+            content.style.marginRight = -dx + 'px';
+          }
+          if (dy) {
+            content.style.marginTop = dy + 'px';
+            content.style.marginBottom = -dy + 'px';
+          }
+        },
+        // fit:end
+
         isOpen() {
           return this.trigger.getAttribute('aria-expanded') === 'true';
         },

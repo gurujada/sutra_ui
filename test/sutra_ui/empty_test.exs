@@ -156,4 +156,90 @@ defmodule SutraUI.EmptyTest do
       assert html =~ ~s(id="my-empty")
     end
   end
+
+  describe "empty/1 short form and inline variant" do
+    import SutraUI.HTMLHelpers
+
+    test "the inner block is the description line and action is the action" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Empty.empty id="e">
+          <:title>No projects</:title>
+          Create one to get started.
+          <:action><button>New</button></:action>
+        </Empty.empty>
+        """)
+
+      assert attribute(html, "#e", "data-variant") == "default"
+      assert text(html, "h3") == "No projects"
+      assert text(html, "header p") == "Create one to get started."
+      assert text(html, "section button") == "New"
+    end
+
+    test "the description slot wins over the inner block" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Empty.empty>
+          <:title>T</:title>
+          <:description>From the slot</:description>
+          From the block
+        </Empty.empty>
+        """)
+
+      assert text(html, "header p") == "From the slot"
+    end
+
+    test "no description or action markup when none is given" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Empty.empty>
+          <:title>T</:title>
+        </Empty.empty>
+        """)
+
+      assert count(html, "header p") == 0
+      assert count(html, "section") == 0
+    end
+
+    test "inline is one quiet line with title, text, icon and action" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Empty.empty id="i" variant="inline" class="mt-2">
+          <:icon><svg data-icon="inbox"></svg></:icon>
+          <:title>No comments</:title>
+          Be the first to reply.
+          <:action><button>Reply</button></:action>
+        </Empty.empty>
+        """)
+
+      assert attribute(html, "#i", "data-variant") == "inline"
+      assert count(html, "#i h3") == 0
+      assert text(html, "#i .empty-title") == "No comments"
+      assert text(html, "#i .empty-text") == "Be the first to reply."
+      assert text(html, "#i .empty-action button") == "Reply"
+      assert count(html, "#i .empty-icon svg[data-icon=inbox]") == 1
+      assert attribute(html, "#i .empty-icon", "aria-hidden") == "true"
+    end
+
+    test "outline keeps its variant" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Empty.empty variant="outline" id="o">
+          <:title>T</:title>
+        </Empty.empty>
+        """)
+
+      assert attribute(html, "#o", "data-variant") == "outline"
+    end
+  end
 end
