@@ -1217,64 +1217,6 @@
 
 /* Command */
 @layer components {
-    .command-dialog {
-        @apply inset-y-0 opacity-0 transition-all transition-discrete;
-
-        &:is([open], :popover-open) {
-            @apply opacity-100;
-
-            &::backdrop {
-                @apply opacity-100;
-            }
-            > * {
-                @apply scale-100;
-            }
-
-            @starting-style {
-                @apply opacity-0;
-
-                &::backdrop {
-                    @apply opacity-0;
-                }
-                > * {
-                    @apply scale-95;
-                }
-            }
-        }
-        &::backdrop {
-            @apply bg-black/50 opacity-0 transition-all transition-discrete;
-        }
-        > * {
-            @apply bg-background fixed top-[50%] left-[50%] z-50 flex flex-col w-full max-w-[calc(100%_-_2rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-lg border shadow-lg sm:max-w-lg max-h-[min(640px,calc(100%_-_2rem))];
-            @apply transition-all scale-95;
-
-            > button,
-            > form[method="dialog"] {
-                @apply absolute top-4 right-4;
-            }
-            > button,
-            > form[method="dialog"] > button {
-                @apply ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground  rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
-            }
-        }
-
-        .command {
-            > header input {
-                @apply h-12;
-            }
-            [role="menu"] {
-                @apply px-2;
-
-                [role="menuitem"] {
-                    @apply py-3 px-2 [&_svg]:size-5;
-                }
-                [role="heading"] {
-                    @apply px-2 py-1.5 font-medium text-muted-foreground;
-                }
-            }
-        }
-    }
-
     .command {
         > header {
             @apply flex items-center border-b px-3 gap-2;
@@ -1457,6 +1399,129 @@
             }
             > button {
                 @apply absolute top-4 right-4 ring-offset-background focus:ring-ring rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+            }
+        }
+    }
+}
+
+/* Command dialog and command palette: the panel of a div-based dialog with no padding, near the
+   top of the screen so the keyboard on a phone leaves the list in view. */
+@layer components {
+    .dialog-panel:is(.command-dialog, .command-palette) {
+        @apply w-full max-w-lg gap-0 overflow-hidden p-0 sm:max-w-lg self-start;
+        margin-top: 8dvh;
+        max-height: min(36rem, 84dvh);
+
+        > section {
+            @apply mx-0 flex min-h-0 flex-1 flex-col overflow-hidden px-0;
+        }
+        > button {
+            @apply hidden;
+        }
+        .command {
+            @apply flex min-h-0 flex-1 flex-col;
+
+            > header input {
+                @apply h-12;
+            }
+        }
+    }
+
+    .dialog-panel.command-dialog .command [role="menu"] {
+        @apply px-2;
+
+        [role="menuitem"] {
+            @apply py-3 px-2 [&_svg]:size-5;
+        }
+        [role="heading"] {
+            @apply px-2 py-1.5 font-medium text-muted-foreground;
+        }
+    }
+
+    [data-command-palette] {
+        [data-palette-trail] {
+            @apply flex items-center gap-1 border-b px-3 py-1.5 text-xs text-muted-foreground;
+
+            &[hidden] {
+                @apply hidden;
+            }
+        }
+
+        [role="listbox"] {
+            @apply min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2;
+
+            &[hidden] {
+                @apply hidden;
+            }
+            &[data-empty]:not([data-empty="list"])::before {
+                @apply flex items-center justify-center px-3 py-6 text-sm text-muted-foreground;
+                content: attr(data-empty-text);
+            }
+        }
+
+        .command-palette-heading {
+            @apply px-2 py-1.5 text-xs font-medium text-muted-foreground;
+        }
+
+        [role="option"] {
+            @apply relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-2.5 text-sm;
+
+            &[aria-selected="true"] {
+                @apply bg-accent text-accent-foreground;
+            }
+            &[aria-disabled="true"] {
+                @apply cursor-not-allowed opacity-60;
+            }
+            &[data-tone="danger"] {
+                @apply text-destructive;
+            }
+            .command-palette-icon {
+                @apply size-4 shrink-0 text-muted-foreground;
+            }
+            .command-palette-title {
+                @apply flex min-w-0 flex-1 flex-col;
+
+                > span:first-child {
+                    @apply truncate;
+                }
+            }
+            .command-palette-reason {
+                @apply truncate text-xs text-muted-foreground;
+            }
+            .command-palette-badge {
+                @apply shrink-0 rounded-full border px-2 py-0.5 text-xs text-muted-foreground;
+            }
+            .command-palette-keys {
+                @apply ml-auto flex shrink-0 gap-1;
+
+                kbd {
+                    @apply rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground;
+                }
+            }
+            .command-palette-more {
+                @apply shrink-0 text-muted-foreground;
+            }
+        }
+
+        [data-palette-hint] {
+            @apply px-3 py-6 text-center text-sm text-muted-foreground;
+
+            &[hidden] {
+                @apply hidden;
+            }
+        }
+        [data-palette-confirm] {
+            @apply flex flex-col items-center gap-2 px-3 py-8 text-center text-sm;
+
+            &[hidden] {
+                @apply hidden;
+            }
+            .command-palette-confirm-keys {
+                @apply text-xs text-muted-foreground;
+
+                kbd {
+                    @apply rounded border bg-muted px-1.5 py-0.5 font-mono;
+                }
             }
         }
     }

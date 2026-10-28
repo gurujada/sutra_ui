@@ -277,7 +277,8 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `hover_card/1` - Rich hover preview (JS hook)
 - `dialog/1` - Modal dialogs; `placement` `center` (default), `side`, `sheet` or `popover` (all div-based)
 - `popover/1` - Click-triggered popups
-- `command/1` - Command palette with search (JS hook)
+- `command/1`, `command_dialog/1` - Command menu with search (JS hook); the dialog is div-based
+- `command_palette/1` - Command palette: shortcut, actions from `SutraUI.Commands`, pages, arguments, server search (see below)
 - `carousel/1` - CSS scroll-snap carousel
 - `calendar/1` - Monthly calendar grid
 - `marquee/1` - CSS-only scrolling content banner

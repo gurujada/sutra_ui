@@ -189,7 +189,7 @@ defmodule SutraUI.CommandTest do
   end
 
   describe "command_dialog/1" do
-    test "renders dialog wrapper" do
+    test "renders a div-based dialog, not a native <dialog>" do
       assigns = %{}
 
       html =
@@ -200,24 +200,24 @@ defmodule SutraUI.CommandTest do
         """)
 
       assert html =~ ~s(id="cmd-dialog")
+      assert html =~ ~s(role="dialog")
+      assert html =~ ~s(aria-modal="true")
       assert html =~ "command-dialog"
-      assert html =~ "<dialog"
+      refute html =~ "<dialog"
     end
 
-    test "mounts command dialog hook for show/hide helpers" do
+    test "opens and closes through the dialog events" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Command.command_dialog id="cmd-dialog">
+        <Command.command_dialog id="cmd-dialog" show>
           <Command.command_item id="item">Item</Command.command_item>
         </Command.command_dialog>
         """)
 
-      assert html =~ ~s(phx-hook="SutraUI.Command.CommandDialog")
-      assert html =~ ~s(data-phx-runtime-hook="SutraUI.Command.CommandDialog")
-      assert html =~ "phx:show-dialog"
-      assert html =~ "phx:hide-dialog"
+      assert html =~ "is-open"
+      assert html =~ ~s(phx-hook="SutraUI.Dialog.Dialog")
     end
 
     test "passes placeholder to inner command" do

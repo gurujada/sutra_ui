@@ -5,6 +5,7 @@
   "license": "MIT",
   "type": "module",
   "exports": {
+    "./commands": "./priv/static/commands.js",
     "./time": "./priv/static/time.js"
   },
   "files": [

@@ -1,0 +1,54 @@
+{
+  "score": [
+    {"query": "", "title": "New file", "keywords": [], "score": 0},
+    {"query": "new f", "title": "New file", "keywords": [], "score": 15},
+    {"query": "file new", "title": "New file", "keywords": [], "score": null},
+    {"query": "fil", "title": "New file", "keywords": [], "score": 6},
+    {"query": "NEW", "title": "New file", "keywords": [], "score": 9},
+    {"query": "ile", "title": "New file", "keywords": [], "score": 3},
+    {"query": "qzx", "title": "New file", "keywords": [], "score": null},
+    {"query": "cafe", "title": "Café menu", "keywords": [], "score": 9},
+    {"query": "café", "title": "Cafe menu", "keywords": [], "score": 9},
+    {"query": "setings", "title": "Settings", "keywords": [], "score": 2},
+    {"query": "sxyzng", "title": "Settings", "keywords": [], "score": null},
+    {"query": "setings", "title": "Account", "keywords": [], "score": null},
+    {"query": "sett", "title": "Open", "keywords": ["settings"], "score": 5},
+    {"query": "open sett", "title": "Open", "keywords": ["settings"], "score": 14},
+    {"query": "a", "title": "Go to Assignments", "keywords": [], "score": 6},
+    {"query": "go a", "title": "Go to Assignments", "keywords": [], "score": 15},
+    {"query": "to go", "title": "Go to Assignments", "keywords": [], "score": null},
+    {"query": "g h", "title": "Go home", "keywords": [], "score": 15},
+    {"query": "thé", "title": "The best", "keywords": [], "score": 9},
+    {"query": "12", "title": "Room 12 and 120", "keywords": [], "score": 6},
+    {"query": "naïve", "title": "Naive bayes", "keywords": [], "score": 9}
+  ],
+  "rank": [
+    {
+      "query": "set",
+      "items": [
+        {"title": "Reset password", "keywords": []},
+        {"title": "Settings", "keywords": []},
+        {"title": "Set theme", "keywords": []},
+        {"title": "Account", "keywords": ["settings"]}
+      ],
+      "order": ["Settings", "Set theme", "Account", "Reset password"]
+    },
+    {
+      "query": "",
+      "items": [
+        {"title": "Bravo", "keywords": []},
+        {"title": "Alpha", "keywords": []}
+      ],
+      "order": ["Bravo", "Alpha"]
+    },
+    {
+      "query": "go",
+      "items": [
+        {"title": "Go to workbooks", "keywords": []},
+        {"title": "Go", "keywords": []},
+        {"title": "Mongo", "keywords": []}
+      ],
+      "order": ["Go", "Go to workbooks", "Mongo"]
+    }
+  ]
+}

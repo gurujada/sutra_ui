@@ -117,7 +117,8 @@ defmodule SutraUI do
   | `SutraUI.DropdownMenu` | Dropdown menus (hook) |
   | `SutraUI.ContextMenu` | Right-click action menus (hook) |
   | `SutraUI.HoverCard` | Hover preview cards (hook) |
-  | `SutraUI.Command` | Command palette (hook) |
+  | `SutraUI.Command` | Command menu and dialog (hook) |
+  | `SutraUI.Commands.Palette` | Command palette with shortcuts and server search (`command_palette`) |
 
   ### Navigation
 
@@ -250,6 +251,7 @@ defmodule SutraUI do
       import SutraUI.Dialog
       import SutraUI.Popover
       import SutraUI.Command
+      import SutraUI.Commands.Palette
       import SutraUI.Carousel
 
       # Phase 6: Form & Layout Helpers
