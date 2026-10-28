@@ -83,12 +83,15 @@ function navButton(label, paths, onClick) {
   return b;
 }
 
+const todayParts = (state) => parse(state.today);
+/** Whether `month` of the year being shown is the current month. */
+const thisMonth = (state, month) => todayParts(state).y === state.y && todayParts(state).m === month;
+
 function monthList(state, cb) {
   const short = monthNames(state.locale, "short");
   const list = h("div", { class: "dp-months", role: "group", "aria-label": `Months of ${state.y}` });
   short.forEach((name, i) => {
-    const isToday = state.today.slice(0, 7) === `${String(state.y).padStart(4, "0")}-${String(i + 1).padStart(2, "0")}`;
-    const b = h("button", { type: "button", class: "dp-cell", "data-current": i + 1 === state.m, "data-today": isToday, "aria-pressed": i + 1 === state.m, "aria-current": isToday ? "date" : null, text: name });
+    const b = h("button", { type: "button", class: "dp-cell", "data-current": i + 1 === state.m, "data-today": thisMonth(state, i + 1), "aria-current": thisMonth(state, i + 1) ? "date" : null, "aria-pressed": i + 1 === state.m, text: name });
     b.addEventListener("click", () => cb.month(i + 1));
     list.append(b);
   });
@@ -99,8 +102,7 @@ function yearList(state, cb) {
   const list = h("div", { class: "dp-years", role: "group", "aria-label": "Years" });
   for (let i = 0; i < 12; i++) {
     const year = state.yearPage + i;
-    const isToday = Number(state.today.slice(0, 4)) === year;
-    const b = h("button", { type: "button", class: "dp-cell", "data-current": year === state.y, "data-today": isToday, "aria-pressed": year === state.y, "aria-current": isToday ? "date" : null, text: String(year) });
+    const b = h("button", { type: "button", class: "dp-cell", "data-current": year === state.y, "data-today": year === todayParts(state).y, "aria-current": year === todayParts(state).y ? "date" : null, "aria-pressed": year === state.y, text: String(year) });
     b.addEventListener("click", () => cb.year(year));
     list.append(b);
   }

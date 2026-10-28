@@ -217,7 +217,7 @@ links or buttons in order: `Tab` moves between them.
   field and the whole picker until the hook mounts.
 - The calendar is a `role="dialog"` with a grid (`role="grid"`, `aria-label` the month). Today has
   `aria-current="date"`, and so do the **current month** in the month list and the **current year**
-  in the year list (also bold and underlined, not colour alone). The chosen day is `aria-selected`
+  in the year list (also bold with a ring, not colour alone). The chosen day is `aria-selected`
   (or `aria-pressed` in the month and year lists); disabled days (see `SutraUI.DateRules`) are
   `aria-disabled`.
 - A range reads its length ("7 days") in a polite live region. A skipped time after a clock change
