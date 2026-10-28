@@ -114,6 +114,27 @@ defmodule SutraUI.Tabs do
   > Tab panels have `tabindex="0"` allowing keyboard users to tab into
   > panel content after selecting a tab.
 
+  ## Segmented control and filter tabs
+
+  Two more shapes share the tabs look but have no panels: they choose, and your LiveView
+  decides what to show.
+
+  `segmented/1` is a single choice out of two to six (a view mode, a unit, a plan): a real
+  radio group, so arrow keys move the choice and it works in a form.
+
+      <.segmented id="view" label="View" name="view" value={@view} click="set_view">
+        <:option value="list" label="List" />
+        <:option value="grid" label="Grid" />
+      </.segmented>
+
+  `filter_tabs/1` is the "All · Mine · Waiting" row with counts: each choice is a link
+  (`patch` or `navigate`, marked `aria-current`) or a button (`click`, marked `aria-pressed`).
+
+      <.filter_tabs id="inbox-filter" label="Filter inbox">
+        <:item label="All" count={42} active={@filter == :all} click="filter" value="all" />
+        <:item label="Mine" count={3} active={@filter == :mine} patch={~p"/inbox?filter=mine"} />
+      </.filter_tabs>
+
   ## Related
 
   - `SutraUI.Accordion` - For collapsible sections (multiple can be open)
@@ -247,5 +268,143 @@ defmodule SutraUI.Tabs do
     )
     |> JS.show(to: "##{tabs_id}-panel-#{value}")
     |> JS.remove_attribute("hidden", to: "##{tabs_id}-panel-#{value}")
+  end
+
+  @doc """
+  A single choice out of two to six, as a row of chips: an accessible radio group of real
+  radio inputs.
+
+  In a form, give `field` (or `name`): the form's `phx-change` receives the value.
+  Standalone, give `click` (an event name or a `%JS{}`): it is sent with `%{"value" => value}`.
+
+  An option with an icon only (its content in the slot) is named by its `title`, which is also
+  its tooltip.
+  """
+  attr(:id, :string, required: true, doc: "Unique identifier")
+  attr(:label, :string, required: true, doc: "Accessible name of the group")
+  attr(:field, Phoenix.HTML.FormField, default: nil, doc: "A form field; sets name and value")
+  attr(:name, :string, default: nil, doc: "The input name without a `field`")
+  attr(:value, :any, default: nil, doc: "The chosen value without a `field`")
+  attr(:click, :any, default: nil, doc: "Standalone: event name or `%JS{}` sent with the value")
+  attr(:target, :any, default: nil, doc: "`phx-target` of `click`")
+  attr(:disabled, :boolean, default: false, doc: "Disables every option")
+  attr(:class, :string, default: nil, doc: "Additional CSS classes")
+  attr(:rest, :global, doc: "Additional HTML attributes")
+
+  slot :option, required: true, doc: "The choices; the slot content (an icon) leads the label" do
+    attr(:value, :string, required: true, doc: "The value this option sends")
+    attr(:label, :string, doc: "Visible words")
+    attr(:title, :string, doc: "Tooltip, and the accessible name when there is no `label`")
+    attr(:disabled, :boolean, doc: "Disables this option")
+  end
+
+  def segmented(assigns) do
+    assigns =
+      assign(assigns,
+        input_name: (assigns.field && assigns.field.name) || assigns.name || assigns.id,
+        chosen: to_string((assigns.field && assigns.field.value) || assigns.value || "")
+      )
+
+    ~H"""
+    <div
+      id={@id}
+      role="radiogroup"
+      aria-label={@label}
+      class={["segmented", @class]}
+      data-style="segmented"
+      {@rest}
+    >
+      <label
+        :for={option <- @option}
+        class="segmented-option"
+        data-state={if to_string(option.value) == @chosen, do: "active", else: "idle"}
+        data-value={option.value}
+        title={option[:title]}
+      >
+        <input
+          type="radio"
+          id={"#{@id}-#{option.value}"}
+          name={@input_name}
+          value={option.value}
+          checked={to_string(option.value) == @chosen}
+          disabled={@disabled || option[:disabled] == true}
+          phx-click={@click}
+          phx-value-value={@click && option.value}
+          phx-target={@click && @target}
+          class="sr-only"
+        />
+        {option.inner_block && render_slot([option])}
+        <span class={!option[:label] && "sr-only"}>{option[:label] || option[:title]}</span>
+      </label>
+    </div>
+    """
+  end
+
+  @doc """
+  A filter row ("All · Mine · Waiting") with optional counts. Each item is a link (`patch` or
+  `navigate`, marked `aria-current="page"`) or a button (`click` with a `value`, marked
+  `aria-pressed`). The active item has `data-state="active"`.
+  """
+  attr(:id, :string, required: true, doc: "Unique identifier")
+  attr(:label, :string, required: true, doc: "Accessible name of the group")
+  attr(:target, :any, default: nil, doc: "`phx-target` for click items")
+  attr(:class, :string, default: nil, doc: "Additional CSS classes")
+  attr(:rest, :global, doc: "Additional HTML attributes")
+
+  slot :item, required: true, doc: "The choices; the slot content (an icon) leads the label" do
+    attr(:label, :string, required: true, doc: "Visible words")
+    attr(:active, :boolean, doc: "Whether this is the current filter")
+    attr(:count, :integer, doc: "A count shown after the label")
+    attr(:patch, :string, doc: "A LiveView patch path (renders a link)")
+    attr(:navigate, :string, doc: "A navigate path (renders a link)")
+    attr(:click, :any, doc: "An event name or `%JS{}` (renders a button)")
+    attr(:value, :string, doc: "Sent as `phx-value-filter` with `click`")
+    attr(:id, :string, doc: "DOM id of the item")
+  end
+
+  def filter_tabs(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      role="group"
+      aria-label={@label}
+      class={["filter-tabs", @class]}
+      data-style="filter"
+      {@rest}
+    >
+      <%= for item <- @item do %>
+        <.link
+          :if={item[:patch] || item[:navigate]}
+          id={item[:id]}
+          patch={item[:patch]}
+          navigate={item[:navigate]}
+          aria-current={item[:active] && "page"}
+          data-state={if item[:active], do: "active", else: "idle"}
+          class="filter-tab"
+        >
+          {item.inner_block && render_slot([item])}{item.label}<span
+            :if={item[:count]}
+            class="filter-tab-count"
+          >{item.count}</span>
+        </.link>
+        <button
+          :if={!(item[:patch] || item[:navigate])}
+          id={item[:id]}
+          type="button"
+          phx-click={item[:click]}
+          phx-value-filter={item[:value]}
+          phx-target={@target}
+          aria-pressed={to_string(!!item[:active])}
+          data-state={if item[:active], do: "active", else: "idle"}
+          class="filter-tab"
+        >
+          {item.inner_block && render_slot([item])}{item.label}<span
+            :if={item[:count]}
+            class="filter-tab-count"
+          >{item.count}</span>
+        </button>
+      <% end %>
+    </div>
+    """
   end
 end

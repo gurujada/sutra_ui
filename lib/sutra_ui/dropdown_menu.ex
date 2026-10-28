@@ -200,9 +200,12 @@ defmodule SutraUI.DropdownMenu do
 
         updated() {
           this.updateMenuItems();
+          if (this.isOpen()) this.fit(this.popover, this.trigger, this.wantedSide);
         },
 
         destroyed() {
+          this.fitObserver?.disconnect();
+          window.removeEventListener('resize', this.resizeHandler);
           if (this.documentClickHandler) {
             document.removeEventListener('click', this.documentClickHandler);
           }
@@ -226,6 +229,7 @@ defmodule SutraUI.DropdownMenu do
             return;
           }
 
+          this.wantedSide = this.popover.getAttribute('data-side');
           this.menuItems = [];
           this.activeIndex = -1;
 
@@ -254,7 +258,77 @@ defmodule SutraUI.DropdownMenu do
             }
           };
           document.addEventListener('sutra-ui:popover', this.popoverEventHandler);
+
+          // Fit the menu inside the viewport each time it opens (and when the window changes).
+          this.fitObserver = new MutationObserver(() => {
+            if (this.isOpen()) this.fit(this.popover, this.trigger, this.wantedSide);
+          });
+          this.fitObserver.observe(this.popover, { attributes: true, attributeFilter: ['aria-hidden'] });
+          this.resizeHandler = () => {
+            if (this.isOpen()) this.fit(this.popover, this.trigger, this.wantedSide);
+          };
+          window.addEventListener('resize', this.resizeHandler);
         },
+
+        isOpen() {
+          return this.trigger?.getAttribute('aria-expanded') === 'true';
+        },
+
+        // fit:start (the same code is in popover.ex and dropdown_menu.ex; a test keeps them equal)
+        // Keep the open card inside the viewport: flip to the other side when it would run
+        // off, then shift it back in. Positions come from the CSSOM (margins), never a style
+        // attribute.
+        fit(content, trigger, wanted) {
+          if (!content || !trigger) return;
+          const margin = 8;
+          const gap = 4;
+          const vw = document.documentElement.clientWidth;
+          const vh = window.innerHeight;
+          content.style.marginLeft = '';
+          content.style.marginRight = '';
+          content.style.marginTop = '';
+          content.style.marginBottom = '';
+          content.style.maxWidth = (vw - 2 * margin) + 'px';
+          content.style.maxHeight = '';
+          if (wanted && wanted !== 'auto') content.setAttribute('data-side', wanted);
+
+          const t = trigger.getBoundingClientRect();
+          const w = content.offsetWidth;
+          const h = content.offsetHeight;
+          let side = content.getAttribute('data-side') || 'bottom';
+          if (side === 'bottom' && t.bottom + gap + h > vh - margin && t.top - gap - h >= margin) side = 'top';
+          else if (side === 'top' && t.top - gap - h < margin && t.bottom + gap + h <= vh - margin) side = 'bottom';
+          else if (side === 'right' && t.right + gap + w > vw - margin && t.left - gap - w >= margin) side = 'left';
+          else if (side === 'left' && t.left - gap - w < margin && t.right + gap + w <= vw - margin) side = 'right';
+          content.setAttribute('data-side', side);
+
+          if (side === 'bottom') content.style.maxHeight = Math.max(vh - margin - t.bottom - gap, 120) + 'px';
+          if (side === 'top') content.style.maxHeight = Math.max(t.top - gap - margin, 120) + 'px';
+
+          // The box without its open animation's scale, around its centre.
+          const r = content.getBoundingClientRect();
+          const left = r.left + (r.width - content.offsetWidth) / 2;
+          const top = r.top + (r.height - content.offsetHeight) / 2;
+          const width = content.offsetWidth;
+          const height = content.offsetHeight;
+          let dx = 0;
+          let dy = 0;
+          if (left + width > vw - margin) dx = vw - margin - (left + width);
+          if (left + dx < margin) dx = margin - left;
+          if (side === 'left' || side === 'right') {
+            if (top + height > vh - margin) dy = vh - margin - (top + height);
+            if (top + dy < margin) dy = margin - top;
+          }
+          if (dx) {
+            content.style.marginLeft = dx + 'px';
+            content.style.marginRight = -dx + 'px';
+          }
+          if (dy) {
+            content.style.marginTop = dy + 'px';
+            content.style.marginBottom = -dy + 'px';
+          }
+        },
+        // fit:end
 
         updateMenuItems() {
           if (!this.menu) return;

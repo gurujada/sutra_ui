@@ -27,12 +27,26 @@ defmodule SutraUI.Avatar do
       # Square avatar
       <.avatar src="/avatar.jpg" alt="User" shape="square" initials="EF" />
 
-      # Avatar group
-      <div class="avatar-group">
-        <.avatar src="https://github.com/user1.png" alt="User 1" initials="U1" />
-        <.avatar src="https://github.com/user2.png" alt="User 2" initials="U2" />
-        <.avatar src="https://github.com/user3.png" alt="User 3" initials="U3" />
-      </div>
+      # Avatar group: a stack of faces with "+n" beyond `max`
+      <.avatar_group
+        id="reviewers"
+        label="Reviewers"
+        max={3}
+        people={[
+          %{name: "Asha Rao", src: "/asha.png"},
+          %{name: "Ravi Teja"},
+          %{name: "Mei Lin", initials: "ML"},
+          %{name: "Sam Cole"}
+        ]}
+      />
+
+  ## Avatar group
+
+  `avatar_group/1` stacks avatars. People beyond `max` collapse to "+n". The group is one
+  `role="group"` named by `label` and every name ("Reviewers: Asha Rao, Ravi Teja, ..."), so a
+  screen reader hears all of them, including the hidden ones; each face also shows its name
+  as a tooltip on hover. Pass an `id` (it is also used for the faces' image fallbacks, so
+  `nonce` applies when you use a Content-Security-Policy).
   """
 
   use Phoenix.Component
@@ -159,5 +173,78 @@ defmodule SutraUI.Avatar do
       </script>
     </span>
     """
+  end
+
+  @doc """
+  A stack of avatars with "+n" for the people beyond `max`.
+
+  Each person is a map with a `:name` and optional `:src` and `:initials` (default: the first
+  letters of the first two words of the name).
+  """
+  attr(:id, :string, required: true, doc: "Unique identifier")
+  attr(:people, :list, required: true, doc: "Maps with `:name` and optional `:src`, `:initials`")
+  attr(:max, :integer, default: 3, doc: "How many faces show before \"+n\"")
+  attr(:size, :string, default: "sm", values: ~w(sm md lg xl), doc: "Size of every avatar")
+
+  attr(:label, :string,
+    default: nil,
+    doc: "Accessible name of the group, e.g. \"Reviewers\"; the names follow it"
+  )
+
+  attr(:nonce, :string, default: nil, doc: "CSP nonce for the avatars' image-fallback hooks")
+  attr(:class, :string, default: nil, doc: "Additional CSS classes")
+  attr(:rest, :global, doc: "Additional HTML attributes")
+
+  def avatar_group(assigns) do
+    {shown, hidden} = Enum.split(assigns.people, max(assigns.max, 0))
+    names = Enum.map_join(assigns.people, ", ", & &1.name)
+
+    assigns =
+      assign(assigns,
+        shown: Enum.with_index(shown),
+        hidden: hidden,
+        hidden_names: Enum.map_join(hidden, ", ", & &1.name),
+        group_name: if(assigns.label, do: "#{assigns.label}: #{names}", else: names)
+      )
+
+    ~H"""
+    <div
+      id={@id}
+      role="group"
+      aria-label={@group_name}
+      class={["avatar-group", @class]}
+      data-size={@size}
+      data-total={length(@people)}
+      data-hidden={length(@hidden)}
+      {@rest}
+    >
+      <span :for={{person, index} <- @shown} title={person.name} class="avatar-group-item">
+        <.avatar
+          id={person[:src] && "#{@id}-#{index}"}
+          nonce={@nonce}
+          size={@size}
+          src={person[:src]}
+          alt=""
+          initials={person[:initials] || initials(person.name)}
+        />
+      </span>
+      <span
+        :if={@hidden != []}
+        title={@hidden_names}
+        class={["avatar", "avatar-#{@size}", "avatar-circle", "avatar-group-more"]}
+        aria-hidden="true"
+      >
+        <span class="avatar-fallback">+{length(@hidden)}</span>
+      </span>
+    </div>
+    """
+  end
+
+  defp initials(name) do
+    name
+    |> String.split()
+    |> Enum.take(2)
+    |> Enum.map_join(&String.first/1)
+    |> String.upcase()
   end
 end
