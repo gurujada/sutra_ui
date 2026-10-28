@@ -116,11 +116,24 @@ and removed in 0.5.
 - A `dialog` is div-based on purpose (screen sharing); never swap in the native
   `<dialog>`. A dialog taller than the screen scrolls inside it and keeps its
   natural width up to its max width.
-- A closed `popover`, `dropdown_menu` or `select` list takes no layout room.
+- A `dialog` takes `placement`: `center`, `side` (docked right from 768 px), `sheet`
+  (bottom sheet on phones) or `popover` (a card under its `anchor` from 640 px).
+  All are the same div-based dialog.
+- A closed `popover`, `dropdown_menu` or `select` list takes no layout room. An open
+  `popover` or `dropdown_menu` flips or shifts to stay inside the viewport.
 - Pass `chevron={false}` to a `dropdown_menu` whose trigger is only an icon (with
   an `sr-only` label).
 - `button` passes `popovertarget`, `popovertargetaction` and the `form*`
   attributes through.
+
+## Times
+
+Show absolute times in the place's zone with `<.local_time at zone format>` (`zone` is
+required) and relative ones with `<.relative_time at>`. Do not format times with
+`Calendar.strftime` in templates; `SutraUI.Time.format/3` is the one wording (24-hour clock).
+The server renders the final English words; the hook refreshes relative words and adds the
+viewer's time when their zone differs. Showing a time in a named zone needs the app's time
+zone database (`config :elixir, :time_zone_database, Tz.TimeZoneDatabase`).
 
 ## CSS And Theming
 

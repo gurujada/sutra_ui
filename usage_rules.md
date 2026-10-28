@@ -224,7 +224,8 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 
 ### Foundation
 - `button/1` - Buttons with variants: primary, secondary, outline, ghost, link, destructive; passes `popovertarget`, `popovertargetaction`, `form*` attributes through
-- `badge/1` - Status badges
+- `badge/1` - Status badges: variants incl. `info`, `warning`, `brand`, `ai`; `style` `solid`/`soft`/`dashed`; `icon` slot
+- `relative_time/1`, `local_time/1` (`SutraUI.Time`) - Times in the place's zone, 24-hour clock; `SutraUI.Time.format/3` words them anywhere. Needs a configured time zone database (`tz`) for any zone but "Etc/UTC"; the hook comes from the generated `phoenix-colocated/sutra_ui` bundle (it imports `sutra_ui/time`)
 - `spinner/1` - Loading indicators
 - `kbd/1` - Keyboard shortcut display
 
@@ -249,7 +250,7 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `table/1` - Raw styled table wrapper
 - `data_table/1` - Data table with column definitions
 - `skeleton/1` - Loading placeholder
-- `empty/1` - Empty state display
+- `empty/1` - Empty state display: block, outline or `variant="inline"`; inner block is the one line, `action` the one action
 - `alert/1` - Alert/callout messages
 - `flash/1` - Phoenix flash messages (only the close button dismisses; the message is a `div`)
 - `progress/1` - Progress bar
@@ -263,15 +264,18 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `pagination/1` - Page navigation
 - `accordion/1` - Collapsible content sections
 - `tabs/1` - Tab panels (JS hook)
+- `segmented/1` - Single choice out of 2-6 (radio group; form `field`/`name` or standalone `click`)
+- `filter_tabs/1` - "All · Mine · Waiting" links or buttons with counts
 - `dropdown_menu/1` - Dropdown menu (JS hook); `chevron={false}` for icon-only triggers
 - `context_menu/1` - Right-click menu (JS hook)
 - `toast_container/1`, `toast/1` - Toast notifications (JS hook)
 
 ### Advanced UI
 - `avatar/1` - User avatars with fallback
+- `avatar_group/1` - Stacked avatars with "+n" beyond `max`; the group is named by `label` and every name
 - `tooltip/1` - Hover and focus tooltip (JS hook)
 - `hover_card/1` - Rich hover preview (JS hook)
-- `dialog/1` - Modal dialogs
+- `dialog/1` - Modal dialogs; `placement` `center` (default), `side`, `sheet` or `popover` (all div-based)
 - `popover/1` - Click-triggered popups
 - `command/1` - Command palette with search (JS hook)
 - `carousel/1` - CSS scroll-snap carousel

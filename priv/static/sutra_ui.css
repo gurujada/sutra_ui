@@ -914,7 +914,7 @@
     .badge-soft {
         border-color: transparent;
         background-color: color-mix(in oklab, var(--badge-tone) 14%, transparent);
-        color: color-mix(in oklab, var(--badge-tone) 70%, var(--foreground));
+        color: color-mix(in oklab, var(--badge-tone) 55%, var(--foreground));
         &:is(a):hover {
             background-color: color-mix(in oklab, var(--badge-tone) 22%, transparent);
         }
@@ -924,7 +924,7 @@
         border-style: dashed;
         border-color: color-mix(in oklab, var(--badge-tone) 65%, transparent);
         background-color: transparent;
-        color: color-mix(in oklab, var(--badge-tone) 70%, var(--foreground));
+        color: color-mix(in oklab, var(--badge-tone) 55%, var(--foreground));
         &:is(a):hover {
             background-color: color-mix(in oklab, var(--badge-tone) 10%, transparent);
         }
@@ -2678,13 +2678,13 @@
         @apply flex;
     }
     .avatar-group {
-        @apply flex items-center -space-x-3;
+        @apply flex items-center -space-x-2;
 
         .avatar {
             @apply ring-2 ring-background;
         }
         &[data-size="sm"] {
-            @apply -space-x-2;
+            @apply -space-x-1.5;
         }
         .avatar-group-item {
             @apply rounded-full;
