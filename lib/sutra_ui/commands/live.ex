@@ -37,8 +37,7 @@ defmodule SutraUI.Commands.Live do
       |> assign(:sutra_commands_runtime, %{
         module: module,
         results: %{},
-        searches: %{},
-        patched?: false
+        searches: %{}
       })
       |> assign(:sutra_commands, %{actions: [], page_actions: [], sources: sources})
       |> Commands.refresh()
@@ -49,19 +48,10 @@ defmodule SutraUI.Commands.Live do
     {:cont, socket}
   end
 
-  # The first `handle_params` follows `mount`, which may have set page actions; every later one
-  # is a patch, and a patched page sets its own again.
+  # Page actions live as long as the LiveView; a patch keeps them and only the app's own
+  # actions are read again. A page with per-tab actions calls `put_page_actions/2` again.
   defp handle_params(_params, _uri, socket) do
-    runtime = socket.assigns.sutra_commands_runtime
-
-    if runtime.patched? do
-      socket =
-        assign(socket, :sutra_commands, %{socket.assigns.sutra_commands | page_actions: []})
-
-      {:cont, Commands.refresh(socket)}
-    else
-      {:cont, assign(socket, :sutra_commands_runtime, %{runtime | patched?: true})}
-    end
+    {:cont, Commands.refresh(socket)}
   end
 
   defp handle_event("sutra-ui:command-search", params, socket) do

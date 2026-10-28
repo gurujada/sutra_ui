@@ -35,18 +35,25 @@ defmodule SutraUI.Commands.LiveTest do
       assert titles(actions(view)) |> Enum.take(3) == ["Rename this page", "Go home", "Settings"]
     end
 
-    test "a patch clears the page's actions before its handle_params sets its own" do
+    test "page actions set in mount survive patches" do
       view = mount_view()
+
+      render_patch(view, "/?tab=1")
+      render_patch(view, "/?tab=2")
+
       assert "Rename this page" in titles(actions(view))
+    end
+
+    test "put_page_actions in handle_params replaces them" do
+      view = mount_view()
 
       render_patch(view, "/?page=b")
 
       assert "Page B action" in titles(actions(view))
       refute "Rename this page" in titles(actions(view))
 
-      render_patch(view, "/")
-
-      refute "Page B action" in titles(actions(view))
+      render_patch(view, "/?page=b&x=1")
+      assert "Page B action" in titles(actions(view))
     end
   end
 

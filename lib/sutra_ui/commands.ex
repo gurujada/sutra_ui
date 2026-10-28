@@ -102,9 +102,9 @@ defmodule SutraUI.Commands do
   end
 
   @doc """
-  Sets the actions of the current page: they come first in the palette and leave with it.
-  Call it in `mount/3` or `handle_params/3`; a patch clears them before `handle_params/3`
-  runs, and navigating to another LiveView leaves them behind.
+  Sets the actions of the current page: they come first in the palette and live as long as
+  the LiveView (a patch keeps them; navigating to another LiveView leaves them behind).
+  Calling it again replaces them, so a page with per-tab actions calls it in `handle_params/3`.
   """
   @spec put_page_actions(Phoenix.LiveView.Socket.t(), [Action.t() | keyword() | map()]) ::
           Phoenix.LiveView.Socket.t()
