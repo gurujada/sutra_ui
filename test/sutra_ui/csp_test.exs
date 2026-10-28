@@ -44,7 +44,7 @@ defmodule SutraUI.CSPTest do
       """)
 
     refute html =~ "onerror"
-    assert html =~ ~s(phx-hook=".Avatar")
+    assert html =~ ~s(phx-hook="SutraUI.Avatar.Avatar")
     assert html =~ ~r/<script[^>]*nonce="n0nce"/
   end
 
@@ -140,5 +140,10 @@ defmodule SutraUI.CSPTest do
     css = File.read!("priv/static/sutra_ui.css")
     assert css =~ ~r/\.popover-trigger\[aria-expanded="true"\] \.popover-trigger-closed/
     assert css =~ ~r/\.popover-trigger:not\(\[aria-expanded="true"\]\) \.popover-trigger-open/
+  end
+
+  test "the pagination list wraps inside its container instead of widening the page" do
+    css = File.read!("priv/static/sutra_ui.css")
+    assert css =~ ~r/\.pagination-list \{\s*@apply [^;]*\bflex-wrap\b/
   end
 end

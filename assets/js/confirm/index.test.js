@@ -166,14 +166,34 @@ test("a replayed click passes through the interceptor", () => {
   handle.uninstall();
 });
 
-test("a click inside a form with data-confirm is left to the submit handler", () => {
+test("a click inside a form hides its data-confirm from phoenix_html until the submit", () => {
+  const win = fakeWindow();
+  const handle = installConfirm(fakeDoc(true), win);
+  const form = attrsEl({ "data-confirm": "Send?" });
+  form.matches = (sel) => sel === "form" || sel === "form[data-confirm]";
+  const event = clickEvent(form);
+  win.fire("click", event);
+  // not prevented (the submit follows), but phoenix_html would find nothing to prompt on
+  assert.equal(event.prevented, false);
+  assert.equal(form.attrs["data-confirm"], undefined);
+  assert.equal(handle.confirmer.pending, null);
+  // the submit the click causes: caught, and the message is back for the dialog
+  const submit = { target: form, prevented: false, preventDefault() { this.prevented = true; }, stopImmediatePropagation() {} };
+  win.fire("submit", submit);
+  assert.equal(form.attrs["data-confirm"], "Send?");
+  assert.equal(submit.prevented, true);
+  assert.deepEqual(handle.confirmer.pending && handle.confirmer.pending.kind, "submit");
+  handle.uninstall();
+});
+
+test("a form click that never submits gets its data-confirm back on the next tick", async () => {
   const win = fakeWindow();
   const handle = installConfirm(fakeDoc(true), win);
   const form = attrsEl({ "data-confirm": "Send?" });
   form.matches = (sel) => sel === "form";
-  const event = clickEvent(form);
-  win.fire("click", event);
-  assert.equal(event.prevented, false);
-  assert.equal(handle.confirmer.pending, null);
+  win.fire("click", clickEvent(form));
+  assert.equal(form.attrs["data-confirm"], undefined);
+  await new Promise((r) => setTimeout(r, 5));
+  assert.equal(form.attrs["data-confirm"], "Send?");
   handle.uninstall();
 });

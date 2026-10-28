@@ -65,6 +65,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **select**: A required select that fails the browser's validation left focus on the hidden `<select>`. The trigger now takes focus, is marked `aria-invalid` and shows the browser's message under it (`role="alert"`, `aria-describedby`); the message clears when a value is chosen. The browser's own bubble cannot be kept: it closes as soon as focus leaves the `<select>`, so it is replaced rather than moved
 - **dialog**: An open dialog closed itself when a parent re-render patched its class (see Changed)
 
+- **avatar**: The image-failed fallback never ran for an avatar with `id` and `src`: the hook name was an expression, so LiveView logged "unknown hook found for .Avatar". It now names the hook in full
+- **popover**: The trigger was rendered twice (closed and open copy), so an element with an `id` in it (an avatar) produced duplicate DOM ids. A trigger that does not read `open` now renders once; one that does (`:let={open}`) keeps both copies
+- **confirm**: A `<form data-confirm>` also opened the browser's `window.confirm()` on a click inside it (phoenix_html asks for every ancestor of a click). Only the styled dialog shows now, and the submit happens once, on the verb
+- **confirm_dialog**: `values` are sent with the event instead of as hidden inputs, so a key named `id` no longer makes LiveView warn about an input named `id`. They still arrive as strings
+- **pagination**: The page list wraps inside its container (a wide range at 390 px widened the page)
+- **use SutraUI**: `use SutraUI, except: [command_palette: 1]` leaves names out of the imports when they clash with your own functions
+
 ### Upgrading from 0.4
 
 Breaking changes, in the order an app meets them:
@@ -80,6 +87,9 @@ Breaking changes, in the order an app meets them:
 9. **Pickers**: `SutraUI.Calendar` stays as the server-driven month grid and the pickers do not use it. Replace hand-made date `<input>`s with `date_picker` and friends. A datetime now posts an ISO 8601 string with an offset: read it with `SutraUI.Time.parse_datetime/3` (a form without JavaScript posts the wall time `2027-03-15T09:00`, which it also reads). Configure a time zone database (`tz`) for zones
 10. **tabs**: `default_value` is no longer required when `value` is given; a call must not mix `patch` and `navigate` tabs
 11. **filter_bar**: plan the move to LiveTable 0.5 filters; it is removed in 0.6
+10. **Name clashes**: `use SutraUI` now imports `command_palette/1`. If your app defines its own function of that name (or any other Sutra name), write `use SutraUI, except: [command_palette: 1]` (a list of `name: arity`, applied to every imported module) or import the modules you need one by one
+11. **CSP details** (see the Content-Security-Policy section of the JavaScript Hooks guide): `nonce` is needed on `command_dialog` and goes on the `live_component` call of `SutraUI.LiveSelect`; LiveViews get the nonce through the session (first render) and connect params (after live navigation), with the plug and `on_mount` code in the guide; a strict `style-src 'self'` also rules out external fonts and stylesheets and inline `style=` in your own markup
+12. **confirm_dialog `values`**: sent with the event, not as hidden inputs (no more "input named id" warning); a field of your own in the dialog must not be named `id`
 
 New in 0.5 with nothing to migrate, but named so that code written against drafts matches: `badge` takes `appearance` (not `style`), `relative_time` takes `length` (`:long` or `:short`).
 

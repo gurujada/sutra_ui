@@ -148,6 +148,67 @@ through the DOM (`el.style.left = ...`), which a CSP allows. Collapsed accordion
 `skeleton` (`width`, `height`) and `carousel` (`width`, `height`, `gap`) take Tailwind classes only; the CSS-length form (`"200px"`) was removed in 0.5. Extracted hooks (`dialog`, `response`) are bundled into your JavaScript and need
 no nonce.
 
+### Where the nonce goes
+
+- Components with a runtime hook take `nonce={@csp_nonce}` themselves: `dropdown_menu`, `popover`, `tooltip`, `avatar` (with an `id`), `command`, `command_dialog`, `tree_view` and so on.
+- `SutraUI.LiveSelect` is a LiveComponent: pass it on the `live_component` call, `<.live_component module={SutraUI.LiveSelect} id="tags" nonce={@csp_nonce} ... />`.
+- Extracted hooks (`dialog`, `select`, `confirm_host`, `toast_group`, `response`, `command_palette`, the pickers) are bundled into your JavaScript and need no nonce.
+
+### Getting the nonce to LiveViews
+
+A plug sees the request, but a LiveView's own mount (and live navigation) does not. Store the
+nonce in the session in the plug, read it in an `on_mount` on first render, and read it from the
+connect params after a live navigation (the socket reconnects with new params):
+
+```elixir
+# plug, in the :browser pipeline
+def put_csp(conn, _opts) do
+  nonce = 16 |> :crypto.strong_rand_bytes() |> Base.url_encode64(padding: false)
+
+  conn
+  |> Plug.Conn.assign(:csp_nonce, nonce)
+  |> Plug.Conn.put_session(:csp_nonce, nonce)
+  |> Plug.Conn.put_resp_header(
+    "content-security-policy",
+    "script-src 'self' 'nonce-#{nonce}'; style-src 'self'; img-src 'self' data:"
+  )
+end
+
+# on_mount, in the live_session
+def on_mount(:csp_nonce, _params, session, socket) do
+  nonce =
+    if Phoenix.LiveView.connected?(socket) do
+      # connect params carry the nonce of the page the socket was opened from
+      Phoenix.LiveView.get_connect_params(socket)["csp_nonce"] || session["csp_nonce"]
+    else
+      session["csp_nonce"]
+    end
+
+  {:cont, Phoenix.Component.assign(socket, :csp_nonce, nonce)}
+end
+```
+
+```js
+// app.js: send the page's nonce with every (re)connect
+const nonce = document.querySelector("meta[name='csp-nonce']")?.content
+new LiveSocket("/live", Socket, {params: () => ({_csrf_token: token, csp_nonce: nonce})})
+```
+
+Render `<meta name="csp-nonce" content={@csp_nonce}>` in the root layout. The nonce is only
+needed on the markup the server renders for a script it inserts; it is not a secret from the page.
+
+### A strict `style-src 'self'` binds your markup too
+
+Sutra UI renders no `style=` attribute, but the policy applies to your own templates: no
+inline `style=`, no `<style>` blocks, no external stylesheet or font host (self-host the fonts),
+and `img-src` must list every image host you load from.
+
+### Dialog values named `id`
+
+`confirm_dialog` sends its `values` with the event, not as hidden inputs, so a key named `id`
+does not trigger LiveView's warning about an input named `id`. Your own form fields inside a
+dialog must still avoid that name.
+
 ## The Hook Name Convention
 
 Most Sutra UI colocated hook scripts use short dot names (e.g., `.Tabs`).
@@ -369,3 +430,7 @@ is runtime hooks.
 - [Components Cheatsheet](components.cheatmd) - All components with examples
 - [Accessibility Guide](accessibility.md) - Keyboard navigation patterns
 - [Installation Guide](installation.md) - Setup instructions
+
+A `phx-hook` given as an expression (`phx-hook={@src && ".Avatar"}`) is not rewritten to the
+module-prefixed name, and LiveView logs "unknown hook". Use a literal `phx-hook=".Name"`, or the full name
+(`SutraUI.Avatar.Avatar`) when the value is computed.
