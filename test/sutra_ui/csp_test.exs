@@ -17,9 +17,9 @@ defmodule SutraUI.CSPTest do
     end
   end
 
-  test "no component renders an inline event handler attribute by default" do
-    for file <- @lib, line <- File.stream!(file) |> Enum.to_list() do
-      refute line =~ ~r/\s+on(error|click|load|change|submit)="/ and not (line =~ "onerror={")
+  test "no component renders an inline event handler attribute" do
+    for file <- @lib, {line, n} <- file |> File.stream!() |> Enum.with_index(1) do
+      refute line =~ ~r/\son[a-z]+=[{"']/, "#{file}:#{n}: #{String.trim(line)}"
     end
   end
 
@@ -48,7 +48,7 @@ defmodule SutraUI.CSPTest do
     assert html =~ ~r/<script[^>]*nonce="n0nce"/
   end
 
-  test "avatar without an id keeps the legacy onerror fallback" do
+  test "avatar without an id renders no inline handler and no script" do
     assigns = %{}
 
     html =
@@ -56,7 +56,7 @@ defmodule SutraUI.CSPTest do
       <Avatar.avatar src="/a.png" alt="A" />
       """)
 
-    assert html =~ "onerror="
+    refute html =~ "onerror"
     refute html =~ "<script"
   end
 

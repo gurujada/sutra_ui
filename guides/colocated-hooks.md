@@ -139,7 +139,6 @@ Neither `script-src` nor `style-src` needs `'unsafe-inline'`. `img-src` needs `d
 |--------|-------|---------------|
 | Runtime hook `<script>` | every component with a runtime hook (`nonce` attribute) | `script-src` nonce |
 | Pre-paint theme script | `theme_script/1` (`nonce` attribute) | `script-src` nonce |
-| `onerror=` handler | `avatar` without an `id` | `script-src-attr 'unsafe-inline'`; pass an `id` instead |
 
 No component renders a `style=` attribute. Run-time numbers (progress, slider and range slider
 positions, upload progress) are rendered as `data-pct` attributes (an integer 0-100) that the

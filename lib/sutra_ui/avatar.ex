@@ -65,9 +65,10 @@ defmodule SutraUI.Avatar do
   @doc """
   Renders an avatar component.
 
-  When `src` fails to load the fallback is shown. With an `id`, a small hook does this and
-  works under a nonce-based Content-Security-Policy (pass `nonce`). Without an `id` the
-  image carries an inline `onerror` handler, which such a policy blocks.
+  When `src` fails to load the fallback is shown. A small hook does this, and it needs an
+  `id` (and `nonce` under a Content-Security-Policy). Without an `id` there is no failure
+  fallback: no inline `onerror` handler is rendered, because a strict policy blocks it, so the
+  browser shows the image's `alt` text when `src` fails.
   """
   attr(:src, :string, default: nil, doc: "The image source URL")
   attr(:alt, :string, default: "", doc: "Alternative text for the image")
@@ -97,7 +98,8 @@ defmodule SutraUI.Avatar do
 
   attr(:announce_status, :boolean,
     default: true,
-    doc: "Render the screen-reader word; `avatar_group` turns it off and names the status itself"
+    doc:
+      "Render the screen-reader word. For groups and custom composition: `avatar_group` turns it off and names every status in the group's own accessible name, and so should any composition that does the same"
   )
 
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
@@ -126,10 +128,6 @@ defmodule SutraUI.Avatar do
           src={@src}
           alt={@alt}
           class="avatar-image"
-          onerror={
-            !@rest[:id] &&
-              "this.style.display='none'; this.nextElementSibling.style.display='flex';"
-          }
         />
       <% end %>
       <span class={["avatar-fallback", @src && "avatar-fallback-hidden"]}>

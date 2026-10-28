@@ -2960,7 +2960,10 @@
         background-color: var(--muted-foreground);
     }
     .avatar-fallback {
-        @apply flex size-full items-center justify-center bg-muted text-muted-foreground font-medium [&>span]:flex [&>span]:items-center [&>span]:justify-center [&_svg]:size-[60%];
+        /* Initials are foreground on a tint of the primary colour: readable in both themes,
+           alone or in a group. */
+        @apply flex size-full items-center justify-center font-semibold text-foreground [&>span]:flex [&>span]:items-center [&>span]:justify-center [&_svg]:size-[60%];
+        background-color: color-mix(in oklab, var(--primary) 18%, var(--background));
     }
     .avatar-fallback-hidden {
         @apply hidden;
@@ -2974,14 +2977,9 @@
     .avatar-group {
         @apply flex items-center -space-x-2;
 
-        /* Overlapping faces are parted by a ring in the page background; initials are
-           foreground on a tint, readable on both. */
+        /* Overlapping faces are parted by a ring in the page background. */
         .avatar {
             @apply relative ring-[3px] ring-background;
-        }
-        .avatar-fallback {
-            @apply font-semibold text-foreground;
-            background-color: color-mix(in oklab, var(--primary) 18%, var(--background));
         }
         &[data-size="sm"] {
             @apply -space-x-1.5;
