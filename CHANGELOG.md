@@ -17,9 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **flash**: The message renders in a flex `div` (was a `<p>`), so icons and the reconnect spinner stay on one row and block content is valid
+- **flash**: The message renders in a `div` (was a `<p>`), so block content is valid; it keeps normal text flow, and icons such as the reconnect spinner sit inline on the text line
 - **flash**: Only the close button dismisses; clicking elsewhere on the message (selecting text, following a link) no longer does
-
 - **skeleton, carousel**: `width`, `height` and `gap` take Tailwind classes (`w-48`, `h-72`, `gap-4`). A CSS length (digits plus a unit, or `auto`, e.g. `200px`) still renders as an inline style as before, but that form is **deprecated and goes away in 0.5**; apps that want `style-src 'self'` should pass classes
 - **accordion**: Closed panels use the `hidden` class instead of an inline `display: none`
 - **popover**: The trigger swaps its closed and open content by `aria-expanded` in CSS instead of toggling inline styles
