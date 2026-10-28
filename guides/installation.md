@@ -146,6 +146,22 @@ add `{:tz, "~> 0.28"}` and `config :elixir, :time_zone_database, Tz.TimeZoneData
 > ]
 > ```
 
+## Step 4b: Toasts and confirmations in the layout
+
+Render one toast stack and one confirm host in the layout your LiveViews use (for example
+`Layouts.app`), replacing Phoenix's `flash_group`:
+
+```heex
+<.toast_group flash={@flash} live />
+<.confirm_host />
+```
+
+`live` lets the server send toasts (`SutraUI.Toast.send/3`); omit it in a layout rendered by
+controllers, where the group shows the flash only. With the host in place every
+`data-confirm` opens a styled dialog instead of the browser's `confirm()` box. The hooks are
+the extracted ones from Step 4; to catch clicks before the LiveView connects, also call
+`installConfirm()` from `sutra_ui/confirm` in `app.js`.
+
 ## Step 5: Verify Installation
 
 Create a simple test to verify everything works:

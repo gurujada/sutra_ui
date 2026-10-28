@@ -54,7 +54,8 @@ Several Sutra UI components use colocated hooks for interactivity:
 | `tabs` | `.Tabs` | Runtime | Keyboard navigation |
 | `relative_time` | `.RelativeTime` | Extracted | Shared page timer for relative words (imports `sutra_ui/time`) |
 | `local_time` | `.LocalTime` | Extracted | Viewer-zone hint (imports `sutra_ui/time`) |
-| `toast` | `.ToastContainer` | Runtime | Toast push events and dismissal |
+| `toast_group` | `.ToastGroup` | Extracted | Toast timers, exit animation, connection notice (imports `sutra_ui/toast`) |
+| `confirm_host` | `.ConfirmHost` | Extracted | Catches `data-confirm` before LiveView and phoenix_html (imports `sutra_ui/confirm`) |
 | `theme_switcher` | `.ThemeSwitcher` | Runtime | Theme toggle event dispatch |
 | `tooltip` | `.Tooltip` | Runtime | Tooltip visibility and positioning |
 | `tree_view` | `SutraUI.TreeView.TreeView` | Runtime | Keyboard navigation when `id` is set |
@@ -66,8 +67,8 @@ generated `phoenix-colocated/sutra_ui` hooks into your LiveSocket.
 
 Small behaviour (open/close, focus, keys, up to a few hundred lines) stays in the colocated
 hook. A widget with real logic gets one source module in the library's `assets/js/<widget>/`,
-with its own tests, and a thin hook that imports it. `relative_time` and `local_time` are the
-first (`sutra_ui/time`).
+with its own tests, and a thin hook that imports it. `relative_time` and `local_time` (`sutra_ui/time`), the toast stack
+(`sutra_ui/toast`) and `data-confirm` (`sutra_ui/confirm`) use it.
 
 A runtime hook is an inline `<script>` and cannot import, so a hook that uses a module is an
 **extracted** hook: your app's esbuild bundles it, and resolves `sutra_ui/time` through `deps`

@@ -99,7 +99,7 @@ defmodule SutraUI do
   |-----------|-------------|
   | `SutraUI.Alert` | Alert messages |
   | `SutraUI.Flash` | Phoenix flash messages |
-  | `SutraUI.Toast` | Toast notifications (hook) |
+  | `SutraUI.Toast` | Toasts and flashes in one stack: `toast_group`, `Toast.send/3` (hook) |
   | `SutraUI.Progress` | Progress bars |
   | `SutraUI.Skeleton` | Loading placeholders |
   | `SutraUI.Empty` | Empty states |
@@ -112,6 +112,7 @@ defmodule SutraUI do
   | Component | Description |
   |-----------|-------------|
   | `SutraUI.Dialog` | Modal dialogs (hook) |
+  | `SutraUI.Confirm` | Confirmation dialogs and a styled `data-confirm` (hook) |
   | `SutraUI.Popover` | Click-triggered popups (hook) |
   | `SutraUI.Tooltip` | Hover and focus tooltips (hook) |
   | `SutraUI.DropdownMenu` | Dropdown menus (hook) |
@@ -191,6 +192,16 @@ defmodule SutraUI do
   """
 
   @doc """
+  Opens a `SutraUI.Confirm.confirm_dialog/1` by id. See `SutraUI.Confirm`.
+
+      <.button phx-click={SutraUI.open_confirm("retire-confirm")}>Retire</.button>
+  """
+  defdelegate open_confirm(id), to: SutraUI.Confirm
+
+  @doc "Like `open_confirm/1`, chained onto other JS commands."
+  defdelegate open_confirm(js, id), to: SutraUI.Confirm
+
+  @doc """
   Use Sutra UI in your Phoenix application.
 
   This macro imports Sutra UI function components for use in your templates.
@@ -242,7 +253,8 @@ defmodule SutraUI do
       import SutraUI.Accordion
       import SutraUI.Tabs
       import SutraUI.DropdownMenu
-      import SutraUI.Toast
+      import SutraUI.Toast, only: [toast: 1, toast_group: 1, toast_container: 1]
+      import SutraUI.Confirm
 
       # Phase 5: Advanced UI
       import SutraUI.Avatar

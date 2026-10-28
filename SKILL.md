@@ -28,8 +28,9 @@ Do not use these from application code:
 - Do not replace Phoenix form validation, uploads, navigation, or events with
   client-side state machines.
 - Do not write `style=` attributes on or around Sutra components; use classes.
-- Do not put `phx-click` on a flash box, or use the native `<dialog>` for a
-  Sutra dialog.
+- Do not put `phx-click` on a flash box, or use the native `<dialog>` or
+  `window.confirm()` for a Sutra dialog or confirmation: use `confirm_host/1` and
+  `data-confirm`, or `confirm_dialog/1`.
 
 For exact attrs, slots, or event names, inspect the component module in
 `lib/sutra_ui/*.ex`. This skill teaches Sutra's composition model; source code
@@ -88,7 +89,7 @@ writing HEEx.
 - Layout/data: `card`, `header`, `table`, `item`, `separator`, `marquee`,
   `calendar`, `timeline`, `tree_view`, `stepper`, `stepper_wizard`, `drawer`
 - Feedback: `alert`, `flash`, `progress`, `skeleton`, `empty`,
-  `loading_state`, `toast`
+  `loading_state`, `toast_group` (+ `SutraUI.Toast.send/3`), `toast`
 - Overlays/actions: `dialog`, `popover`, `tooltip`, `hover_card`,
   `dropdown_menu`, `context_menu`, `command`
 - Navigation: `tabs`, `segmented`, `filter_tabs`, `accordion`, `breadcrumb`, `pagination`,
@@ -130,6 +131,9 @@ end
 - Hiding custom content behind rigid attrs when a slot would be simpler.
 - Copying demo-specific layout or marketing copy into reusable app components.
 - Dismissing a flash by clicking its box: only its × button closes it.
+- Using `window.confirm()` or a second toast system: render `toast_group` once and
+  `confirm_host` once in the layout; confirm only what cannot be undone, offer Undo in a toast
+  for the rest.
 - Passing CSS values (`width="200px"`, `gap="1rem"`) to `skeleton/1` or
   `carousel/1`: pass classes (`w-48`, `gap-4`); the CSS form is deprecated and
   goes away in 0.5.

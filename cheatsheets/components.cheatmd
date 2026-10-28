@@ -486,15 +486,34 @@ Only the close button dismisses a flash; the message is a `div`, so it can hold 
 ### Toast
 
 ```heex
-<.toast_container flash={@flash} />
+<%!-- once, in the layout: flashes and server toasts in one stack --%>
+<.toast_group flash={@flash} live />
 
-<.toast id="saved-toast" variant="default">
+<.toast id="saved-toast" kind="success">
   <:title>Changes saved</:title>
 </.toast>
+```
 
-<.toast id="error-toast" variant="destructive">
-  <:title>Something went wrong</:title>
-</.toast>
+```elixir
+alias SutraUI.Toast
+Toast.send(:success, "Saved")                      # info/success 5 s, warning 8 s, error stays
+Toast.send(:info, "Uploading…", id: "up", duration: 0)
+Toast.update("up", kind: :success, body: "Uploaded", duration: 4000)
+Toast.dismiss("up")
+Toast.send(:info, "Deleted", action: %{label: "Undo", event: "undo"}, duration: 8000)
+conn |> Toast.put_toast(:success, "Published") |> redirect(to: ~p"/")   # survives a redirect
+```
+
+### Confirmations
+
+```heex
+<.confirm_host />   <%!-- once, in the layout --%>
+<button phx-click="delete" data-confirm="This cannot be undone."
+        data-confirm-title="Delete it?" data-confirm-verb="Delete">Delete</button>
+
+<.button phx-click={SutraUI.open_confirm("retire")}>Retire</.button>
+<.confirm_dialog id="retire" title="Retire this course?" consequence="Nobody can start it again."
+                 confirm="Retire" event="retire" values={%{"id" => @course.id}} />
 ```
 
 ## Overlay

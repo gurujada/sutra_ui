@@ -237,10 +237,11 @@ For page-level accessibility, add a skip link at the top of your layout:
 Toast notifications use `aria-live` to announce messages:
 
 ```heex
-<.toast_container flash={@flash} />
-<!-- Renders toast messages with status/live-region semantics -->
+<.toast_group flash={@flash} live />
+<!-- Info and success: role="status", aria-live="polite". Warnings and errors:
+     role="alert", aria-live="assertive". The kind is also a word and an icon. -->
 
-<.toast id="saved-toast">
+<.toast id="saved-toast" kind="success">
   <:title>File saved successfully</:title>
 </.toast>
 <!-- Exposes role="status" and aria-live="polite" -->
