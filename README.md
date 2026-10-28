@@ -352,6 +352,12 @@ Requires support for:
 - CSS `:has()` selector
 - Native `<dialog>` element for `command_dialog`
 
+## Contributing
+
+Browser modules for widgets with real logic live in `assets/js/<widget>/` (tests: `node --test assets/js/`)
+and are built into `priv/static/` with `mix assets.build`. The built files are committed; `mix test`
+fails when one is stale. See [JavaScript Hooks](guides/colocated-hooks.md) for how to add a module.
+
 ## License
 
 MIT License - see [LICENSE](https://github.com/gurujada/sutra_ui/blob/main/LICENSE) for details.

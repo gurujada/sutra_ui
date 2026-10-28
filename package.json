@@ -1,0 +1,16 @@
+{
+  "name": "sutra_ui",
+  "version": "0.4.1",
+  "description": "Browser modules of the Sutra UI Phoenix LiveView component library. Imported by its colocated hooks.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./time": "./priv/static/time.js"
+  },
+  "files": [
+    "priv/static/*.js"
+  ],
+  "scripts": {
+    "test": "node --test assets/js/"
+  }
+}

@@ -11,6 +11,7 @@ defmodule SutraUI.MixProject do
       elixir: "~> 1.20",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
 
@@ -42,8 +43,17 @@ defmodule SutraUI.MixProject do
       {:mdex, "~> 0.13"},
       # Dev/Test
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:esbuild, "~> 0.10", only: :dev, runtime: false},
+      {:tz, "~> 0.28", only: :test},
       {:lazy_html, "~> 0.1", only: :test},
       {:jason, "~> 1.0", optional: true}
+    ]
+  end
+
+  defp aliases do
+    [
+      # Maintainers only: builds assets/js into priv/static (committed, shipped on Hex).
+      "assets.build": ["run assets/build.exs"]
     ]
   end
 
@@ -57,7 +67,7 @@ defmodule SutraUI.MixProject do
         "Demo" => "https://sutraui.gurujada.com"
       },
       files:
-        ~w(lib priv guides cheatsheets .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage_rules.md SKILL.md skill)
+        ~w(lib priv package.json guides cheatsheets .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage_rules.md SKILL.md skill)
     ]
   end
 
@@ -87,7 +97,8 @@ defmodule SutraUI.MixProject do
           SutraUI.Button,
           SutraUI.Badge,
           SutraUI.Spinner,
-          SutraUI.Kbd
+          SutraUI.Kbd,
+          SutraUI.Time
         ],
         "Form Controls": [
           SutraUI.Label,

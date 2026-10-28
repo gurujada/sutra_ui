@@ -52,6 +52,7 @@ defmodule SutraUI do
   | `SutraUI.Badge` | Status indicators |
   | `SutraUI.Spinner` | Loading indicators |
   | `SutraUI.Kbd` | Keyboard shortcut display |
+  | `SutraUI.Time` | `relative_time` and `local_time`: one shown zone, a viewer hint, 24-hour clock (hook) |
 
   ### Form Controls
 
@@ -284,6 +285,9 @@ defmodule SutraUI do
       # Phase 10: AI Primitives
       import SutraUI.Response
       import SutraUI.Activity
+
+      # Times (the wording helpers stay behind `SutraUI.Time.format/3`)
+      import SutraUI.Time, only: [relative_time: 1, local_time: 1]
     end
   end
 end

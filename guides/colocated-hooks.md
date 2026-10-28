@@ -52,6 +52,8 @@ Several Sutra UI components use colocated hooks for interactivity:
 | `slider` | `.Slider` | Runtime | Range input behavior |
 | `tab_nav` | `.TabNav` | Runtime | Routed navigation keyboard focus and mobile dropdown |
 | `tabs` | `.Tabs` | Runtime | Keyboard navigation |
+| `relative_time` | `.RelativeTime` | Extracted | Shared page timer for relative words (imports `sutra_ui/time`) |
+| `local_time` | `.LocalTime` | Extracted | Viewer-zone hint (imports `sutra_ui/time`) |
 | `toast` | `.ToastContainer` | Runtime | Toast push events and dismissal |
 | `theme_switcher` | `.ThemeSwitcher` | Runtime | Theme toggle event dispatch |
 | `tooltip` | `.Tooltip` | Runtime | Tooltip visibility and positioning |
@@ -59,6 +61,48 @@ Several Sutra UI components use colocated hooks for interactivity:
 
 Extracted hooks without `runtime` are exceptions. If you use one, merge the
 generated `phoenix-colocated/sutra_ui` hooks into your LiveSocket.
+
+## Library Modules (`sutra_ui/<widget>`)
+
+Small behaviour (open/close, focus, keys, up to a few hundred lines) stays in the colocated
+hook. A widget with real logic gets one source module in the library's `assets/js/<widget>/`,
+with its own tests, and a thin hook that imports it. `relative_time` and `local_time` are the
+first (`sutra_ui/time`).
+
+A runtime hook is an inline `<script>` and cannot import, so a hook that uses a module is an
+**extracted** hook: your app's esbuild bundles it, and resolves `sutra_ui/time` through `deps`
+in `NODE_PATH`, the way it resolves `phoenix` and `phoenix_live_view` (the root `package.json`
+exports it). No npm, no extra config:
+
+```elixir
+# the component
+<script :type={Phoenix.LiveView.ColocatedHook} name=".RelativeTime">
+  import {RelativeTime} from "sutra_ui/time"
+  export default RelativeTime
+</script>
+```
+
+```javascript
+// app.js, as for dialog
+import {hooks as sutraHooks} from "phoenix-colocated/sutra_ui"
+const liveSocket = new LiveSocket("/live", Socket, {hooks: {...sutraHooks}, ...})
+```
+
+### Adding a module (maintainers)
+
+1. Create `assets/js/<widget>/index.js`: plain ES modules with JSDoc types, no dependencies
+   (locale, zone and number formatting come from the browser's `Intl`). Put tests beside the
+   source as `*.test.js` and run them with `node --test assets/js/`.
+2. Export the hook objects (`mounted`, `updated`, `destroyed`) from `index.js`.
+3. Add `"./<widget>": "./priv/static/<widget>.js"` to the `exports` of the root `package.json`.
+4. Run `mix assets.build` (the `esbuild` Hex package, dev only; it needs no npm). It bundles
+   each `assets/js/*/index.js` to `priv/static/<widget>.js` with a first line holding the
+   source hash. Commit the built file: it ships on Hex.
+5. In the component, add the thin extracted hook shown above.
+
+`test/sutra_ui/assets_test.exs` fails when a built file is older than its source (the hash in
+its first line no longer matches `assets/js/<widget>/`, tests excluded), when `package.json`
+does not export the widget, or when its version differs from `mix.exs`.
 
 ## Content-Security-Policy
 

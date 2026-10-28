@@ -5,6 +5,13 @@ All notable changes to Sutra UI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **assets**: Widgets with real logic are one source module in `assets/js/<widget>/` with `node --test` tests, built (esbuild, maintainers only: `mix assets.build`) into the committed `priv/static/<widget>.js` and exported by a root `package.json`. An app's esbuild resolves `import {X} from "sutra_ui/<widget>"` through `deps` in `NODE_PATH`; a test fails when a built file is older than its source. See the JavaScript Hooks guide
+- **time**: `relative_time` and `local_time` (see `SutraUI.Time`), and `SutraUI.Time.format/3` with the named formats `:date`, `:short`, `:long`, `:day`, `:time`, `:date_time`, `:day_time`, `:full`, `:month`. Times show in the place's zone on a 24-hour clock ("Mon 5 Oct, 14:30 IST"); the server renders final English words in `<time datetime title>`; an extracted hook (`sutra_ui/time`) refreshes relative words from one shared page timer and adds the viewer's time when the browser's zone differs. No time zone database is bundled: the app configures one (`tz`), and a missing one raises an error naming the config
+
 ## [0.4.1] - 2026-10-28
 
 ### Added
