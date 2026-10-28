@@ -126,6 +126,15 @@ and removed in 0.5.
 - `button` passes `popovertarget`, `popovertargetaction` and the `form*`
   attributes through.
 
+## URL Tabs
+
+For tabs that need their own URL use `tabs` with `patch` on each tab (one LiveView, `value`
+from `handle_params`; `keep` for instant return and preserved typing) or `navigate` (separate
+LiveViews of one `live_session`; a `nav` with `aria-current`, no panels). Do not build tabs from
+`phx-click` plus an assign: the URL, reload and back button would not work. Patch tabs switch on
+the client before the server answers, so keep the server's render of `value` equal to the
+clicked tab.
+
 ## Times
 
 Show absolute times in the place's zone with `<.local_time at zone format>` (`zone` is

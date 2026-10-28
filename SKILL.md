@@ -91,7 +91,7 @@ writing HEEx.
   `loading_state`, `toast`
 - Overlays/actions: `dialog`, `popover`, `tooltip`, `hover_card`,
   `dropdown_menu`, `context_menu`, `command`
-- Navigation: `tabs`, `segmented`, `filter_tabs`, `accordion`, `breadcrumb`, `pagination`,
+- Navigation: `tabs` (client-only, `patch` URL tabs, `navigate` tab bar), `segmented`, `filter_tabs`, `accordion`, `breadcrumb`, `pagination`,
   `tab_nav`
 - Display: `avatar`, `avatar_group`, `carousel`, `theme_switcher`, `relative_time`,
   `local_time`

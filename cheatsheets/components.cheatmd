@@ -628,6 +628,26 @@ Only the close button dismisses a flash; the message is a `div`, so it can hold 
 </.tabs>
 ```
 
+### URL Tabs
+
+```heex
+<%!-- tabs as routes of one LiveView; handle_params sets @tab --%>
+<.tabs id="course" value={@tab} label="Course" keep={@visited}>
+  <:tab value="overview" patch={~p"/courses/#{@id}/overview"}>Overview</:tab>
+  <:tab value="notes" patch={~p"/courses/#{@id}/notes"}>Notes</:tab>
+  <:panel value="overview">...</:panel>
+  <:panel value="notes">...</:panel>
+</.tabs>
+
+<%!-- separate LiveViews in one live_session --%>
+<.tabs id="account" value={to_string(@live_action)} label="Account">
+  <:tab value="profile" navigate={~p"/account/profile"}>Profile</:tab>
+  <:tab value="billing" navigate={~p"/account/billing"}>Billing</:tab>
+</.tabs>
+```
+
+`keep={@visited}` (kept with `SutraUI.Tabs.visit/2`) or `keep` (every panel) leaves visited panels hidden on the page; without it only the active panel renders.
+
 ### Segmented And Filter Tabs
 
 ```heex
