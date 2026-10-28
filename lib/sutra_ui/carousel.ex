@@ -60,16 +60,21 @@ defmodule SutraUI.Carousel do
   attr(:show_arrows, :boolean, default: true, doc: "Whether to show prev/next arrow buttons")
   attr(:loop, :boolean, default: false, doc: "Whether to loop back to first slide after last")
   attr(:item_class, :string, default: nil, doc: "Additional CSS classes for each carousel item")
-  attr(:gap, :string, default: nil, doc: "Tailwind gap class between items (e.g., 'gap-4')")
+
+  attr(:gap, :string,
+    default: nil,
+    doc:
+      "Tailwind gap class between items (e.g., 'gap-4'). A CSS length ('1rem') still works as an inline style but is deprecated and goes away in 0.5; it needs `style-src 'unsafe-inline'`"
+  )
 
   attr(:width, :string,
     default: nil,
-    doc: "Tailwind width class for the carousel (e.g., 'w-96', 'w-1/2')"
+    doc: "Tailwind width class (e.g., 'w-96'). A CSS length ('400px') is deprecated like `gap`"
   )
 
   attr(:height, :string,
     default: nil,
-    doc: "Tailwind height class for the carousel (e.g., 'h-72')"
+    doc: "Tailwind height class (e.g., 'h-72'). A CSS length ('300px') is deprecated like `gap`"
   )
 
   attr(:class, :string, default: nil, doc: "Additional CSS classes for the carousel container")
@@ -89,13 +94,15 @@ defmodule SutraUI.Carousel do
     ~H"""
     <div
       id={@id}
-      class={["carousel", @width, @height, @class]}
+      class={["carousel", SutraUI.Dimension.classes([@width, @height]), @class]}
       phx-hook=".Carousel"
       data-loop={@loop}
+      {SutraUI.Dimension.style_attr(width: @width, height: @height)}
       {@rest}
     >
       <div
-        class={["carousel-viewport", @gap]}
+        class={["carousel-viewport", SutraUI.Dimension.classes([@gap])]}
+        {SutraUI.Dimension.style_attr(gap: @gap)}
         tabindex="0"
         role="region"
         aria-label="Carousel"

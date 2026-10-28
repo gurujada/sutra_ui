@@ -33,8 +33,16 @@ defmodule SutraUI.Skeleton do
   @doc """
   Renders a skeleton loading placeholder.
   """
-  attr(:width, :string, default: nil, doc: "Tailwind width class (e.g., 'w-48', 'w-1/2')")
-  attr(:height, :string, default: nil, doc: "Tailwind height class (e.g., 'h-6', 'h-12')")
+  attr(:width, :string,
+    default: nil,
+    doc:
+      "Tailwind width class (e.g., 'w-48', 'w-1/2'). A CSS length ('200px') still works as an inline style but is deprecated and goes away in 0.5; it needs `style-src 'unsafe-inline'`"
+  )
+
+  attr(:height, :string,
+    default: nil,
+    doc: "Tailwind height class (e.g., 'h-6'). A CSS length ('24px') is deprecated like `width`"
+  )
 
   attr(:radius, :string,
     default: "md",
@@ -52,7 +60,8 @@ defmodule SutraUI.Skeleton do
   def skeleton(assigns) do
     ~H"""
     <div
-      class={["skeleton", radius_class(@radius), @width, @height, @class]}
+      class={["skeleton", radius_class(@radius), SutraUI.Dimension.classes([@width, @height]), @class]}
+      {SutraUI.Dimension.style_attr(width: @width, height: @height)}
       role="status"
       aria-label="Loading..."
       {@rest}

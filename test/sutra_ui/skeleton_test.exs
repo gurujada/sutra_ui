@@ -53,5 +53,29 @@ defmodule SutraUI.SkeletonTest do
 
       refute html =~ "style"
     end
+
+    test "a CSS length still renders an inline style (deprecated, removed in 0.5)" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Skeleton.skeleton width="200px" height="3rem" />
+        """)
+
+      assert html =~ ~s(style="width: 200px; height: 3rem")
+      refute html =~ ~r/class="[^"]*200px/
+    end
+
+    test "percent and auto are CSS lengths; class names are not" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Skeleton.skeleton width="100%" height="w-auto" />
+        """)
+
+      assert html =~ ~s(style="width: 100%")
+      assert html =~ "w-auto"
+    end
   end
 end

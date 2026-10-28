@@ -60,9 +60,32 @@ defmodule SutraUI.CSPTest do
     refute html =~ "<script"
   end
 
-  test "no component renders an inline style attribute" do
-    for file <- @lib, {line, n} <- file |> File.stream!() |> Enum.with_index(1) do
-      refute line =~ ~r/\sstyle=[{"']/, "#{file}:#{n}: #{String.trim(line)}"
+  # The only inline styles left come from `SutraUI.Dimension.style_attr/1`: the deprecated
+  # CSS-length form of skeleton and carousel `width`/`height`/`gap`, removed in 0.5.
+  # Everything else must stay free of `style=`.
+  @deprecated_style_lines %{
+    "lib/sutra_ui/skeleton.ex" => [
+      "{SutraUI.Dimension.style_attr(width: @width, height: @height)}"
+    ],
+    "lib/sutra_ui/carousel.ex" => [
+      "{SutraUI.Dimension.style_attr(width: @width, height: @height)}",
+      "{SutraUI.Dimension.style_attr(gap: @gap)}"
+    ]
+  }
+
+  test "no component renders an inline style attribute except the deprecated length forms" do
+    # dimension.ex defines the helper; it renders nothing itself
+    for file <- @lib -- ["lib/sutra_ui/dimension.ex"],
+        {line, n} <- file |> File.stream!() |> Enum.with_index(1) do
+      allowed = Map.get(@deprecated_style_lines, file, [])
+
+      if line =~ ~r/\sstyle=[{"']/ or line =~ "style_attr(" do
+        assert String.trim(line) in allowed, "#{file}:#{n}: #{String.trim(line)}"
+      end
+    end
+
+    for {file, lines} <- @deprecated_style_lines, line <- lines do
+      assert File.read!(file) =~ line, "#{file} no longer uses #{line}: drop it from the list"
     end
   end
 
