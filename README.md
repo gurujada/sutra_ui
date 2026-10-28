@@ -279,7 +279,8 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `skeleton` - Loading placeholder
 - `empty` - Empty state
 - `loading_state` - Loading indicator with message
-- `toast` - Toast notifications
+- `toast_group`, `toast` - Flashes and server toasts in one stack (`SutraUI.Toast.send/3`)
+- `confirm_dialog`, `confirm_host` - Confirmations; styled `data-confirm`
 
 ### Overlay
 - `dialog` - Modal dialogs

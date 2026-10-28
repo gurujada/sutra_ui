@@ -375,4 +375,37 @@ defmodule SutraUI.DialogTest do
       end
     end
   end
+
+  describe "alert, initial focus and inert page" do
+    import SutraUI.HTMLHelpers
+
+    test "by default a dialog is role=dialog and leaves the page alone" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Dialog.dialog id="d"><:title>T</:title>Body</Dialog.dialog>
+        """)
+
+      assert attribute(html, "#d-panel", "role") == "dialog"
+      assert attribute(html, "#d", "data-inert-page") == nil
+      assert attribute(html, "#d", "data-initial-focus") == nil
+    end
+
+    test "alert renders role=alertdialog; inert_page and initial_focus are rendered for the hook" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Dialog.dialog id="d" alert inert_page initial_focus="[data-keep]">
+          <:title>T</:title>Body
+        </Dialog.dialog>
+        """)
+
+      assert attribute(html, "#d-panel", "role") == "alertdialog"
+      assert attribute(html, "#d-panel", "aria-modal") == "true"
+      assert attribute(html, "#d", "data-inert-page") == "true"
+      assert attribute(html, "#d", "data-initial-focus") == "[data-keep]"
+    end
+  end
 end

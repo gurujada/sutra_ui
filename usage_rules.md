@@ -268,7 +268,8 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `filter_tabs/1` - "All · Mine · Waiting" links or buttons with counts
 - `dropdown_menu/1` - Dropdown menu (JS hook); `chevron={false}` for icon-only triggers
 - `context_menu/1` - Right-click menu (JS hook)
-- `toast_container/1`, `toast/1` - Toast notifications (JS hook)
+- `toast_group/1`, `toast/1` - Flashes and server toasts in one stack (extracted hook; `live` for `SutraUI.Toast.send/3`); `toast_container/1` is deprecated
+- `confirm_dialog/1`, `confirm_host/1` - Confirmations; `confirm_host` makes `data-confirm` use the styled dialog, never `window.confirm()`
 
 ### Advanced UI
 - `avatar/1` - User avatars with fallback
@@ -564,31 +565,33 @@ end
 
 ### Toast Notifications from LiveView
 
+Put `<.toast_group flash={@flash} live />` in the layout once, then:
+
 ```elixir
-# Show toast on successful action
+alias SutraUI.Toast
+
 def handle_event("save", params, socket) do
   case save_data(params) do
     {:ok, _record} ->
-      {:noreply,
-       socket
-       |> put_flash(:info, "Changes saved successfully")}
-    
+      Toast.send(:success, "Changes saved successfully")
+      {:noreply, socket}
+
     {:error, changeset} ->
       {:noreply, assign(socket, :form, to_form(changeset))}
   end
 end
 
-# Or use push_event for more control
-def handle_event("export_complete", _, socket) do
-  {:noreply,
-   push_event(socket, "toast", %{
-     variant: "success",
-     title: "Export Complete",
-     description: "Your data has been exported to CSV.",
-     duration: 5000
-   })}
-end
+# Update or dismiss by id; from another process pass `to: liveview_pid`
+Toast.send(:info, "Uploading…", id: "upload", duration: 0)
+Toast.update("upload", kind: :success, body: "Uploaded", duration: 4000)
+
+# Reversible actions act at once and offer Undo; only the irreversible ask first
+Toast.send(:info, "Lesson deleted", action: %{label: "Undo", event: "undo"}, duration: 8000)
 ```
+
+`put_flash/3` still works and shows in the same stack. Errors and toasts with an action
+stay until dismissed; info and success leave after 5 s. Never `window.confirm()`: use
+`<.confirm_host />` (every `data-confirm` then opens a styled dialog) or `confirm_dialog/1`.
 
 ## Troubleshooting
 

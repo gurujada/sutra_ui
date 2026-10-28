@@ -164,6 +164,22 @@ defmodule SutraUI.Dialog do
     doc: "CSS selector of the element a `popover` placement hangs under"
   )
 
+  attr(:alert, :boolean,
+    default: false,
+    doc: "Renders `role=\"alertdialog\"`, for a question that interrupts (see `SutraUI.Confirm`)"
+  )
+
+  attr(:initial_focus, :string,
+    default: nil,
+    doc: "CSS selector (inside the panel) of the element that gets focus when the dialog opens"
+  )
+
+  attr(:inert_page, :boolean,
+    default: false,
+    doc:
+      "Mark the rest of the page `inert` while open: nothing behind it can be clicked, focused or read by a screen reader"
+  )
+
   attr(:rest, :global, doc: "Additional HTML attributes")
 
   slot(:inner_block, required: true, doc: "The main dialog content")
@@ -182,6 +198,9 @@ defmodule SutraUI.Dialog do
       data-placement={@placement}
       data-size={@placement == "side" && @size}
       data-anchor={@placement == "popover" && @anchor}
+      data-alert={@alert && "true"}
+      data-initial-focus={@initial_focus}
+      data-inert-page={@inert_page && "true"}
       {@rest}
     >
       <.focus_wrap
@@ -200,7 +219,7 @@ defmodule SutraUI.Dialog do
         <div
           id={"#{@id}-panel"}
           class={["dialog-panel", @class]}
-          role="dialog"
+          role={if @alert, do: "alertdialog", else: "dialog"}
           aria-modal="true"
           aria-labelledby={@title != [] && "#{@id}-title"}
           aria-describedby={@description != [] && "#{@id}-description"}
@@ -267,18 +286,49 @@ defmodule SutraUI.Dialog do
             this.trigger = active && !this.el.contains(active) && active !== document.body ? active : this.trigger;
             this.place();
             this.el.classList.add("is-open");
-            // Focus first focusable element
+            this.setInert(true);
+            // Focus the requested element, else the first focusable one
             requestAnimationFrame(() => {
-              const panel = this.el.querySelector("[role='dialog']");
+              const panel = this.el.querySelector("[role='dialog'], [role='alertdialog']");
               if (panel) {
-                const focusable = panel.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+                const wanted = this.el.dataset.initialFocus && panel.querySelector(this.el.dataset.initialFocus);
+                const focusable = wanted || panel.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
                 if (focusable) focusable.focus();
               }
             });
           };
 
           this.hideHandler = () => {
+            const wasOpen = this.el.classList.contains("is-open");
             this.el.classList.remove("is-open");
+            this.setInert(false);
+            // Focus goes back to what opened the dialog
+            if (wasOpen && this.trigger && this.trigger.isConnected) this.trigger.focus();
+          };
+
+          // inert_page: everything outside the dialog is inert while it is open. Only the
+          // siblings along the path from the dialog up to <body> are marked, so the dialog
+          // itself stays live.
+          this.inerted = [];
+          this.setInert = (on) => {
+            if (this.el.dataset.inertPage !== "true") return;
+            if (!on) {
+              for (const node of this.inerted) node.inert = false;
+              this.inerted = [];
+              return;
+            }
+            let node = this.el;
+            while (node && node !== document.body) {
+              const parent = node.parentElement;
+              if (!parent) break;
+              for (const sibling of parent.children) {
+                if (sibling !== node && !sibling.inert && sibling.tagName !== "SCRIPT") {
+                  sibling.inert = true;
+                  this.inerted.push(sibling);
+                }
+              }
+              node = parent;
+            }
           };
 
           this.el.addEventListener("phx:show-dialog", this.showHandler);
@@ -291,6 +341,7 @@ defmodule SutraUI.Dialog do
         },
 
         destroyed() {
+          this.setInert(false);
           this.el.removeEventListener("phx:show-dialog", this.showHandler);
           this.el.removeEventListener("phx:hide-dialog", this.hideHandler);
           window.removeEventListener("resize", this.place);
