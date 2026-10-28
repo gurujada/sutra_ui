@@ -140,12 +140,16 @@ defmodule SutraUI.Confirm do
       data-tone={@tone}
       {@rest}
     >
-      <:title><span class="block pr-8">{@title}</span></:title>
+      <:title>
+        <span class="flex items-start gap-2 pr-8">
+          <.alert_icon :if={@tone == :danger} />{@title}
+        </span>
+      </:title>
       <:description>{@consequence}</:description>
       <.form for={%{}} id={"#{@id}-form"} phx-submit={@submit} class="space-y-4">
         <input :for={{name, value} <- @values} type="hidden" name={name} value={value} />
         {render_slot(@inner_block)}
-        <div class="flex justify-end gap-2">
+        <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button.button type="button" variant="ghost" data-confirm-keep phx-click={@close}>
             {@keep}
           </Button.button>
@@ -190,9 +194,13 @@ defmodule SutraUI.Confirm do
     ~H"""
     <div id={@id} phx-hook=".ConfirmHost" data-sutra-confirm-host data-default-title={@title}>
       <Dialog.dialog id={@dialog_id} alert inert_page initial_focus="[data-confirm-keep]">
-        <:title><span data-confirm-title>{@title}</span></:title>
+        <:title>
+          <span class="flex items-start gap-2">
+            <.alert_icon data-confirm-icon /><span data-confirm-title>{@title}</span>
+          </span>
+        </:title>
         <:description><span data-confirm-message></span></:description>
-        <div class="flex justify-end gap-2">
+        <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button.button
             type="button"
             variant="ghost"
@@ -229,6 +237,31 @@ defmodule SutraUI.Confirm do
       import {ConfirmHost} from "sutra_ui/confirm"
       export default ConfirmHost
     </script>
+    """
+  end
+
+  # The triangle-alert glyph a danger confirmation carries with its title, so the tone is
+  # never colour alone (the command palette's confirm step shows the same one).
+  attr(:rest, :global)
+
+  defp alert_icon(assigns) do
+    ~H"""
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="mt-px size-[1.125rem] shrink-0 text-destructive"
+      aria-hidden="true"
+      {@rest}
+    >
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" />
+    </svg>
     """
   end
 

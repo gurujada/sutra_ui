@@ -40,6 +40,11 @@ defmodule SutraUI.ConfirmTest do
       assert q(html, "#retire-description") |> LazyHTML.text() =~ "Nobody can start it again."
     end
 
+    test "a danger confirmation carries the triangle-alert icon with its title", %{html: html} do
+      assert Enum.count(q(html, "#retire-title svg")) == 1
+      assert attr_of(html, "#retire", "data-alert") == ["true"]
+    end
+
     test "is a div, never a native dialog", %{html: html} do
       assert Enum.count(q(html, "dialog")) == 0
       assert attr_of(html, "div#retire.dialog", "id") == ["retire"]

@@ -892,9 +892,9 @@
         @apply text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground;
     }
     .badge-success {
-        --badge-tone: var(--color-green-600);
-        --badge-on: white;
-        @apply border-transparent bg-green-500 text-white [a&]:hover:bg-green-500/90 dark:bg-green-600;
+        --badge-tone: var(--success);
+        --badge-on: var(--success-foreground);
+        @apply border-transparent bg-success text-success-foreground [a&]:hover:bg-success/90;
     }
     .badge-info {
         --badge-tone: var(--info);
@@ -1384,6 +1384,11 @@
 
         .dialog-backdrop {
             @apply fixed inset-0 bg-black/50 opacity-0 transition-opacity duration-200;
+        }
+
+        /* A question that interrupts reads from one left edge, title to buttons. */
+        &[data-alert] .dialog-panel > header {
+            @apply text-left;
         }
 
         .dialog-panel {
@@ -2848,6 +2853,9 @@
     .toast-title {
         @apply font-medium leading-snug break-words;
     }
+    .toast-message {
+        @apply leading-snug break-words;
+    }
     .toast-description {
         @apply mt-0.5 text-sm text-muted-foreground break-words;
     }
@@ -3329,7 +3337,7 @@
     }
 
     .activity-item[data-status="complete"] .activity-dot {
-        @apply bg-emerald-500 ring-emerald-500/15;
+        @apply bg-success ring-success/15;
     }
 
     .activity-item[data-status="error"] .activity-dot {
@@ -3800,15 +3808,23 @@
     }
 
     .flash-info {
-        @apply bg-blue-50 border-blue-200 text-blue-800;
-        @apply dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200;
+        @apply text-foreground;
+        background-color: color-mix(in oklab, var(--info) 10%, var(--popover));
+        border-color: color-mix(in oklab, var(--info) 45%, transparent);
     }
 
     .flash-error {
-        @apply bg-red-50 border-red-200 text-red-800;
-        @apply dark:bg-red-950 dark:border-red-800 dark:text-red-200;
+        @apply text-foreground;
+        background-color: color-mix(in oklab, var(--destructive) 10%, var(--popover));
+        border-color: color-mix(in oklab, var(--destructive) 45%, transparent);
     }
 
+    .flash-info .flash-icon {
+        color: var(--info);
+    }
+    .flash-error .flash-icon {
+        color: var(--destructive);
+    }
     .flash-icon {
         @apply shrink-0 mt-0.5;
     }

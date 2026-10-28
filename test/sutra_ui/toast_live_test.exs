@@ -70,6 +70,19 @@ defmodule SutraUI.ToastLiveTest do
     assert attr(view, "toast-a", "role") == ["status"]
   end
 
+  test "a toast has no title unless the caller passes one", %{view: view} do
+    send_toast(view, %{"kind" => "info", "body" => "Lesson deleted", "id" => "nt"})
+    send_toast(view, %{"kind" => "info", "body" => "Detail", "id" => "wt", "title" => "Upload"})
+    doc = view |> render() |> LazyHTML.from_fragment()
+    assert doc |> LazyHTML.query("#toast-nt .toast-title") |> Enum.count() == 0
+
+    assert doc |> LazyHTML.query("#toast-nt .toast-message") |> LazyHTML.text() =~
+             "Lesson deleted"
+
+    assert doc |> LazyHTML.query("#toast-wt .toast-title") |> LazyHTML.text() =~ "Upload"
+    assert doc |> LazyHTML.query("#toast-wt .toast-description") |> LazyHTML.text() =~ "Detail"
+  end
+
   test "an error stays until dismissed", %{view: view} do
     send_toast(view, %{"kind" => "error", "body" => "Broke", "id" => "e"})
     assert attr(view, "toast-e", "data-duration") == ["0"]

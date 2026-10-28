@@ -1,4 +1,4 @@
-/* sutra_ui confirm source-hash:2b5319e983e6d51b (built by mix assets.build; do not edit) */
+/* sutra_ui confirm source-hash:92e40207f63d0123 (built by mix assets.build; do not edit) */
 
 // assets/js/confirm/index.js
 var HOST_SELECTOR = "[data-sutra-confirm-host]";
@@ -73,6 +73,8 @@ function domHost(win, getRoot) {
         button.textContent = prompt.verb || button.dataset.defaultVerb || button.textContent;
       }
       root.dataset.tone = prompt.tone;
+      const icon = part(root, "icon");
+      if (icon) icon.style.display = prompt.tone === "danger" ? "" : "none";
       const dialog = root.querySelector("[phx-hook]") || root.firstElementChild;
       dialog.dispatchEvent(new CustomEvent("phx:show-dialog"));
       win.requestAnimationFrame(() => {

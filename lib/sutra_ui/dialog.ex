@@ -198,6 +198,7 @@ defmodule SutraUI.Dialog do
       data-placement={@placement}
       data-size={@placement == "side" && @size}
       data-anchor={@placement == "popover" && @anchor}
+      data-alert={@alert && "true"}
       data-initial-focus={@initial_focus}
       data-inert-page={@inert_page && "true"}
       {@rest}

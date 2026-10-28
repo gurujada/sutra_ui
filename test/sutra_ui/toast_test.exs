@@ -163,9 +163,13 @@ defmodule SutraUI.ToastTest do
       assert attr_of(html, "[data-toast][data-kind=info]", "data-duration") == ["5000"]
       assert html =~ "Saved"
       assert html =~ "Could not save"
-      # state as a word: the kind word is in the DOM next to the icon
-      assert html_of(html) |> LazyHTML.query("[data-kind=error] .toast-title") |> LazyHTML.text() =~
-               "Error"
+      # state as a word (for screen readers) next to the icon; no visible title repeating the kind
+      message = html_of(html) |> LazyHTML.query("[data-kind=error] .toast-message")
+      assert LazyHTML.text(message) =~ "Error: Could not save"
+      assert attr_of(html, "[data-kind=error] .toast-message .sr-only", "class") == ["sr-only"]
+
+      assert html_of(html) |> LazyHTML.query("[data-kind=error] .toast-title") |> Enum.count() ==
+               0
 
       refute html =~ "data-toast-notice"
     end

@@ -44,7 +44,7 @@ defmodule SutraUI.Toast do
   | Option | Meaning |
   |--------|---------|
   | `:id` | Stable id, to update or dismiss it. Sending again with the same id replaces it |
-  | `:title` | A heading above the body (default: the kind's word) |
+  | `:title` | A heading above the body; by default there is none and the message is the one line (the kind is the icon and colour, and a screen-reader word) |
   | `:duration` | Milliseconds before it leaves; `0` stays until dismissed. See below |
   | `:action` | `%{label: ..., event: ..., values: %{}, target: nil}`: a button pushing `event` |
   | `:metadata` | Any term, passed untouched to a custom `render` function |
@@ -510,7 +510,6 @@ defmodule SutraUI.Toast do
 
     assigns =
       assign(assigns,
-        title: toast[:title] || assigns.labels[toast.kind],
         has_title: toast[:title] not in [nil, ""],
         countdown: toast[:action] != nil and toast.duration > 0
       )
@@ -534,10 +533,16 @@ defmodule SutraUI.Toast do
       <% else %>
         <span class="toast-icon" aria-hidden="true"><.kind_icon kind={@toast.kind} /></span>
         <div class="toast-content">
-          <p class="toast-title">
-            <span :if={@has_title} class="sr-only">{@labels[@toast.kind]}: </span>{@title}
-          </p>
-          <p :if={@toast[:body] not in [nil, ""]} class="toast-description">{@toast.body}</p>
+          <%= if @has_title do %>
+            <p class="toast-title">
+              <span class="sr-only">{@labels[@toast.kind]}: </span>{@toast.title}
+            </p>
+            <p :if={@toast[:body] not in [nil, ""]} class="toast-description">{@toast.body}</p>
+          <% else %>
+            <p class="toast-message">
+              <span class="sr-only">{@labels[@toast.kind]}: </span>{@toast[:body]}
+            </p>
+          <% end %>
         </div>
         <div :if={@toast[:action]} class="toast-action">
           <button

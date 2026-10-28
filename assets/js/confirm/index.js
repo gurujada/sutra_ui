@@ -94,6 +94,8 @@ function domHost(win, getRoot) {
         button.textContent = prompt.verb || button.dataset.defaultVerb || button.textContent;
       }
       root.dataset.tone = prompt.tone;
+      const icon = part(root, "icon");
+      if (icon) icon.style.display = prompt.tone === "danger" ? "" : "none";
       const dialog = root.querySelector("[phx-hook]") || root.firstElementChild;
       dialog.dispatchEvent(new CustomEvent("phx:show-dialog"));
       // Danger starts on Keep, so Enter does not delete; a plain question starts on the verb.
