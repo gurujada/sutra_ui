@@ -4,7 +4,7 @@ const SVG = "http://www.w3.org/2000/svg";
 
 /**
  * Create an element. `class` and `text` are special; false, null and undefined skip an
- * attribute; true sets it empty. Never writes a style attribute.
+ * attribute; true sets it empty ("true" for aria-*). Never writes a style attribute.
  * @param {string} tag
  * @param {Record<string, any>} [attrs]
  * @param {(Node | string | null | undefined | false)[]} [children]
@@ -16,7 +16,7 @@ export function h(tag, attrs = {}, children = []) {
     if (value === null || value === undefined || value === false) continue;
     if (name === "class") node.className = value;
     else if (name === "text") node.textContent = value;
-    else node.setAttribute(name, value === true ? "" : String(value));
+    else node.setAttribute(name, value === true && !name.startsWith("aria-") ? "" : String(value));
   }
   for (const child of children) if (child) node.append(child);
   return node;

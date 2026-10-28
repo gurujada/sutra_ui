@@ -1,4 +1,4 @@
-/* sutra_ui dates source-hash:e2f36067fe6d68d6 (built by mix assets.build; do not edit) */
+/* sutra_ui dates source-hash:f9868ea04b8e653a (built by mix assets.build; do not edit) */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -416,7 +416,7 @@ function h(tag, attrs = {}, children = []) {
     if (value === null || value === void 0 || value === false) continue;
     if (name === "class") node.className = value;
     else if (name === "text") node.textContent = value;
-    else node.setAttribute(name, value === true ? "" : String(value));
+    else node.setAttribute(name, value === true && !name.startsWith("aria-") ? "" : String(value));
   }
   for (const child of children) if (child) node.append(child);
   return node;
