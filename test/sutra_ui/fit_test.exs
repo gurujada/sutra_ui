@@ -47,4 +47,9 @@ defmodule SutraUI.FitTest do
       end
     end
   end
+
+  test "a fixed dialog takes no sibling margin (a space-y parent must not shrink it)" do
+    css = File.read!("priv/static/sutra_ui.css")
+    assert css =~ ~r/\.dialog \{[^}]*margin: 0 !important;/s
+  end
 end

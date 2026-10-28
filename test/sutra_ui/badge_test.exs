@@ -126,7 +126,7 @@ defmodule SutraUI.BadgeTest do
     end
   end
 
-  describe "badge/1 tones and styles" do
+  describe "badge/1 tones and appearances" do
     import SutraUI.HTMLHelpers
 
     test "the new tones render with data-variant" do
@@ -139,37 +139,37 @@ defmodule SutraUI.BadgeTest do
           """)
 
         assert attribute(html, "span", "data-variant") == variant
-        assert attribute(html, "span", "data-style") == "solid"
+        assert attribute(html, "span", "data-appearance") == "solid"
         assert text(html, "span") == "Tone"
       end
     end
 
-    test "soft and dashed styles" do
-      for style <- ~w(soft dashed) do
-        assigns = %{style: style}
+    test "soft and dashed appearances" do
+      for appearance <- ~w(soft dashed) do
+        assigns = %{appearance: appearance}
 
         html =
           rendered_to_string(~H"""
-          <Badge.badge variant="warning" style={@style}>Due</Badge.badge>
+          <Badge.badge variant="warning" appearance={@appearance}>Due</Badge.badge>
           """)
 
-        assert attribute(html, "span", "data-style") == style
+        assert attribute(html, "span", "data-appearance") == appearance
         assert attribute(html, "span", "data-variant") == "warning"
       end
     end
 
-    test "every variant takes every style" do
+    test "every variant takes every appearance" do
       for variant <- ~w(default secondary destructive success outline info warning brand ai),
-          style <- ~w(solid soft dashed) do
-        assigns = %{variant: variant, style: style}
+          appearance <- ~w(solid soft dashed) do
+        assigns = %{variant: variant, appearance: appearance}
 
         html =
           rendered_to_string(~H"""
-          <Badge.badge variant={@variant} style={@style}>x</Badge.badge>
+          <Badge.badge variant={@variant} appearance={@appearance}>x</Badge.badge>
           """)
 
         assert attribute(html, "span", "data-variant") == variant
-        assert attribute(html, "span", "data-style") == style
+        assert attribute(html, "span", "data-appearance") == appearance
       end
     end
 
@@ -189,18 +189,18 @@ defmodule SutraUI.BadgeTest do
       assert text(html, "span[data-variant]") == "Verified"
     end
 
-    test "no icon wrapper without the slot, and links keep tone and style" do
+    test "no icon wrapper without the slot, and links keep tone and appearance" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Badge.badge href="/n" variant="ai" style="soft">5 new</Badge.badge>
+        <Badge.badge href="/n" variant="ai" appearance="soft">5 new</Badge.badge>
         """)
 
       assert count(html, ".badge-icon") == 0
       assert attribute(html, "a", "href") == "/n"
       assert attribute(html, "a", "data-variant") == "ai"
-      assert attribute(html, "a", "data-style") == "soft"
+      assert attribute(html, "a", "data-appearance") == "soft"
     end
   end
 end

@@ -60,8 +60,8 @@ has one, otherwise use inline accessible SVG.
 <.badge variant="destructive">Error</.badge>
 <.badge variant="outline">Outline</.badge>
 <.badge variant="info">Info</.badge>
-<.badge variant="warning" style="soft">Due soon</.badge>
-<.badge variant="ai" style="dashed">Suggested</.badge>
+<.badge variant="warning" appearance="soft">Due soon</.badge>
+<.badge variant="ai" appearance="dashed">Suggested</.badge>
 <.badge variant="success"><:icon><.my_icon name="check" /></:icon>Verified</.badge>
 ```
 
@@ -71,7 +71,7 @@ Variants: `default secondary destructive success outline info warning brand ai`.
 
 ```heex
 <.relative_time at={@post.inserted_at} />            <%!-- 3 hours ago --%>
-<.relative_time at={@due} style={:short} until={86_400} zone="Asia/Kolkata" />
+<.relative_time at={@due} length={:short} until={86_400} zone="Asia/Kolkata" />
 <.local_time at={@due} format={:day_time} zone={@workbook.time_zone} />
 <.local_time at={@due} format={:time} zone="Asia/Kolkata" hint={false} />
 ```

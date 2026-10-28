@@ -1,4 +1,4 @@
-/* sutra_ui time source-hash:9641d9ddceb4044f (built by mix assets.build; do not edit) */
+/* sutra_ui time source-hash:62a5124c5e40775c (built by mix assets.build; do not edit) */
 
 // assets/js/time/index.js
 var MINUTE = 60;
@@ -73,7 +73,7 @@ function refreshRelative(el, nowMs, locale) {
   if (Math.abs(seconds) >= until) {
     return seconds < 0 ? Math.min((-seconds - until + 1) * 1e3, 36e5) : null;
   }
-  const style = el.dataset.style === "short" ? "short" : "long";
+  const style = el.dataset.length === "short" ? "short" : "long";
   const words = relativeWords(seconds, style, locale);
   if (el.textContent !== words) el.textContent = words;
   return Math.abs(seconds) < HOUR ? FAST_MS : SLOW_MS;

@@ -79,11 +79,7 @@ defmodule SutraUI.CSPTest do
         {line, n} <- file |> File.stream!() |> Enum.with_index(1) do
       allowed = Map.get(@deprecated_style_lines, file, [])
 
-      # A component call in a doc example (`<.badge style="soft">`) passes an attribute to the
-      # component; it is not an HTML attribute.
-      doc_example? = line |> String.trim_leading() |> String.starts_with?("<.")
-
-      if (line =~ ~r/\sstyle=[{"']/ and not doc_example?) or line =~ "style_attr(" do
+      if line =~ ~r/\sstyle=[{"']/ or line =~ "style_attr(" do
         assert String.trim(line) in allowed, "#{file}:#{n}: #{String.trim(line)}"
       end
     end

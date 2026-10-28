@@ -137,7 +137,7 @@ export function refreshRelative(el, nowMs, locale) {
     return seconds < 0 ? Math.min((-seconds - until + 1) * 1000, 3_600_000) : null;
   }
 
-  const style = el.dataset.style === "short" ? "short" : "long";
+  const style = el.dataset.length === "short" ? "short" : "long";
   const words = relativeWords(seconds, style, locale);
   if (el.textContent !== words) el.textContent = words;
 

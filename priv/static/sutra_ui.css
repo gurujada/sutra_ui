@@ -1334,6 +1334,9 @@
 @layer components {
     .dialog {
         @apply fixed inset-0 z-50 hidden;
+        /* A fixed full-screen box takes no sibling margin: a `space-y-*` parent (a utility, so it
+           wins over this layer) would otherwise shrink it. */
+        margin: 0 !important;
 
         &.is-open {
             @apply flex items-center justify-center;
@@ -2680,8 +2683,14 @@
     .avatar-group {
         @apply flex items-center -space-x-2;
 
+        /* Overlapping faces are parted by a ring in the page background; initials are
+           foreground on a tint, readable on both. */
         .avatar {
-            @apply ring-2 ring-background;
+            @apply relative ring-[3px] ring-background;
+        }
+        .avatar-fallback {
+            @apply font-semibold text-foreground;
+            background-color: color-mix(in oklab, var(--primary) 18%, var(--background));
         }
         &[data-size="sm"] {
             @apply -space-x-1.5;
@@ -2690,7 +2699,8 @@
             @apply rounded-full;
         }
         .avatar-group-more .avatar-fallback {
-            @apply text-xs font-semibold;
+            @apply text-xs;
+            background-color: var(--secondary);
         }
     }
 }

@@ -114,16 +114,16 @@ defmodule SutraUI.TimeTest do
       assert attribute(html, "time", "datetime") == "2026-10-05T09:00:00Z"
       assert attribute(html, "time", "title") == "5 Oct 2026, 14:30 IST"
       assert attribute(html, "time", "phx-hook") == "SutraUI.Time.RelativeTime"
-      assert attribute(html, "time", "data-style") == "long"
+      assert attribute(html, "time", "data-length") == "long"
       assert attribute(html, "time", "data-until") == "604800"
       refute html =~ "<script"
     end
 
     test "short style" do
       assigns = %{at: @at, now: @now}
-      html = rendered_to_string(~H|<T.relative_time at={@at} now={@now} style={:short} />|)
+      html = rendered_to_string(~H|<T.relative_time at={@at} now={@now} length={:short} />|)
       assert text(html, "time") == "3h"
-      assert attribute(html, "time", "data-style") == "short"
+      assert attribute(html, "time", "data-length") == "short"
     end
 
     test "a future instant reads 'in'" do

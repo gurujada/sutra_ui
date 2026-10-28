@@ -15,9 +15,9 @@ defmodule SutraUI.Badge do
   - `info`, `warning`, `brand`, `ai` - Theme-token tones (`--info`, `--warning`, `--brand`,
     `--ai`, each with a `-foreground`); override the tokens to retheme
 
-  ## Styles
+  ## Appearances
 
-  Any variant comes in three styles: `solid` (default), `soft` (a tinted background with
+  Any variant comes in three appearances: `solid` (default), `soft` (a tinted background with
   tinted text) and `dashed` (a dashed border, for pending or suggested things).
 
   ## Examples
@@ -30,10 +30,10 @@ defmodule SutraUI.Badge do
       <.badge variant="destructive">Error</.badge>
       <.badge variant="outline">Pending</.badge>
 
-      # Tones and styles
+      # Tones and appearances
       <.badge variant="info">Info</.badge>
-      <.badge variant="warning" style="soft">Due soon</.badge>
-      <.badge variant="ai" style="dashed">Suggested</.badge>
+      <.badge variant="warning" appearance="soft">Due soon</.badge>
+      <.badge variant="ai" appearance="dashed">Suggested</.badge>
 
       # As a link
       <.badge href="/notifications">5 new</.badge>
@@ -53,7 +53,7 @@ defmodule SutraUI.Badge do
   ## Attributes
 
   * `variant` - Colour. One of `default`, `secondary`, `destructive`, `success`, `outline`, `info`, `warning`, `brand`, `ai`. Defaults to `default`.
-  * `style` - `solid` (default), `soft` or `dashed`.
+  * `appearance` - `solid` (default), `soft` or `dashed`.
   * `href` - Optional link URL. Renders as `<a>` instead of `<span>`.
   * `class` - Additional CSS classes.
 
@@ -68,10 +68,10 @@ defmodule SutraUI.Badge do
     doc: "Colour variant"
   )
 
-  attr(:style, :string,
+  attr(:appearance, :string,
     default: "solid",
     values: ~w(solid soft dashed),
-    doc: "Fill style: solid, soft (tinted) or dashed (dashed border)"
+    doc: "Fill: solid, soft (tinted) or dashed (dashed border)"
   )
 
   attr(:href, :string,
@@ -94,18 +94,18 @@ defmodule SutraUI.Badge do
 
   def badge(assigns) do
     assigns =
-      assign(assigns, :classes, badge_class(assigns.variant, assigns.style, assigns.class))
+      assign(assigns, :classes, badge_class(assigns.variant, assigns.appearance, assigns.class))
 
     if assigns.href do
       ~H"""
-      <a href={@href} class={@classes} data-variant={@variant} data-style={@style} {@rest}>
+      <a href={@href} class={@classes} data-variant={@variant} data-appearance={@appearance} {@rest}>
         <span :if={@icon != []} class="badge-icon" aria-hidden="true">{render_slot(@icon)}</span>
         {render_slot(@inner_block)}
       </a>
       """
     else
       ~H"""
-      <span class={@classes} data-variant={@variant} data-style={@style} {@rest}>
+      <span class={@classes} data-variant={@variant} data-appearance={@appearance} {@rest}>
         <span :if={@icon != []} class="badge-icon" aria-hidden="true">{render_slot(@icon)}</span>
         {render_slot(@inner_block)}
       </span>
@@ -114,7 +114,7 @@ defmodule SutraUI.Badge do
   end
 
   # Simple semantic CSS class - all styling via @apply in sutra_ui.css
-  defp badge_class(variant, style, extra_class) do
+  defp badge_class(variant, appearance, extra_class) do
     base =
       case variant do
         "default" -> "badge"
@@ -128,6 +128,6 @@ defmodule SutraUI.Badge do
         "ai" -> "badge-ai"
       end
 
-    [base, style != "solid" && "badge-#{style}", extra_class]
+    [base, appearance != "solid" && "badge-#{appearance}", extra_class]
   end
 end

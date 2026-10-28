@@ -224,7 +224,7 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 
 ### Foundation
 - `button/1` - Buttons with variants: primary, secondary, outline, ghost, link, destructive; passes `popovertarget`, `popovertargetaction`, `form*` attributes through
-- `badge/1` - Status badges: variants incl. `info`, `warning`, `brand`, `ai`; `style` `solid`/`soft`/`dashed`; `icon` slot
+- `badge/1` - Status badges: variants incl. `info`, `warning`, `brand`, `ai`; `appearance` `solid`/`soft`/`dashed`; `icon` slot
 - `relative_time/1`, `local_time/1` (`SutraUI.Time`) - Times in the place's zone, 24-hour clock; `SutraUI.Time.format/3` words them anywhere. Needs a configured time zone database (`tz`) for any zone but "Etc/UTC"; the hook comes from the generated `phoenix-colocated/sutra_ui` bundle (it imports `sutra_ui/time`)
 - `spinner/1` - Loading indicators
 - `kbd/1` - Keyboard shortcut display

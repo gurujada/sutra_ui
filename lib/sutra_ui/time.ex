@@ -23,7 +23,7 @@ defmodule SutraUI.Time do
   ## Examples
 
       <.relative_time at={@post.inserted_at} />                    <%!-- "3 hours ago" --%>
-      <.relative_time at={@due} style={:short} />                  <%!-- "in 2d" --%>
+      <.relative_time at={@due} length={:short} />                  <%!-- "in 2d" --%>
       <.local_time at={@due} format={:day_time} zone={@workbook.time_zone} />
       <%!-- "Mon 5 Oct, 14:30 IST", plus "· Sun 23:30 your time" from the hook abroad --%>
 
@@ -223,7 +223,7 @@ defmodule SutraUI.Time do
   """
   attr(:at, DateTime, required: true, doc: "the instant")
 
-  attr(:style, :atom,
+  attr(:length, :atom,
     default: :long,
     values: [:long, :short],
     doc: "`:long` \"3 hours ago\", `:short` \"3h\""
@@ -251,14 +251,14 @@ defmodule SutraUI.Time do
     words =
       if abs(seconds) >= assigns.until,
         do: date_near(assigns.at, now, assigns.zone),
-        else: relative_words(seconds, assigns.style)
+        else: relative_words(seconds, assigns.length)
 
     assigns =
       assign(assigns,
         words: words,
         iso: DateTime.to_iso8601(assigns.at),
         full: format(assigns.at, :full, assigns.zone),
-        dom_id: assigns.id || generated_id(:relative, [assigns.at, assigns.style, assigns.zone])
+        dom_id: assigns.id || generated_id(:relative, [assigns.at, assigns.length, assigns.zone])
       )
 
     ~H"""
@@ -266,7 +266,7 @@ defmodule SutraUI.Time do
       id={@dom_id}
       phx-hook=".RelativeTime"
       data-sutra-time="relative"
-      data-style={@style}
+      data-length={@length}
       data-until={@until}
       datetime={@iso}
       title={@full}

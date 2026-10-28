@@ -54,11 +54,11 @@ test("relativeWords: another language comes from Intl", () => {
 });
 
 test("refreshRelative rewrites the words and says when to run again", () => {
-  const el = timeEl({ datetime: "2026-10-05T08:59:00Z" }, { style: "long" }, "1 minute ago");
+  const el = timeEl({ datetime: "2026-10-05T08:59:00Z" }, { length: "long" }, "1 minute ago");
   assert.equal(refreshRelative(el, T0 + 4 * 60_000, "en"), FAST_MS);
   assert.equal(el.textContent, "5 minutes ago");
 
-  const old = timeEl({ datetime: "2026-10-05T05:00:00Z" }, { style: "short" });
+  const old = timeEl({ datetime: "2026-10-05T05:00:00Z" }, { length: "short" });
   assert.equal(refreshRelative(old, T0, "en"), SLOW_MS);
   assert.equal(old.textContent, "4h");
 });
@@ -87,7 +87,7 @@ test("Ticker: one timer, fast while under an hour, then slow, then none", () => 
     clearTimer: () => {},
   });
 
-  const recent = timeEl({ datetime: "2026-10-05T08:59:30Z" }, { style: "long" });
+  const recent = timeEl({ datetime: "2026-10-05T08:59:30Z" }, { length: "long" });
   ticker.add(recent);
   assert.equal(timers.at(-1).ms, FAST_MS);
   assert.equal(recent.textContent, "now");
