@@ -4210,3 +4210,196 @@
     [data-pct-width="99"] { --pct-width: 99%; }
     [data-pct-width="100"] { --pct-width: 100%; }
 }
+
+/* Date and time pickers (SutraUI.DatePicker) */
+@layer components {
+    .date-picker {
+        @apply relative block w-full;
+
+        /* The browser's control until the hook runs; then it stays in the form, unseen. */
+        .dp-native {
+            @apply h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive;
+        }
+        &:not([data-enhanced]) > .dp-ui {
+            @apply hidden;
+        }
+        &[data-enhanced] > .dp-native {
+            @apply pointer-events-none absolute inset-0 size-full opacity-0;
+        }
+
+        .dp-control {
+            @apply flex min-h-9 w-full flex-wrap items-center gap-x-1.5 rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-xs transition-[color,box-shadow] dark:bg-input/30 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50;
+        }
+        &[data-invalid] .dp-control {
+            @apply border-destructive ring-destructive/20;
+        }
+        &[data-disabled] .dp-control {
+            @apply cursor-not-allowed opacity-50;
+        }
+        .dp-field {
+            @apply inline-flex items-center;
+        }
+        .dp-seg {
+            @apply rounded-sm bg-transparent px-0.5 py-0.5 text-center tabular-nums outline-none placeholder:text-muted-foreground focus:bg-accent focus:text-accent-foreground disabled:cursor-not-allowed;
+        }
+        .dp-seg-2 {
+            width: 3.4ch;
+            box-sizing: content-box;
+        }
+        .dp-seg-4 {
+            width: 5ch;
+            box-sizing: content-box;
+        }
+        .dp-sep,
+        .dp-dash {
+            @apply text-muted-foreground select-none;
+        }
+        .dp-length {
+            @apply ml-1 rounded-sm bg-muted px-1.5 py-0.5 text-xs text-muted-foreground empty:hidden;
+        }
+        /* JS-drawn icons use these, not utilities (an app's Tailwind may not scan the hook). */
+        .dp-icon {
+            @apply size-4 shrink-0;
+        }
+        .dp-icon-lg {
+            @apply size-5;
+        }
+        .dp-open {
+            @apply ml-auto inline-flex size-7 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none;
+        }
+
+        .dp-note {
+            @apply mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground;
+        }
+        .dp-reason,
+        .dp-clock {
+            @apply text-destructive;
+        }
+        .dp-clock {
+            @apply text-sm;
+        }
+        .dp-offset {
+            @apply ml-1 inline-flex items-center rounded-md border border-input bg-background px-2 py-1 text-xs font-medium text-foreground hover:bg-accent;
+        }
+
+        .dp-backdrop,
+        .dp-sheet-head {
+            @apply hidden;
+        }
+
+        .dp-popover {
+            @apply absolute z-50 w-max min-w-72 max-w-full rounded-md border bg-popover p-3 text-popover-foreground shadow-md outline-none;
+            overflow-y: auto;
+
+            &[aria-hidden="true"] {
+                @apply hidden;
+            }
+        }
+
+        .dp-presets {
+            @apply mb-3 flex flex-wrap gap-1.5;
+        }
+        .dp-preset {
+            @apply rounded-full border border-input px-2.5 py-1 text-xs font-medium hover:bg-accent aria-disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:hover:bg-transparent;
+        }
+
+        .dp-cal-head {
+            @apply mb-2 flex items-center justify-between gap-1;
+        }
+        .dp-cal-title {
+            @apply flex items-center gap-1;
+        }
+        .dp-title-btn {
+            @apply rounded-md px-2 py-1 text-sm font-medium hover:bg-accent aria-expanded:bg-accent;
+        }
+        .dp-nav {
+            @apply inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground;
+        }
+        .dp-grid {
+            @apply flex flex-col gap-0.5;
+        }
+        .dp-row {
+            @apply grid grid-cols-7;
+        }
+        .dp-weekday {
+            @apply pb-1 text-center text-xs font-normal text-muted-foreground;
+        }
+        .dp-cell-wrap {
+            @apply flex justify-center;
+        }
+        .dp-day {
+            @apply inline-flex size-9 w-full items-center justify-center rounded-md text-sm tabular-nums outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring;
+
+            &[data-outside] {
+                @apply text-muted-foreground opacity-60;
+            }
+            &[data-today] {
+                @apply font-semibold text-primary;
+            }
+            &[data-in-range] {
+                @apply rounded-none bg-accent text-accent-foreground;
+            }
+            &[data-range-start] {
+                @apply rounded-l-md;
+            }
+            &[data-range-end] {
+                @apply rounded-r-md;
+            }
+            &[data-selected] {
+                @apply bg-primary text-primary-foreground hover:bg-primary;
+            }
+            &[data-refused] {
+                @apply cursor-not-allowed text-muted-foreground line-through opacity-40 hover:bg-transparent;
+            }
+        }
+        .dp-months,
+        .dp-years {
+            @apply grid grid-cols-3 gap-1;
+        }
+        .dp-cell {
+            @apply rounded-md px-2 py-2.5 text-sm hover:bg-accent aria-pressed:bg-primary aria-pressed:text-primary-foreground;
+        }
+        .dp-summary {
+            @apply mt-3 border-t pt-2 text-xs text-muted-foreground empty:hidden;
+        }
+        .dp-times {
+            @apply flex max-h-64 flex-col gap-0.5 overflow-y-auto outline-none;
+        }
+        .dp-time {
+            @apply cursor-pointer rounded-sm px-3 py-1.5 text-sm tabular-nums hover:bg-accent aria-selected:font-semibold data-[active]:bg-accent data-[active]:text-accent-foreground;
+        }
+        .dp-popover[data-kind="time"] {
+            @apply min-w-32 p-1;
+        }
+
+        /* Phones: a bottom sheet over a backdrop, with the label as its title. */
+        @media (max-width: 639px) {
+            &[data-state="open"] .dp-backdrop {
+                @apply fixed inset-0 z-50 block bg-black/40;
+            }
+            .dp-popover {
+                @apply fixed inset-x-0 bottom-0 top-auto! z-50 m-0! w-auto min-w-0! max-w-none! rounded-t-2xl rounded-b-none border-x-0 border-b-0 p-3;
+                max-height: 88dvh;
+                padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+            }
+            .dp-sheet-head {
+                @apply flex items-center justify-between gap-2 px-1 pb-2;
+            }
+            .dp-sheet-title {
+                @apply truncate text-base font-medium;
+            }
+            .dp-sheet-close {
+                @apply -mr-1 inline-flex size-10 items-center justify-center rounded-md text-muted-foreground hover:bg-accent;
+            }
+            .dp-day {
+                @apply h-11 text-base;
+            }
+            .dp-nav {
+                @apply size-10;
+            }
+            .dp-time {
+                @apply py-3 text-base;
+            }
+        }
+    }
+}

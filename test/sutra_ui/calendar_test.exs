@@ -162,4 +162,30 @@ defmodule SutraUI.CalendarTest do
       assert html =~ "calendar-day-range-end"
     end
   end
+
+  describe "rules" do
+    test "a SutraUI.DateRules disables the days it refuses" do
+      assigns = %{
+        rules: %SutraUI.DateRules{
+          min: ~D[2026-06-10],
+          disabled_weekdays: [7],
+          disabled_dates: [~D[2026-06-15]]
+        }
+      }
+
+      html = rendered_to_string(~H|<Calendar.calendar year={2026} month={6} rules={@rules} />|)
+
+      disabled = fn day ->
+        html =~
+          ~r/<button[^>]*disabled[^>]*phx-value-date="#{day}"|<button[^>]*phx-value-date="#{day}"[^>]*disabled/
+      end
+
+      assert disabled.("2026-06-09")
+      refute disabled.("2026-06-10")
+      # 14 June 2026 is a Sunday
+      assert disabled.("2026-06-14")
+      assert disabled.("2026-06-15")
+      refute disabled.("2026-06-16")
+    end
+  end
 end
