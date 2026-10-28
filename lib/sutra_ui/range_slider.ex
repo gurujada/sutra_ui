@@ -253,7 +253,8 @@ defmodule SutraUI.RangeSlider do
       <div class="range-slider-track">
         <div
           class="range-slider-range"
-          style={"left: #{@percent_min}%; width: #{@percent_max - @percent_min}%"}
+          data-pct-start={SutraUI.Pct.pct(@percent_min)}
+          data-pct-width={SutraUI.Pct.pct(@percent_max - @percent_min)}
         >
         </div>
       </div>
@@ -267,7 +268,7 @@ defmodule SutraUI.RangeSlider do
         aria-valuemin={@min}
         aria-valuemax={@max}
         aria-valuenow={@value_min}
-        style={"left: #{@percent_min}%"}
+        data-pct={SutraUI.Pct.pct(@percent_min)}
       >
         <div :if={@tooltips} class="range-slider-tooltip">
           {@display_min}
@@ -283,7 +284,7 @@ defmodule SutraUI.RangeSlider do
         aria-valuemin={@min}
         aria-valuemax={@max}
         aria-valuenow={@value_max}
-        style={"left: #{@percent_max}%"}
+        data-pct={SutraUI.Pct.pct(@percent_max)}
       >
         <div :if={@tooltips} class="range-slider-tooltip">
           {@display_max}
@@ -297,7 +298,7 @@ defmodule SutraUI.RangeSlider do
         <div
           :for={pip <- @pips_data}
           class={["range-slider-pip", pip.large && "range-slider-pip-large"]}
-          style={"left: #{pip.percent}%"}
+          data-pct={SutraUI.Pct.pct(pip.percent)}
         >
           <div class="range-slider-pip-marker"></div>
           <div :if={pip.large} class="range-slider-pip-label">{pip.value}</div>

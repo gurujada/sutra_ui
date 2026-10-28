@@ -288,9 +288,10 @@ defmodule SutraUI.RangeSliderTest do
         })
 
       # 20% and 80% positioning
-      assert html =~ ~s(left: 20.0%)
-      assert html =~ ~s(left: 80.0%)
-      assert html =~ ~s(width: 60.0%)
+      assert html =~ ~s(data-pct-start="20")
+      assert html =~ ~s(data-pct="20")
+      assert html =~ ~s(data-pct="80")
+      assert html =~ ~s(data-pct-width="60")
     end
 
     test "thumbs are focusable when not disabled" do
@@ -359,11 +360,11 @@ defmodule SutraUI.RangeSliderTest do
       assert html =~ ~s(class="range-slider-pips")
       assert html =~ ~s(class="range-slider-pip range-slider-pip-large")
       # Default positions: 0, 25, 50, 75, 100
-      assert html =~ ~s(left: 0%)
-      assert html =~ ~s(left: 25%)
-      assert html =~ ~s(left: 50%)
-      assert html =~ ~s(left: 75%)
-      assert html =~ ~s(left: 100%)
+      assert html =~ ~s(data-pct="0")
+      assert html =~ ~s(data-pct="25")
+      assert html =~ ~s(data-pct="50")
+      assert html =~ ~s(data-pct="75")
+      assert html =~ ~s(data-pct="100")
       # Labels for values
       assert html =~ ~s(class="range-slider-pip-label")
       assert html =~ ">0<"
@@ -383,9 +384,9 @@ defmodule SutraUI.RangeSliderTest do
         })
 
       assert html =~ ~s(class="range-slider-pips")
-      assert html =~ ~s(left: 0%)
-      assert html =~ ~s(left: 50%)
-      assert html =~ ~s(left: 100%)
+      assert html =~ ~s(data-pct="0")
+      assert html =~ ~s(data-pct="50")
+      assert html =~ ~s(data-pct="100")
       assert html =~ ">0<"
       assert html =~ ">500<"
       assert html =~ ">1000<"
@@ -402,9 +403,9 @@ defmodule SutraUI.RangeSliderTest do
 
       assert html =~ ~s(class="range-slider-pips")
       # 3 pips at 0%, 50%, 100%
-      assert html =~ ~s(left: 0.0%)
-      assert html =~ ~s(left: 50.0%)
-      assert html =~ ~s(left: 100.0%)
+      assert html =~ ~s(data-pct="0")
+      assert html =~ ~s(data-pct="50")
+      assert html =~ ~s(data-pct="100")
     end
 
     test "renders pips with values mode" do
@@ -417,9 +418,9 @@ defmodule SutraUI.RangeSliderTest do
         })
 
       assert html =~ ~s(class="range-slider-pips")
-      assert html =~ ~s(left: 10.0%)
-      assert html =~ ~s(left: 30.0%)
-      assert html =~ ~s(left: 90.0%)
+      assert html =~ ~s(data-pct="10")
+      assert html =~ ~s(data-pct="30")
+      assert html =~ ~s(data-pct="90")
       assert html =~ ">10<"
       assert html =~ ">30<"
       assert html =~ ">90<"
@@ -437,12 +438,12 @@ defmodule SutraUI.RangeSliderTest do
 
       assert html =~ ~s(class="range-slider-pips")
       # Steps at 0, 2, 4, 6, 8, 10
-      assert html =~ ~s(left: 0.0%)
-      assert html =~ ~s(left: 20.0%)
-      assert html =~ ~s(left: 40.0%)
-      assert html =~ ~s(left: 60.0%)
-      assert html =~ ~s(left: 80.0%)
-      assert html =~ ~s(left: 100.0%)
+      assert html =~ ~s(data-pct="0")
+      assert html =~ ~s(data-pct="20")
+      assert html =~ ~s(data-pct="40")
+      assert html =~ ~s(data-pct="60")
+      assert html =~ ~s(data-pct="80")
+      assert html =~ ~s(data-pct="100")
     end
 
     test "does not render pips when pips is nil" do

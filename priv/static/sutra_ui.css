@@ -622,6 +622,7 @@
 
     .file-upload-entry-progress span {
         @apply block h-full rounded-full bg-primary transition-[width] duration-300;
+        width: var(--pct, 0%);
     }
 
     .file-upload-entry-remove {
@@ -1599,6 +1600,11 @@
             @apply p-4;
         }
     }
+    /* The trigger shows its closed or open content by aria-expanded (no inline style). */
+    .popover-trigger[aria-expanded="true"] .popover-trigger-closed,
+    .popover-trigger:not([aria-expanded="true"]) .popover-trigger-open {
+        @apply hidden;
+    }
     .popover-trigger {
         @apply inline-flex items-center cursor-pointer bg-transparent border-0 p-0 text-foreground;
     }
@@ -1653,7 +1659,7 @@
     .input[type="range"],
     input.slider[type="range"] {
         @apply appearance-none flex items-center p-0 outline-none disabled:pointer-events-none disabled:opacity-50;
-        --slider-value: 20%;
+        --slider-value: var(--pct, 20%);
 
         &:hover:not(:disabled),
         &:focus-visible:not(:disabled) {
@@ -2359,6 +2365,7 @@
     }
     .progress-indicator {
         @apply h-full bg-primary transition-all duration-300 ease-in-out rounded-full;
+        width: var(--pct, 0%);
     }
     .progress-sm {
         @apply h-1;
@@ -3226,6 +3233,8 @@
     }
     .range-slider-range {
         @apply absolute h-full bg-primary rounded-full pointer-events-none;
+        left: var(--pct-start, 0%);
+        width: var(--pct-width, 0%);
         /* Smooth transition for server updates */
         transition:
             left 150ms ease-out,
@@ -3233,6 +3242,7 @@
     }
     .range-slider-thumb {
         @apply absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-5 bg-background border-2 border-primary rounded-full shadow-md cursor-grab outline-none z-10;
+        left: var(--pct, 0%);
         /* Smooth transition for server updates, but not during drag */
         transition:
             left 150ms ease-out,
@@ -3292,6 +3302,7 @@
 
     .range-slider-pip {
         @apply absolute flex flex-col items-center;
+        left: var(--pct, 0%);
         transform: translateX(-50%);
     }
 
@@ -3457,4 +3468,312 @@
             transform: none;
         }
     }
+}
+
+/* Percentage tables: components render `data-pct` (0-100) instead of an inline `style`, so a
+   strict Content-Security-Policy (`style-src 'self'`) works. Generated, do not edit. */
+@layer components {
+    [data-pct="0"] { --pct: 0%; }
+    [data-pct="1"] { --pct: 1%; }
+    [data-pct="2"] { --pct: 2%; }
+    [data-pct="3"] { --pct: 3%; }
+    [data-pct="4"] { --pct: 4%; }
+    [data-pct="5"] { --pct: 5%; }
+    [data-pct="6"] { --pct: 6%; }
+    [data-pct="7"] { --pct: 7%; }
+    [data-pct="8"] { --pct: 8%; }
+    [data-pct="9"] { --pct: 9%; }
+    [data-pct="10"] { --pct: 10%; }
+    [data-pct="11"] { --pct: 11%; }
+    [data-pct="12"] { --pct: 12%; }
+    [data-pct="13"] { --pct: 13%; }
+    [data-pct="14"] { --pct: 14%; }
+    [data-pct="15"] { --pct: 15%; }
+    [data-pct="16"] { --pct: 16%; }
+    [data-pct="17"] { --pct: 17%; }
+    [data-pct="18"] { --pct: 18%; }
+    [data-pct="19"] { --pct: 19%; }
+    [data-pct="20"] { --pct: 20%; }
+    [data-pct="21"] { --pct: 21%; }
+    [data-pct="22"] { --pct: 22%; }
+    [data-pct="23"] { --pct: 23%; }
+    [data-pct="24"] { --pct: 24%; }
+    [data-pct="25"] { --pct: 25%; }
+    [data-pct="26"] { --pct: 26%; }
+    [data-pct="27"] { --pct: 27%; }
+    [data-pct="28"] { --pct: 28%; }
+    [data-pct="29"] { --pct: 29%; }
+    [data-pct="30"] { --pct: 30%; }
+    [data-pct="31"] { --pct: 31%; }
+    [data-pct="32"] { --pct: 32%; }
+    [data-pct="33"] { --pct: 33%; }
+    [data-pct="34"] { --pct: 34%; }
+    [data-pct="35"] { --pct: 35%; }
+    [data-pct="36"] { --pct: 36%; }
+    [data-pct="37"] { --pct: 37%; }
+    [data-pct="38"] { --pct: 38%; }
+    [data-pct="39"] { --pct: 39%; }
+    [data-pct="40"] { --pct: 40%; }
+    [data-pct="41"] { --pct: 41%; }
+    [data-pct="42"] { --pct: 42%; }
+    [data-pct="43"] { --pct: 43%; }
+    [data-pct="44"] { --pct: 44%; }
+    [data-pct="45"] { --pct: 45%; }
+    [data-pct="46"] { --pct: 46%; }
+    [data-pct="47"] { --pct: 47%; }
+    [data-pct="48"] { --pct: 48%; }
+    [data-pct="49"] { --pct: 49%; }
+    [data-pct="50"] { --pct: 50%; }
+    [data-pct="51"] { --pct: 51%; }
+    [data-pct="52"] { --pct: 52%; }
+    [data-pct="53"] { --pct: 53%; }
+    [data-pct="54"] { --pct: 54%; }
+    [data-pct="55"] { --pct: 55%; }
+    [data-pct="56"] { --pct: 56%; }
+    [data-pct="57"] { --pct: 57%; }
+    [data-pct="58"] { --pct: 58%; }
+    [data-pct="59"] { --pct: 59%; }
+    [data-pct="60"] { --pct: 60%; }
+    [data-pct="61"] { --pct: 61%; }
+    [data-pct="62"] { --pct: 62%; }
+    [data-pct="63"] { --pct: 63%; }
+    [data-pct="64"] { --pct: 64%; }
+    [data-pct="65"] { --pct: 65%; }
+    [data-pct="66"] { --pct: 66%; }
+    [data-pct="67"] { --pct: 67%; }
+    [data-pct="68"] { --pct: 68%; }
+    [data-pct="69"] { --pct: 69%; }
+    [data-pct="70"] { --pct: 70%; }
+    [data-pct="71"] { --pct: 71%; }
+    [data-pct="72"] { --pct: 72%; }
+    [data-pct="73"] { --pct: 73%; }
+    [data-pct="74"] { --pct: 74%; }
+    [data-pct="75"] { --pct: 75%; }
+    [data-pct="76"] { --pct: 76%; }
+    [data-pct="77"] { --pct: 77%; }
+    [data-pct="78"] { --pct: 78%; }
+    [data-pct="79"] { --pct: 79%; }
+    [data-pct="80"] { --pct: 80%; }
+    [data-pct="81"] { --pct: 81%; }
+    [data-pct="82"] { --pct: 82%; }
+    [data-pct="83"] { --pct: 83%; }
+    [data-pct="84"] { --pct: 84%; }
+    [data-pct="85"] { --pct: 85%; }
+    [data-pct="86"] { --pct: 86%; }
+    [data-pct="87"] { --pct: 87%; }
+    [data-pct="88"] { --pct: 88%; }
+    [data-pct="89"] { --pct: 89%; }
+    [data-pct="90"] { --pct: 90%; }
+    [data-pct="91"] { --pct: 91%; }
+    [data-pct="92"] { --pct: 92%; }
+    [data-pct="93"] { --pct: 93%; }
+    [data-pct="94"] { --pct: 94%; }
+    [data-pct="95"] { --pct: 95%; }
+    [data-pct="96"] { --pct: 96%; }
+    [data-pct="97"] { --pct: 97%; }
+    [data-pct="98"] { --pct: 98%; }
+    [data-pct="99"] { --pct: 99%; }
+    [data-pct="100"] { --pct: 100%; }
+    [data-pct-start="0"] { --pct-start: 0%; }
+    [data-pct-start="1"] { --pct-start: 1%; }
+    [data-pct-start="2"] { --pct-start: 2%; }
+    [data-pct-start="3"] { --pct-start: 3%; }
+    [data-pct-start="4"] { --pct-start: 4%; }
+    [data-pct-start="5"] { --pct-start: 5%; }
+    [data-pct-start="6"] { --pct-start: 6%; }
+    [data-pct-start="7"] { --pct-start: 7%; }
+    [data-pct-start="8"] { --pct-start: 8%; }
+    [data-pct-start="9"] { --pct-start: 9%; }
+    [data-pct-start="10"] { --pct-start: 10%; }
+    [data-pct-start="11"] { --pct-start: 11%; }
+    [data-pct-start="12"] { --pct-start: 12%; }
+    [data-pct-start="13"] { --pct-start: 13%; }
+    [data-pct-start="14"] { --pct-start: 14%; }
+    [data-pct-start="15"] { --pct-start: 15%; }
+    [data-pct-start="16"] { --pct-start: 16%; }
+    [data-pct-start="17"] { --pct-start: 17%; }
+    [data-pct-start="18"] { --pct-start: 18%; }
+    [data-pct-start="19"] { --pct-start: 19%; }
+    [data-pct-start="20"] { --pct-start: 20%; }
+    [data-pct-start="21"] { --pct-start: 21%; }
+    [data-pct-start="22"] { --pct-start: 22%; }
+    [data-pct-start="23"] { --pct-start: 23%; }
+    [data-pct-start="24"] { --pct-start: 24%; }
+    [data-pct-start="25"] { --pct-start: 25%; }
+    [data-pct-start="26"] { --pct-start: 26%; }
+    [data-pct-start="27"] { --pct-start: 27%; }
+    [data-pct-start="28"] { --pct-start: 28%; }
+    [data-pct-start="29"] { --pct-start: 29%; }
+    [data-pct-start="30"] { --pct-start: 30%; }
+    [data-pct-start="31"] { --pct-start: 31%; }
+    [data-pct-start="32"] { --pct-start: 32%; }
+    [data-pct-start="33"] { --pct-start: 33%; }
+    [data-pct-start="34"] { --pct-start: 34%; }
+    [data-pct-start="35"] { --pct-start: 35%; }
+    [data-pct-start="36"] { --pct-start: 36%; }
+    [data-pct-start="37"] { --pct-start: 37%; }
+    [data-pct-start="38"] { --pct-start: 38%; }
+    [data-pct-start="39"] { --pct-start: 39%; }
+    [data-pct-start="40"] { --pct-start: 40%; }
+    [data-pct-start="41"] { --pct-start: 41%; }
+    [data-pct-start="42"] { --pct-start: 42%; }
+    [data-pct-start="43"] { --pct-start: 43%; }
+    [data-pct-start="44"] { --pct-start: 44%; }
+    [data-pct-start="45"] { --pct-start: 45%; }
+    [data-pct-start="46"] { --pct-start: 46%; }
+    [data-pct-start="47"] { --pct-start: 47%; }
+    [data-pct-start="48"] { --pct-start: 48%; }
+    [data-pct-start="49"] { --pct-start: 49%; }
+    [data-pct-start="50"] { --pct-start: 50%; }
+    [data-pct-start="51"] { --pct-start: 51%; }
+    [data-pct-start="52"] { --pct-start: 52%; }
+    [data-pct-start="53"] { --pct-start: 53%; }
+    [data-pct-start="54"] { --pct-start: 54%; }
+    [data-pct-start="55"] { --pct-start: 55%; }
+    [data-pct-start="56"] { --pct-start: 56%; }
+    [data-pct-start="57"] { --pct-start: 57%; }
+    [data-pct-start="58"] { --pct-start: 58%; }
+    [data-pct-start="59"] { --pct-start: 59%; }
+    [data-pct-start="60"] { --pct-start: 60%; }
+    [data-pct-start="61"] { --pct-start: 61%; }
+    [data-pct-start="62"] { --pct-start: 62%; }
+    [data-pct-start="63"] { --pct-start: 63%; }
+    [data-pct-start="64"] { --pct-start: 64%; }
+    [data-pct-start="65"] { --pct-start: 65%; }
+    [data-pct-start="66"] { --pct-start: 66%; }
+    [data-pct-start="67"] { --pct-start: 67%; }
+    [data-pct-start="68"] { --pct-start: 68%; }
+    [data-pct-start="69"] { --pct-start: 69%; }
+    [data-pct-start="70"] { --pct-start: 70%; }
+    [data-pct-start="71"] { --pct-start: 71%; }
+    [data-pct-start="72"] { --pct-start: 72%; }
+    [data-pct-start="73"] { --pct-start: 73%; }
+    [data-pct-start="74"] { --pct-start: 74%; }
+    [data-pct-start="75"] { --pct-start: 75%; }
+    [data-pct-start="76"] { --pct-start: 76%; }
+    [data-pct-start="77"] { --pct-start: 77%; }
+    [data-pct-start="78"] { --pct-start: 78%; }
+    [data-pct-start="79"] { --pct-start: 79%; }
+    [data-pct-start="80"] { --pct-start: 80%; }
+    [data-pct-start="81"] { --pct-start: 81%; }
+    [data-pct-start="82"] { --pct-start: 82%; }
+    [data-pct-start="83"] { --pct-start: 83%; }
+    [data-pct-start="84"] { --pct-start: 84%; }
+    [data-pct-start="85"] { --pct-start: 85%; }
+    [data-pct-start="86"] { --pct-start: 86%; }
+    [data-pct-start="87"] { --pct-start: 87%; }
+    [data-pct-start="88"] { --pct-start: 88%; }
+    [data-pct-start="89"] { --pct-start: 89%; }
+    [data-pct-start="90"] { --pct-start: 90%; }
+    [data-pct-start="91"] { --pct-start: 91%; }
+    [data-pct-start="92"] { --pct-start: 92%; }
+    [data-pct-start="93"] { --pct-start: 93%; }
+    [data-pct-start="94"] { --pct-start: 94%; }
+    [data-pct-start="95"] { --pct-start: 95%; }
+    [data-pct-start="96"] { --pct-start: 96%; }
+    [data-pct-start="97"] { --pct-start: 97%; }
+    [data-pct-start="98"] { --pct-start: 98%; }
+    [data-pct-start="99"] { --pct-start: 99%; }
+    [data-pct-start="100"] { --pct-start: 100%; }
+    [data-pct-width="0"] { --pct-width: 0%; }
+    [data-pct-width="1"] { --pct-width: 1%; }
+    [data-pct-width="2"] { --pct-width: 2%; }
+    [data-pct-width="3"] { --pct-width: 3%; }
+    [data-pct-width="4"] { --pct-width: 4%; }
+    [data-pct-width="5"] { --pct-width: 5%; }
+    [data-pct-width="6"] { --pct-width: 6%; }
+    [data-pct-width="7"] { --pct-width: 7%; }
+    [data-pct-width="8"] { --pct-width: 8%; }
+    [data-pct-width="9"] { --pct-width: 9%; }
+    [data-pct-width="10"] { --pct-width: 10%; }
+    [data-pct-width="11"] { --pct-width: 11%; }
+    [data-pct-width="12"] { --pct-width: 12%; }
+    [data-pct-width="13"] { --pct-width: 13%; }
+    [data-pct-width="14"] { --pct-width: 14%; }
+    [data-pct-width="15"] { --pct-width: 15%; }
+    [data-pct-width="16"] { --pct-width: 16%; }
+    [data-pct-width="17"] { --pct-width: 17%; }
+    [data-pct-width="18"] { --pct-width: 18%; }
+    [data-pct-width="19"] { --pct-width: 19%; }
+    [data-pct-width="20"] { --pct-width: 20%; }
+    [data-pct-width="21"] { --pct-width: 21%; }
+    [data-pct-width="22"] { --pct-width: 22%; }
+    [data-pct-width="23"] { --pct-width: 23%; }
+    [data-pct-width="24"] { --pct-width: 24%; }
+    [data-pct-width="25"] { --pct-width: 25%; }
+    [data-pct-width="26"] { --pct-width: 26%; }
+    [data-pct-width="27"] { --pct-width: 27%; }
+    [data-pct-width="28"] { --pct-width: 28%; }
+    [data-pct-width="29"] { --pct-width: 29%; }
+    [data-pct-width="30"] { --pct-width: 30%; }
+    [data-pct-width="31"] { --pct-width: 31%; }
+    [data-pct-width="32"] { --pct-width: 32%; }
+    [data-pct-width="33"] { --pct-width: 33%; }
+    [data-pct-width="34"] { --pct-width: 34%; }
+    [data-pct-width="35"] { --pct-width: 35%; }
+    [data-pct-width="36"] { --pct-width: 36%; }
+    [data-pct-width="37"] { --pct-width: 37%; }
+    [data-pct-width="38"] { --pct-width: 38%; }
+    [data-pct-width="39"] { --pct-width: 39%; }
+    [data-pct-width="40"] { --pct-width: 40%; }
+    [data-pct-width="41"] { --pct-width: 41%; }
+    [data-pct-width="42"] { --pct-width: 42%; }
+    [data-pct-width="43"] { --pct-width: 43%; }
+    [data-pct-width="44"] { --pct-width: 44%; }
+    [data-pct-width="45"] { --pct-width: 45%; }
+    [data-pct-width="46"] { --pct-width: 46%; }
+    [data-pct-width="47"] { --pct-width: 47%; }
+    [data-pct-width="48"] { --pct-width: 48%; }
+    [data-pct-width="49"] { --pct-width: 49%; }
+    [data-pct-width="50"] { --pct-width: 50%; }
+    [data-pct-width="51"] { --pct-width: 51%; }
+    [data-pct-width="52"] { --pct-width: 52%; }
+    [data-pct-width="53"] { --pct-width: 53%; }
+    [data-pct-width="54"] { --pct-width: 54%; }
+    [data-pct-width="55"] { --pct-width: 55%; }
+    [data-pct-width="56"] { --pct-width: 56%; }
+    [data-pct-width="57"] { --pct-width: 57%; }
+    [data-pct-width="58"] { --pct-width: 58%; }
+    [data-pct-width="59"] { --pct-width: 59%; }
+    [data-pct-width="60"] { --pct-width: 60%; }
+    [data-pct-width="61"] { --pct-width: 61%; }
+    [data-pct-width="62"] { --pct-width: 62%; }
+    [data-pct-width="63"] { --pct-width: 63%; }
+    [data-pct-width="64"] { --pct-width: 64%; }
+    [data-pct-width="65"] { --pct-width: 65%; }
+    [data-pct-width="66"] { --pct-width: 66%; }
+    [data-pct-width="67"] { --pct-width: 67%; }
+    [data-pct-width="68"] { --pct-width: 68%; }
+    [data-pct-width="69"] { --pct-width: 69%; }
+    [data-pct-width="70"] { --pct-width: 70%; }
+    [data-pct-width="71"] { --pct-width: 71%; }
+    [data-pct-width="72"] { --pct-width: 72%; }
+    [data-pct-width="73"] { --pct-width: 73%; }
+    [data-pct-width="74"] { --pct-width: 74%; }
+    [data-pct-width="75"] { --pct-width: 75%; }
+    [data-pct-width="76"] { --pct-width: 76%; }
+    [data-pct-width="77"] { --pct-width: 77%; }
+    [data-pct-width="78"] { --pct-width: 78%; }
+    [data-pct-width="79"] { --pct-width: 79%; }
+    [data-pct-width="80"] { --pct-width: 80%; }
+    [data-pct-width="81"] { --pct-width: 81%; }
+    [data-pct-width="82"] { --pct-width: 82%; }
+    [data-pct-width="83"] { --pct-width: 83%; }
+    [data-pct-width="84"] { --pct-width: 84%; }
+    [data-pct-width="85"] { --pct-width: 85%; }
+    [data-pct-width="86"] { --pct-width: 86%; }
+    [data-pct-width="87"] { --pct-width: 87%; }
+    [data-pct-width="88"] { --pct-width: 88%; }
+    [data-pct-width="89"] { --pct-width: 89%; }
+    [data-pct-width="90"] { --pct-width: 90%; }
+    [data-pct-width="91"] { --pct-width: 91%; }
+    [data-pct-width="92"] { --pct-width: 92%; }
+    [data-pct-width="93"] { --pct-width: 93%; }
+    [data-pct-width="94"] { --pct-width: 94%; }
+    [data-pct-width="95"] { --pct-width: 95%; }
+    [data-pct-width="96"] { --pct-width: 96%; }
+    [data-pct-width="97"] { --pct-width: 97%; }
+    [data-pct-width="98"] { --pct-width: 98%; }
+    [data-pct-width="99"] { --pct-width: 99%; }
+    [data-pct-width="100"] { --pct-width: 100%; }
 }

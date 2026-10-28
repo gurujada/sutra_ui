@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **theme_switcher**: `theme_script/1` renders the pre-paint theme script for the root layout, with an optional `nonce`
-- **csp**: Every component that renders a runtime hook script accepts a `nonce` attribute, so apps can use a nonce-based `script-src` instead of `'unsafe-inline'`; the JavaScript Hooks guide lists what still needs inline styles
+- **csp**: Every component that renders a runtime hook script accepts a `nonce` attribute, so apps can use a nonce-based `script-src` instead of `'unsafe-inline'`
+- **csp**: No component renders a `style=` attribute any more, so `style-src 'self'` works. Run-time percentages (progress, slider, range slider, upload progress) render `data-pct` / `data-pct-start` / `data-pct-width` (integers 0-100) that the stylesheet maps to custom properties
 - **dropdown_menu**: `chevron` attribute (default `true`); `chevron={false}` omits the chevron for icon-only triggers, and an `sr-only` label beside an icon hides it in CSS
 - **avatar**: With an `id`, the image-failed fallback runs from a nonce-able hook instead of an inline `onerror` handler
 
@@ -18,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **flash**: The message renders in a flex `div` (was a `<p>`), so icons and the reconnect spinner stay on one row and block content is valid
 - **flash**: Only the close button dismisses; clicking elsewhere on the message (selecting text, following a link) no longer does
+
+- **skeleton**: `width` and `height` take Tailwind classes (`w-48`, `h-6`) instead of CSS values (`200px`)
+- **carousel**: `width`, `height` and `gap` take Tailwind classes (`w-96`, `h-72`, `gap-4`) instead of CSS values
+- **accordion**: Closed panels use the `hidden` class instead of an inline `display: none`
+- **popover**: The trigger swaps its closed and open content by `aria-expanded` in CSS instead of toggling inline styles
+- **slider, range_slider, progress, file_upload**: Positions and widths come from `data-pct` instead of inline styles (rounded to whole percents until the hook refines them)
 
 ### Fixed
 

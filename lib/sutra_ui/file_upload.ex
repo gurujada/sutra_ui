@@ -250,7 +250,7 @@ defmodule SutraUI.FileUpload do
               aria-valuemax="100"
               aria-label={"Uploading #{entry.client_name}"}
             >
-              <span style={"width: #{entry.progress}%"}></span>
+              <span data-pct={SutraUI.Pct.pct(entry.progress)}></span>
             </div>
             <p :for={error <- upload_errors(@upload, entry)} class="file-upload-entry-error">
               {entry_error(error)}

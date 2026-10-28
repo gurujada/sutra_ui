@@ -138,7 +138,7 @@ defmodule SutraUI.Slider do
       |> assign(:step, step)
       |> assign(:precision, precision)
       |> assign(:value, formatted_value)
-      |> assign(:percent, "#{percent}%")
+      |> assign(:percent_value, percent)
 
     ~H"""
     <input
@@ -155,7 +155,7 @@ defmodule SutraUI.Slider do
       aria-valuemax={@max}
       aria-valuenow={@value}
       data-precision={@precision}
-      style={"--slider-value: #{@percent}"}
+      data-pct={SutraUI.Pct.pct(@percent_value)}
       phx-hook=".Slider"
       {@rest}
     />

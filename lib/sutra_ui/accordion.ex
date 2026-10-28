@@ -111,10 +111,9 @@ defmodule SutraUI.Accordion do
           </h3>
           <div
             id={"accordion-content-#{item.value}"}
-            class="accordion-content"
+            class={["accordion-content", item.value not in @default_open && "hidden"]}
             role="region"
             aria-labelledby={"accordion-trigger-#{item.value}"}
-            style={if item.value not in @default_open, do: "display: none;", else: nil}
           >
             <div class="accordion-content-inner">
               {render_slot([item])}

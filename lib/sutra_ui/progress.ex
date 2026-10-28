@@ -56,7 +56,7 @@ defmodule SutraUI.Progress do
       aria-label={@aria_label}
       {@rest}
     >
-      <div class="progress-indicator" style={"width: #{@clamped_value}%"}></div>
+      <div class="progress-indicator" data-pct={SutraUI.Pct.pct(@clamped_value)}></div>
     </div>
     """
   end

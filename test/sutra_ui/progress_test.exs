@@ -29,7 +29,7 @@ defmodule SutraUI.ProgressTest do
       assert html =~ "progress-indicator"
     end
 
-    test "sets correct width style" do
+    test "sets the percentage for the stylesheet" do
       assigns = %{}
 
       html =
@@ -37,7 +37,7 @@ defmodule SutraUI.ProgressTest do
         <Progress.progress value={75} />
         """)
 
-      assert html =~ "width: 75%"
+      assert html =~ ~s(data-pct="75")
     end
   end
 
@@ -50,7 +50,7 @@ defmodule SutraUI.ProgressTest do
         <Progress.progress value={-10} />
         """)
 
-      assert html =~ "width: 0%"
+      assert html =~ ~s(data-pct="0")
       assert html =~ ~s(aria-valuenow="0")
     end
 
@@ -62,7 +62,7 @@ defmodule SutraUI.ProgressTest do
         <Progress.progress value={150} />
         """)
 
-      assert html =~ "width: 100%"
+      assert html =~ ~s(data-pct="100")
       assert html =~ ~s(aria-valuenow="100")
     end
   end

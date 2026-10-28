@@ -924,7 +924,7 @@ defmodule SutraUI.InputTest do
       assert html =~ ~s(<span class="label mb-1">Volume</span>)
     end
 
-    test "renders range with CSS custom property for visual fill" do
+    test "renders range with its fill percentage for the stylesheet" do
       assigns = %{}
 
       html =
@@ -932,7 +932,8 @@ defmodule SutraUI.InputTest do
         <Input.input type="range" name="volume" value="75" min="0" max="100" />
         """)
 
-      assert html =~ "--slider-value: 75"
+      assert html =~ ~s(data-pct="75")
+      refute html =~ "style="
     end
 
     test "renders range with colocated hook for live updates" do

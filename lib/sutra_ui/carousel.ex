@@ -19,7 +19,7 @@ defmodule SutraUI.Carousel do
         </:item>
       </.carousel>
 
-      <.carousel id="card-carousel" show_indicators={false} gap="1rem" loop>
+      <.carousel id="card-carousel" show_indicators={false} gap="gap-4" loop>
         <:item>
           <div class="card">Card 1</div>
         </:item>
@@ -28,7 +28,7 @@ defmodule SutraUI.Carousel do
         </:item>
       </.carousel>
 
-      <.carousel id="sized-carousel" width="400px" height="300px">
+      <.carousel id="sized-carousel" width="w-96" height="h-72">
         <:item>Slide 1</:item>
         <:item>Slide 2</:item>
       </.carousel>
@@ -60,16 +60,16 @@ defmodule SutraUI.Carousel do
   attr(:show_arrows, :boolean, default: true, doc: "Whether to show prev/next arrow buttons")
   attr(:loop, :boolean, default: false, doc: "Whether to loop back to first slide after last")
   attr(:item_class, :string, default: nil, doc: "Additional CSS classes for each carousel item")
-  attr(:gap, :string, default: nil, doc: "Gap between items (CSS value, e.g., '1rem', '16px')")
+  attr(:gap, :string, default: nil, doc: "Tailwind gap class between items (e.g., 'gap-4')")
 
   attr(:width, :string,
     default: nil,
-    doc: "Width of the carousel (CSS value, e.g., '400px', '100%')"
+    doc: "Tailwind width class for the carousel (e.g., 'w-96', 'w-1/2')"
   )
 
   attr(:height, :string,
     default: nil,
-    doc: "Height of the carousel (CSS value, e.g., '300px', 'auto')"
+    doc: "Tailwind height class for the carousel (e.g., 'h-72')"
   )
 
   attr(:class, :string, default: nil, doc: "Additional CSS classes for the carousel container")
@@ -86,28 +86,16 @@ defmodule SutraUI.Carousel do
     item_count = length(assigns.item)
     assigns = assign(assigns, :item_count, item_count)
 
-    style =
-      [
-        assigns.width && "width: #{assigns.width}",
-        assigns.height && "height: #{assigns.height}"
-      ]
-      |> Enum.filter(& &1)
-      |> Enum.join("; ")
-
-    assigns = assign(assigns, :container_style, if(style != "", do: style, else: nil))
-
     ~H"""
     <div
       id={@id}
-      class={["carousel", @class]}
+      class={["carousel", @width, @height, @class]}
       phx-hook=".Carousel"
       data-loop={@loop}
-      style={@container_style}
       {@rest}
     >
       <div
-        class="carousel-viewport"
-        style={@gap && "gap: #{@gap};"}
+        class={["carousel-viewport", @gap]}
         tabindex="0"
         role="region"
         aria-label="Carousel"

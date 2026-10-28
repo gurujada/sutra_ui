@@ -83,21 +83,25 @@ Generate a nonce per request in a plug, put it in `conn.assigns`, send the same 
 With that, an app can use:
 
 ```
-script-src 'self' 'nonce-<nonce>'; style-src 'self'; style-src-attr 'unsafe-inline'
+script-src 'self' 'nonce-<nonce>'; style-src 'self'
 ```
 
-`'unsafe-inline'` is not needed in `script-src`. What Sutra UI renders that a CSP sees:
+Neither `script-src` nor `style-src` needs `'unsafe-inline'`. What Sutra UI renders that a CSP sees:
 
 | Output | Where | Policy needed |
 |--------|-------|---------------|
 | Runtime hook `<script>` | every component with a runtime hook (`nonce` attribute) | `script-src` nonce |
 | Pre-paint theme script | `theme_script/1` (`nonce` attribute) | `script-src` nonce |
 | `onerror=` handler | `avatar` without an `id` | `script-src-attr 'unsafe-inline'`; pass an `id` instead |
-| `style=` attributes | `accordion`, `carousel`, `file_upload`, `popover`, `progress`, `range_slider`, `skeleton`, `slider` | `style-src-attr 'unsafe-inline'` |
 
-Inline `style=` attributes carry computed values (progress width, slider position, collapsed
-state) and are still needed; the hooks themselves set styles through the DOM, which a CSP allows.
-Extracted hooks (`dialog`, `response`) are bundled into your JavaScript and need no nonce.
+No component renders a `style=` attribute. Run-time numbers (progress, slider and range slider
+positions, upload progress) are rendered as `data-pct` attributes (an integer 0-100) that the
+stylesheet maps to a `--pct` custom property; hooks that move things while you drag set styles
+through the DOM (`el.style.left = ...`), which a CSP allows. Collapsed accordion panels use the
+`hidden` class, and the popover trigger shows its open or closed content by `aria-expanded`.
+`skeleton` (`width`, `height`) and `carousel` (`width`, `height`, `gap`) take Tailwind classes,
+not CSS values. Extracted hooks (`dialog`, `response`) are bundled into your JavaScript and need
+no nonce.
 
 ## The Hook Name Convention
 

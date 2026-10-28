@@ -225,21 +225,21 @@ defmodule SutraUI.CarouselTest do
   end
 
   describe "carousel/1 gap" do
-    test "applies gap style when specified" do
+    test "applies the gap class when specified" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <Carousel.carousel id="test-carousel" gap="1rem">
+        <Carousel.carousel id="test-carousel" gap="gap-4">
           <:item>Item 1</:item>
           <:item>Item 2</:item>
         </Carousel.carousel>
         """)
 
-      assert html =~ "gap: 1rem"
+      assert html =~ ~r/class="carousel-viewport gap-4"/
     end
 
-    test "no gap style when not specified" do
+    test "no gap class when not specified" do
       assigns = %{}
 
       html =
@@ -249,7 +249,7 @@ defmodule SutraUI.CarouselTest do
         </Carousel.carousel>
         """)
 
-      refute html =~ "gap:"
+      refute html =~ "gap-"
     end
   end
 
