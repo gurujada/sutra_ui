@@ -30,7 +30,8 @@ defmodule SutraUI.FitTest do
 
   test "fit() positions through the CSSOM only" do
     block = fit_block("lib/sutra_ui/popover.ex")
-    assert block =~ "content.style.marginLeft"
+    assert block =~ "content.style.left"
+    assert block =~ "content.style.position = 'fixed'"
     refute block =~ ~r/setAttribute\(\s*['"]style['"]/
   end
 
@@ -38,6 +39,10 @@ defmodule SutraUI.FitTest do
     for file <- ["lib/sutra_ui/popover.ex", "lib/sutra_ui/dropdown_menu.ex"] do
       source = File.read!(file)
       assert source =~ "MutationObserver"
+      # the card is fixed, so it follows scrolling (page and ancestors) while open
+      assert source =~ "addEventListener('scroll'"
+      assert source =~ "capture: true"
+      assert source =~ "refit()"
       assert source =~ "attributeFilter: ['aria-hidden']"
       assert source =~ "addEventListener('resize'"
       assert source =~ "disconnect()"

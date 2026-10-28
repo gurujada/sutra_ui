@@ -1345,8 +1345,11 @@
                 @apply opacity-100;
             }
 
+            /* `scale: none`, not `scale-100`: a transform on the panel would make it the
+               containing block of fixed cards (select, popover, dropdown) and clip them. */
             .dialog-panel {
-                @apply opacity-100 scale-100;
+                @apply opacity-100;
+                scale: none;
             }
         }
 

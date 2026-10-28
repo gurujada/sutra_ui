@@ -317,6 +317,7 @@ export const Select = {
     this.query = "";
     if (this.search) this.search.value = "";
     this.show();
+    if (!this.isOpen) return;
     this.filter();
 
     const selected = this.options.find(
@@ -347,7 +348,7 @@ export const Select = {
     }
   },
 
-  /** Fit under (or over) the field on a screen; a bottom sheet on a phone. */
+  /** Fixed under (or over) the field on a screen, following it; a bottom sheet on a phone. */
   place() {
     if (!this.isOpen) return;
     if (this.isSheet()) {
@@ -355,7 +356,11 @@ export const Select = {
       this.lock();
     } else {
       this.unlock();
-      fit(this.popover, this.trigger, "bottom");
+      const scrolled = this.listbox.scrollTop;
+      const visible = fit(this.popover, this.trigger, "bottom");
+      this.listbox.scrollTop = scrolled;
+      // The field has scrolled out of view (a dialog body, the page): the list goes with it.
+      if (!visible) this.close(false);
     }
   },
 
@@ -431,6 +436,7 @@ export const Select = {
       this.setActive(first, false);
       this.listbox.scrollTop = 0;
     }
+    this.place(); // the list's height changed
   },
 
   // ---- events -------------------------------------------------------------------------
@@ -466,6 +472,9 @@ export const Select = {
   },
 
   input(e) {
+    // The real <select> changed on its own (the browser's validation focused it, a script set
+    // it): the trigger follows.
+    if (e.target === this.select) return this.sync();
     if (e.target !== this.search) return;
     // The search box is not a field of the form: its events stop here.
     e.stopPropagation();
