@@ -237,6 +237,7 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `switch/1` - Toggle switch
 - `radio_group/1`, `radio/1` - Radio button groups
 - `simple_form/1` - Styled plain form shell; use Phoenix `<.form class="form">` for changeset-backed LiveView forms
+- `date_picker/1`, `date_range_picker/1`, `time_picker/1`, `datetime_picker/1` - Segmented field + calendar (JS hook, extracted); `rules={%SutraUI.DateRules{}}` for min/max/disabled days and the same checks on the server (`DateRules.validate/4`); datetime needs `zone`; segment order from `config :sutra_ui, locale:` or `locale=` (default day-month-year); tests `import SutraUI.Test` (`pick/4`)
 - `select/1` - Form select: a real `<select>` plus SutraUI's list (JS hook, extracted; bottom sheet on phones). Use `options`/`field`; `select_option` only for custom option content
 - `slider/1` - Range slider (JS hook)
 - `range_slider/1` - Dual-handle range slider (JS hook)

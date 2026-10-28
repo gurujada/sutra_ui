@@ -46,7 +46,8 @@ defmodule SutraUI.MixProject do
       {:esbuild, "~> 0.10", only: :dev, runtime: false},
       {:tz, "~> 0.28", only: :test},
       {:lazy_html, "~> 0.1", only: :test},
-      {:jason, "~> 1.0", optional: true}
+      {:jason, "~> 1.0", optional: true},
+      {:ecto, "~> 3.12", optional: true}
     ]
   end
 

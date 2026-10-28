@@ -145,6 +145,7 @@ defmodule SutraUI do
   | `SutraUI.Separator` | Visual content dividers |
   | `SutraUI.Marquee` | Scrolling content banners |
   | `SutraUI.Calendar` | Monthly calendar grid |
+  | `SutraUI.DatePicker` | Date, range, time and datetime pickers (hook) |
   | `SutraUI.Timeline` | Chronological event lists |
 
   ### AI
@@ -293,6 +294,7 @@ defmodule SutraUI do
       import SutraUI.Marquee
       import SutraUI.HoverCard
       import SutraUI.Calendar
+      import SutraUI.DatePicker
       import SutraUI.Timeline
       import SutraUI.ContextMenu
 

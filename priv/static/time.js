@@ -1,6 +1,40 @@
-/* sutra_ui time source-hash:62a5124c5e40775c (built by mix assets.build; do not edit) */
+/* sutra_ui time source-hash:ef481083dae4ed69 (built by mix assets.build; do not edit) */
 
 // assets/js/time/index.js
+var MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+];
+var WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function formatDay(iso, format = "date") {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? "");
+  if (!m) return "";
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const month = MONTHS[mo - 1];
+  const weekday = WEEKDAYS[new Date(Date.UTC(y, mo - 1, d)).getUTCDay()];
+  switch (format) {
+    case "short":
+      return `${d} ${month.slice(0, 3)}`;
+    case "long":
+      return `${d} ${month} ${y}`;
+    case "day":
+      return `${weekday} ${d} ${month.slice(0, 3)}`;
+    case "month":
+      return `${month} ${y}`;
+    default:
+      return `${d} ${month.slice(0, 3)} ${y}`;
+  }
+}
 var MINUTE = 60;
 var HOUR = 3600;
 var DAY = 86400;
@@ -168,6 +202,7 @@ export {
   SLOW_MS,
   Ticker,
   applyViewerHint,
+  formatDay,
   pageLocale,
   refreshRelative,
   relativeWords,

@@ -7,6 +7,35 @@
 
 /** @typedef {"long" | "short"} Style */
 
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/**
+ * A calendar day in the same words as `SutraUI.Time.format/3`: "5 Oct 2026" (`date`),
+ * "5 Oct" (`short`), "5 October 2026" (`long`), "Mon 5 Oct" (`day`), "October 2026" (`month`).
+ * English month names, like the server's, whatever the page's language.
+ * @param {string} iso "2026-10-05"
+ * @param {"date" | "short" | "long" | "day" | "month"} [format]
+ * @returns {string}
+ */
+export function formatDay(iso, format = "date") {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? "");
+  if (!m) return "";
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const month = MONTHS[mo - 1];
+  const weekday = WEEKDAYS[new Date(Date.UTC(y, mo - 1, d)).getUTCDay()];
+  switch (format) {
+    case "short": return `${d} ${month.slice(0, 3)}`;
+    case "long": return `${d} ${month} ${y}`;
+    case "day": return `${weekday} ${d} ${month.slice(0, 3)}`;
+    case "month": return `${month} ${y}`;
+    default: return `${d} ${month.slice(0, 3)} ${y}`;
+  }
+}
+
 const MINUTE = 60;
 const HOUR = 3600;
 const DAY = 86400;

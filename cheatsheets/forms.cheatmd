@@ -253,6 +253,26 @@ A real `<select>` underneath, SutraUI's list on top (a bottom sheet on phones).
 </.select>
 ```
 
+### Date and time pickers
+
+```heex
+<.date_picker field={@form[:due]} label="Due" rules={%SutraUI.DateRules{min: :today, disabled_weekdays: [7]}} />
+<.date_range_picker field={@form[:period]} label="Period" rules={%SutraUI.DateRules{max_length: 14}} preset_key />
+<.time_picker field={@form[:opens]} label="Opens" step={15} />
+<.datetime_picker field={@form[:starts_at]} label="Starts" zone="Asia/Kolkata" />
+```
+
+```elixir
+# the server refuses what the calendar greys out
+changeset |> SutraUI.DateRules.validate(:due, rules, zone: "Asia/Kolkata")
+
+# a datetime posts "2027-03-15T09:00:00+05:30"
+{:ok, dt} = SutraUI.Time.parse_datetime(params["starts_at"], "Asia/Kolkata")
+
+# in a test
+pick(view, "task[due]", ~D[2027-03-15], form: "#task-form")
+```
+
 ### Live Select (Async Search)
 
 ```heex

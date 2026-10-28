@@ -45,6 +45,8 @@ defmodule SutraUI.Calendar do
   * `range_end` - Range end date (only used in `mode="range"`).
   * `mode` - Selection mode: `single` or `range`. Defaults to `single`.
   * `disabled_dates` - List of `Date` structs or ISO strings to disable.
+  * `rules` - A `SutraUI.DateRules` (or keyword list): its min, max, disabled dates and weekdays
+    disable days, the same rules `SutraUI.DateRules.validate/4` checks on the server.
   * `week_start` - First weekday, where `0` is Sunday and `6` is Saturday.
     Defaults to `0`.
   * `select_event` - LiveView event emitted on date click with `phx-value-date`.
@@ -99,6 +101,11 @@ defmodule SutraUI.Calendar do
   attr(:mode, :string, default: "single", values: ~w(single range), doc: "Selection mode")
   attr(:disabled_dates, :list, default: [], doc: "List of disabled Date structs or ISO strings")
 
+  attr(:rules, :any,
+    default: nil,
+    doc: "A `SutraUI.DateRules` that disables days (min, max, dates, weekdays)"
+  )
+
   attr(:week_start, :integer,
     default: 0,
     values: [0, 1, 2, 3, 4, 5, 6],
@@ -152,7 +159,10 @@ defmodule SutraUI.Calendar do
       |> assign(:prev, prev)
       |> assign(:next, next)
       |> assign(:nav_event, nav_event)
-      |> assign(:disabled_set, MapSet.new(disabled, fn d -> Date.to_iso8601(d) end))
+      |> assign(
+        :disabled_set,
+        MapSet.new(disabled ++ rule_disabled(assigns.rules, weeks), fn d -> Date.to_iso8601(d) end)
+      )
 
     ~H"""
     <div
@@ -253,6 +263,19 @@ defmodule SutraUI.Calendar do
       </div>
     </div>
     """
+  end
+
+  # The days of the grid that the rules refuse, so the same struct that validates on the server
+  # disables them here.
+  defp rule_disabled(nil, _weeks), do: []
+
+  defp rule_disabled(rules, weeks) do
+    rules = SutraUI.DateRules.new(rules)
+    today = Date.utc_today()
+
+    weeks
+    |> List.flatten()
+    |> Enum.reject(&(SutraUI.DateRules.check_date(rules, &1, today) == :ok))
   end
 
   defp normalize_date(nil), do: nil

@@ -177,6 +177,88 @@ defmodule SutraUI.Time do
   end
 
   @doc """
+  A wall-clock time (what a person types) as an instant in `zone`.
+
+  Clock changes make some wall times ambiguous, and they are reported, never guessed:
+
+    * `{:ok, datetime}` - exactly one instant
+    * `{:ambiguous, first, second}` - the hour repeats when clocks go back (1:30 happens
+      twice); `first` is the earlier instant
+    * `{:gap, before, after}` - the time does not exist (clocks jumped forward); the instants
+      either side of the gap
+
+  Raises like `to_zone/3` for an unknown zone or a missing time zone database.
+  """
+  @spec from_wall(NaiveDateTime.t(), String.t(), keyword()) ::
+          {:ok, DateTime.t()}
+          | {:ambiguous, DateTime.t(), DateTime.t()}
+          | {:gap, DateTime.t(), DateTime.t()}
+  def from_wall(%NaiveDateTime{} = wall, zone, opts \\ []) do
+    db = Keyword.get_lazy(opts, :time_zone_database, &Calendar.get_time_zone_database/0)
+
+    case DateTime.from_naive(wall, zone, db) do
+      {:ok, _} = ok ->
+        ok
+
+      {:ambiguous, _, _} = ambiguous ->
+        ambiguous
+
+      {:gap, _, _} = gap ->
+        gap
+
+      {:error, :utc_only_time_zone_database} ->
+        raise_db(zone)
+
+      {:error, :time_zone_not_found} ->
+        raise ArgumentError, "unknown time zone #{inspect(zone)}"
+
+      {:error, reason} ->
+        raise ArgumentError, "cannot read a time in #{inspect(zone)}: #{inspect(reason)}"
+    end
+  end
+
+  defp raise_db(zone),
+    do:
+      raise(
+        ArgumentError,
+        "reading a time in #{inspect(zone)} needs a time zone database, and none is configured " <>
+          "(see the Setup section of the SutraUI.Time docs)"
+      )
+
+  @doc """
+  Reads what a datetime picker posts, in `zone`: an ISO 8601 string with an offset
+  (`"2027-03-15T09:00:00+05:30"`) or a wall time with none (`"2027-03-15T09:00"`, what the
+  browser's own control posts without JavaScript).
+
+  Returns what `from_wall/3` returns, or `{:error, :invalid}`. A string with an offset is
+  always exact, so it is the way a repeated hour is told apart.
+  """
+  @spec parse_datetime(String.t() | nil, String.t(), keyword()) ::
+          {:ok, DateTime.t()}
+          | {:ambiguous, DateTime.t(), DateTime.t()}
+          | {:gap, DateTime.t(), DateTime.t()}
+          | {:error, :invalid}
+  def parse_datetime(string, zone, opts \\ [])
+  def parse_datetime(nil, _zone, _opts), do: {:error, :invalid}
+  def parse_datetime("", _zone, _opts), do: {:error, :invalid}
+
+  def parse_datetime(string, zone, opts) when is_binary(string) do
+    case DateTime.from_iso8601(string) do
+      {:ok, dt, _offset} ->
+        {:ok, to_zone(dt, zone, opts)}
+
+      _ ->
+        case NaiveDateTime.from_iso8601(wall_seconds(string)) do
+          {:ok, naive} -> from_wall(naive, zone, opts)
+          _ -> {:error, :invalid}
+        end
+    end
+  end
+
+  defp wall_seconds(string),
+    do: if(Regex.match?(~r/T\d\d:\d\d$/, string), do: string <> ":00", else: string)
+
+  @doc """
   How long ago `at` was, in words, as of `now` (negative: in the future).
 
   `:long` gives "now", "5 minutes ago", "3 hours ago", "2 days ago", "in 2 days"; `:short`
