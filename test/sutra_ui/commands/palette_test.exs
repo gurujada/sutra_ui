@@ -191,6 +191,25 @@ defmodule SutraUI.Commands.PaletteTest do
     end
   end
 
+  describe "focus return" do
+    # The palette closes through the dialog's hide event, which the dialog hook answers by
+    # focusing what opened it; the palette's browser module no longer does this itself.
+    test "is the dialog hook's job on every hide" do
+      html = render_palette(%{actions: actions(), show: true})
+
+      assert attr(html, "#pal-dialog", "phx-hook") == ["SutraUI.Dialog.Dialog"]
+
+      assert %{ops: [["dispatch", %{event: "phx:hide-dialog", to: "#pal-dialog"}]]} =
+               Palette.hide_palette("pal")
+
+      dialog_source = File.read!("lib/sutra_ui/dialog.ex")
+      assert dialog_source =~ "this.trigger.focus()"
+      assert dialog_source =~ ~s|addEventListener("phx:hide-dialog"|
+
+      refute File.read!("assets/js/commands/index.js") =~ "trigger.focus()"
+    end
+  end
+
   describe "show_palette/2 and hide_palette/2" do
     test "target the palette's dialog" do
       assert %Phoenix.LiveView.JS{

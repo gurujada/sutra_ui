@@ -36,12 +36,12 @@ defmodule SutraUI.Skeleton do
   attr(:width, :string,
     default: nil,
     doc:
-      "Tailwind width class (e.g., 'w-48', 'w-1/2'). A CSS length ('200px') still works as an inline style but is deprecated and goes away in 0.5; it needs `style-src 'unsafe-inline'`"
+      "Tailwind width class (e.g., 'w-48', 'w-1/2'). CSS lengths ('200px') are no longer accepted (they were an inline style): use a class, e.g. 'w-[200px]'"
   )
 
   attr(:height, :string,
     default: nil,
-    doc: "Tailwind height class (e.g., 'h-6'). A CSS length ('24px') is deprecated like `width`"
+    doc: "Tailwind height class (e.g., 'h-6'); not a CSS length, like `width`"
   )
 
   attr(:radius, :string,
@@ -60,8 +60,7 @@ defmodule SutraUI.Skeleton do
   def skeleton(assigns) do
     ~H"""
     <div
-      class={["skeleton", radius_class(@radius), SutraUI.Dimension.classes([@width, @height]), @class]}
-      {SutraUI.Dimension.style_attr(width: @width, height: @height)}
+      class={["skeleton", radius_class(@radius), @width, @height, @class]}
       role="status"
       aria-label="Loading..."
       {@rest}

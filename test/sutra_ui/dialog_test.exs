@@ -408,4 +408,28 @@ defmodule SutraUI.DialogTest do
       assert attribute(html, "#d", "data-initial-focus") == "[data-keep]"
     end
   end
+
+  describe "dialog/1 across parent re-renders" do
+    import SutraUI.HTMLHelpers
+
+    # The open state lives on the client (a class the hook sets); a parent re-render resets
+    # the class attribute, so the hook puts it back unless the server itself changed `show`.
+    # Proven in Chromium (tmp/proof/p6): open, re-render the parent, still open, focus returns.
+    test "renders the server's show state for the hook to compare" do
+      assigns = %{}
+
+      closed = rendered_to_string(~H'<Dialog.dialog id="d"><:title>T</:title>x</Dialog.dialog>')
+
+      open =
+        rendered_to_string(~H'<Dialog.dialog id="d" show><:title>T</:title>x</Dialog.dialog>')
+
+      assert attribute(closed, "#d", "data-show") == "false"
+      assert attribute(open, "#d", "data-show") == "true"
+    end
+
+    test "the hook restores is-open after a patch" do
+      source = File.read!("lib/sutra_ui/dialog.ex")
+      assert source =~ ~s|if (this.opened) this.el.classList.add("is-open")|
+    end
+  end
 end

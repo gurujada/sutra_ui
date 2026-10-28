@@ -6,17 +6,20 @@ defmodule SutraUI.FilterBarTest do
 
   alias SutraUI.FilterBar
 
+  # filter_bar is deprecated; the tests call it dynamically so they compile without warnings.
+  defp bar(assigns), do: apply(FilterBar, :filter_bar, [assigns])
+
   describe "filter_bar/1 rendering" do
     test "renders filter bar container" do
       assigns = %{}
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter">
+        <.bar on_change="filter">
           <:filter>
             <input type="text" name="search" />
           </:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar"
@@ -28,7 +31,7 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter">
+        <.bar on_change="filter">
           <:filter>
             <input type="text" name="search" />
           </:filter>
@@ -37,7 +40,7 @@ defmodule SutraUI.FilterBarTest do
               <option>All</option>
             </select>
           </:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ ~s(name="search")
@@ -51,11 +54,11 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" on_clear="clear" show_clear>
+        <.bar on_change="filter" on_clear="clear" show_clear>
           <:filter>
             <input type="text" name="search" />
           </:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar-clear"
@@ -68,11 +71,11 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" on_clear="clear" show_clear={false}>
+        <.bar on_change="filter" on_clear="clear" show_clear={false}>
           <:filter>
             <input type="text" name="search" />
           </:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       refute html =~ "filter-bar-clear"
@@ -83,11 +86,11 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" show_clear>
+        <.bar on_change="filter" show_clear>
           <:filter>
             <input type="text" name="search" />
           </:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       refute html =~ "filter-bar-clear"
@@ -100,9 +103,9 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" class="my-custom-class">
+        <.bar on_change="filter" class="my-custom-class">
           <:filter><input name="a" /></:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar"
@@ -116,9 +119,9 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter">
+        <.bar on_change="filter">
           <:filter><input name="a" /></:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar-cols-3"
@@ -129,9 +132,9 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" cols={2}>
+        <.bar on_change="filter" cols={2}>
           <:filter><input name="a" /></:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar-cols-2"
@@ -142,9 +145,9 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" cols={4}>
+        <.bar on_change="filter" cols={4}>
           <:filter><input name="a" /></:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar-cols-4"
@@ -155,9 +158,9 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" cols={1}>
+        <.bar on_change="filter" cols={1}>
           <:filter><input name="a" /></:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar-cols-1"
@@ -168,9 +171,9 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" cols={5}>
+        <.bar on_change="filter" cols={5}>
           <:filter><input name="a" /></:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar-cols-5"
@@ -181,9 +184,9 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" cols={6}>
+        <.bar on_change="filter" cols={6}>
           <:filter><input name="a" /></:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar-cols-6"
@@ -194,9 +197,9 @@ defmodule SutraUI.FilterBarTest do
 
       html =
         rendered_to_string(~H"""
-        <FilterBar.filter_bar on_change="filter" cols={99}>
+        <.bar on_change="filter" cols={99}>
           <:filter><input name="a" /></:filter>
-        </FilterBar.filter_bar>
+        </.bar>
         """)
 
       assert html =~ "filter-bar-cols-3"

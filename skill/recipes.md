@@ -16,7 +16,7 @@ conn
 |> assign(:csp_nonce, nonce)
 |> put_resp_header(
   "content-security-policy",
-  "script-src 'self' 'nonce-#{nonce}'; style-src 'self'"
+  "script-src 'self' 'nonce-#{nonce}'; style-src 'self'; img-src 'self' data:"
 )
 ```
 

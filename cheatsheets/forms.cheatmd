@@ -404,7 +404,9 @@ end
 ## Filter Forms
 {: .col-2}
 
-### Filter Bar
+### Filter Bar (deprecated)
+
+Deprecated, removed in 0.6: filtering moves to LiveTable 0.5 (filter chips).
 
 ```heex
 <.filter_bar on_change="filter" on_clear="reset_filters" show_clear={@has_filters}>

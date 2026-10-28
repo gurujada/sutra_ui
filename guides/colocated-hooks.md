@@ -130,25 +130,22 @@ Generate a nonce per request in a plug, put it in `conn.assigns`, send the same 
 With that, an app can use:
 
 ```
-script-src 'self' 'nonce-<nonce>'; style-src 'self'
+script-src 'self' 'nonce-<nonce>'; style-src 'self'; img-src 'self' data:
 ```
 
-Neither `script-src` nor `style-src` needs `'unsafe-inline'`. What Sutra UI renders that a CSP sees:
+Neither `script-src` nor `style-src` needs `'unsafe-inline'`. `img-src` needs `data:` because the icons Sutra's stylesheet draws (select chevrons, checkmarks and the like) are data-URI CSS images. What Sutra UI renders that a CSP sees:
 
 | Output | Where | Policy needed |
 |--------|-------|---------------|
 | Runtime hook `<script>` | every component with a runtime hook (`nonce` attribute) | `script-src` nonce |
 | Pre-paint theme script | `theme_script/1` (`nonce` attribute) | `script-src` nonce |
-| `onerror=` handler | `avatar` without an `id` | `script-src-attr 'unsafe-inline'`; pass an `id` instead |
 
-No component renders a `style=` attribute (apart from that deprecated form). Run-time numbers (progress, slider and range slider
+No component renders a `style=` attribute. Run-time numbers (progress, slider and range slider
 positions, upload progress) are rendered as `data-pct` attributes (an integer 0-100) that the
 stylesheet maps to a `--pct` custom property; hooks that move things while you drag set styles
 through the DOM (`el.style.left = ...`), which a CSP allows. Collapsed accordion panels use the
 `hidden` class, and the popover trigger shows its open or closed content by `aria-expanded`.
-`skeleton` (`width`, `height`) and `carousel` (`width`, `height`, `gap`) take Tailwind classes. Passing
-a CSS length (`"200px"`, `"1rem"`, `"auto"`) still renders an inline style in 0.4.x, which
-`style-src 'self'` blocks: that form is deprecated and goes away in 0.5. Extracted hooks (`dialog`, `response`) are bundled into your JavaScript and need
+`skeleton` (`width`, `height`) and `carousel` (`width`, `height`, `gap`) take Tailwind classes only; the CSS-length form (`"200px"`) was removed in 0.5. Extracted hooks (`dialog`, `response`) are bundled into your JavaScript and need
 no nonce.
 
 ## The Hook Name Convention

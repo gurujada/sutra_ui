@@ -273,8 +273,8 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `confirm_dialog/1`, `confirm_host/1` - Confirmations; `confirm_host` makes `data-confirm` use the styled dialog, never `window.confirm()`
 
 ### Advanced UI
-- `avatar/1` - User avatars with fallback
-- `avatar_group/1` - Stacked avatars with "+n" beyond `max`; the group is named by `label` and every name
+- `avatar/1` - User avatars with fallback; `status` (`online`/`away`/`offline`) adds a ring-cut dot and a screen-reader word (the app supplies the state, e.g. from Phoenix.Presence)
+- `avatar_group/1` - Stacked avatars with "+n" beyond `max`; the group is named by `label` and every name (and status); people maps take `:status`
 - `tooltip/1` - Hover and focus tooltip (JS hook)
 - `hover_card/1` - Rich hover preview (JS hook)
 - `dialog/1` - Modal dialogs; `placement` `center` (default), `side`, `sheet` or `popover` (all div-based)
@@ -291,7 +291,7 @@ document the generated `phoenix-colocated/sutra_ui` LiveSocket import.
 - `activity/1` - Safe user-facing agent progress with slot-owned row content
 
 ### Layout Helpers
-- `filter_bar/1` - Filter bar for index pages
+- `filter_bar/1` - **Deprecated** (removed in 0.6): filtering moves to LiveTable 0.5; do not use in new code
 - `input_group/1` - Input with prefix/suffix
 - `item/1` - Versatile list item
 - `loading_state/1` - Loading indicator with message

@@ -74,7 +74,7 @@ defmodule SutraUI do
   | `SutraUI.InputGroup` | Input with prefix/suffix |
   | `SutraUI.InputOTP` | One-time password inputs (hook) |
   | `SutraUI.FileUpload` | LiveView upload dropzone |
-  | `SutraUI.FilterBar` | Filter controls layout |
+  | `SutraUI.FilterBar` | Filter controls layout (deprecated, removed in 0.6) |
 
   ### Layout
 

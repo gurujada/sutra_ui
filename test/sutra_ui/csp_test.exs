@@ -17,9 +17,9 @@ defmodule SutraUI.CSPTest do
     end
   end
 
-  test "no component renders an inline event handler attribute by default" do
-    for file <- @lib, line <- File.stream!(file) |> Enum.to_list() do
-      refute line =~ ~r/\s+on(error|click|load|change|submit)="/ and not (line =~ "onerror={")
+  test "no component renders an inline event handler attribute" do
+    for file <- @lib, {line, n} <- file |> File.stream!() |> Enum.with_index(1) do
+      refute line =~ ~r/\son[a-z]+=[{"']/, "#{file}:#{n}: #{String.trim(line)}"
     end
   end
 
@@ -48,7 +48,7 @@ defmodule SutraUI.CSPTest do
     assert html =~ ~r/<script[^>]*nonce="n0nce"/
   end
 
-  test "avatar without an id keeps the legacy onerror fallback" do
+  test "avatar without an id renders no inline handler and no script" do
     assigns = %{}
 
     html =
@@ -56,36 +56,14 @@ defmodule SutraUI.CSPTest do
       <Avatar.avatar src="/a.png" alt="A" />
       """)
 
-    assert html =~ "onerror="
+    refute html =~ "onerror"
     refute html =~ "<script"
   end
 
-  # The only inline styles left come from `SutraUI.Dimension.style_attr/1`: the deprecated
-  # CSS-length form of skeleton and carousel `width`/`height`/`gap`, removed in 0.5.
-  # Everything else must stay free of `style=`.
-  @deprecated_style_lines %{
-    "lib/sutra_ui/skeleton.ex" => [
-      "{SutraUI.Dimension.style_attr(width: @width, height: @height)}"
-    ],
-    "lib/sutra_ui/carousel.ex" => [
-      "{SutraUI.Dimension.style_attr(width: @width, height: @height)}",
-      "{SutraUI.Dimension.style_attr(gap: @gap)}"
-    ]
-  }
-
-  test "no component renders an inline style attribute except the deprecated length forms" do
-    # dimension.ex defines the helper; it renders nothing itself
-    for file <- @lib -- ["lib/sutra_ui/dimension.ex"],
-        {line, n} <- file |> File.stream!() |> Enum.with_index(1) do
-      allowed = Map.get(@deprecated_style_lines, file, [])
-
-      if line =~ ~r/\sstyle=[{"']/ or line =~ "style_attr(" do
-        assert String.trim(line) in allowed, "#{file}:#{n}: #{String.trim(line)}"
-      end
-    end
-
-    for {file, lines} <- @deprecated_style_lines, line <- lines do
-      assert File.read!(file) =~ line, "#{file} no longer uses #{line}: drop it from the list"
+  # No component renders a `style=` attribute (skeleton and carousel CSS lengths went in 0.5).
+  test "no component renders an inline style attribute" do
+    for file <- @lib, {line, n} <- file |> File.stream!() |> Enum.with_index(1) do
+      refute line =~ ~r/\sstyle=[{"']/, "#{file}:#{n}: #{String.trim(line)}"
     end
   end
 
@@ -134,7 +112,7 @@ defmodule SutraUI.CSPTest do
 
     assert rendered_to_string(~H"<SutraUI.Progress.progress value={42.4} />") =~ ~s(data-pct="42")
 
-    assert rendered_to_string(~H"<SutraUI.Slider.slider id=\"s\" name=\"s\" value={30} />") =~
+    assert rendered_to_string(~H'<SutraUI.Slider.slider id="s" name="s" value={30} />') =~
              ~s(data-pct="30")
   end
 

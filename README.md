@@ -241,7 +241,8 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 
 ### Foundation
 - `button` - Buttons with variants (primary, secondary, destructive, outline, ghost, link)
-- `badge` - Status badges
+- `badge` - Status badges (variants incl. `info`, `warning`, `brand`, `ai`; `solid`/`soft`/`dashed`)
+- `relative_time`, `local_time` - Times in the place's zone (`SutraUI.Time`)
 - `spinner` - Loading spinner
 - `kbd` - Keyboard shortcut display
 
@@ -251,7 +252,8 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `checkbox` - Checkbox input
 - `switch` - Toggle switch
 - `radio_group` - Radio button groups
-- `select` - Custom dropdown with search
+- `select` - Real `<select>` with SutraUI's list: search, multiple, bottom sheet on phones
+- `date_picker`, `date_range_picker`, `time_picker`, `datetime_picker` - Segmented fields with a calendar, presets and `SutraUI.DateRules`
 - `slider` - Range slider
 - `range_slider` - Dual-handle range slider
 - `live_select` - LiveComponent async searchable select with tags
@@ -260,7 +262,7 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `input_group` - Input with prefix/suffix
 - `input_otp` - One-time password and PIN input
 - `file_upload` - LiveView upload dropzone
-- `filter_bar` - Filter controls layout
+- `filter_bar` - Filter controls layout (deprecated: filtering moves to LiveTable 0.5; removed in 0.6)
 
 ### Layout
 - `card` - Content container with header/footer
@@ -283,23 +285,25 @@ Sutra UI uses **OKLCH** colors for better perceptual uniformity:
 - `confirm_dialog`, `confirm_host` - Confirmations; styled `data-confirm`
 
 ### Overlay
-- `dialog` - Modal dialogs
+- `dialog` - Modal dialogs: `center`, `side`, `sheet` and `popover` placements
 - `popover` - Click-triggered popups
 - `tooltip` - Hover tooltips
 - `hover_card` - Rich hover previews
 - `dropdown_menu` - Dropdown menus
 - `context_menu` - Right-click action menus
-- `command` - Command palette with search
+- `command` - Inline command menu with search
+- `command_palette`, `command_dialog` - Command palette (shortcuts, pages, arguments, server search) and a plain command dialog
 
 ### Navigation
-- `tabs` - Tab panels
+- `tabs` - Tab panels; URL tabs with `patch` or `navigate`
+- `segmented`, `filter_tabs` - A single choice out of a few; "All · Mine · Waiting" with counts
 - `accordion` - Collapsible sections
 - `breadcrumb` - Breadcrumb navigation
 - `pagination` - Page navigation
 - `tab_nav` - Responsive routed tab navigation
 
 ### Display
-- `avatar` - User avatars with fallback
+- `avatar`, `avatar_group` - User avatars with fallback, presence `status` and stacks
 - `carousel` - Image/content carousel
 - `theme_switcher` - Light/dark theme event button
 - `marquee` - Scrolling content banner

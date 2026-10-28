@@ -249,7 +249,9 @@ end
 </.form>
 ```
 
-### Filter Bar
+### Filter Bar (deprecated)
+
+Deprecated, removed in 0.6: filtering moves to LiveTable 0.5 (filter chips).
 
 ```heex
 <.filter_bar on_change="filter">
@@ -752,8 +754,9 @@ Use `collapse="never"` when the tab row should stay visible on small screens.
 <.avatar src={nil} initials="JD" />
 <.avatar size="sm" src="/avatar.jpg" />
 <.avatar size="lg" src="/avatar.jpg" />
+<.avatar initials="AR" status="online" />   <%!-- online | away | offline: a dot and a screen-reader word --%>
 
-<.avatar_group id="reviewers" label="Reviewers" max={3} people={[%{name: "Asha Rao"}, %{name: "Ravi Teja", src: "/r.png"}, %{name: "Mei Lin"}, %{name: "Sam Cole"}]} />
+<.avatar_group id="reviewers" label="Reviewers" max={3} people={[%{name: "Asha Rao", status: "online"}, %{name: "Ravi Teja", src: "/r.png"}, %{name: "Mei Lin"}, %{name: "Sam Cole"}]} />
 ```
 
 ### Carousel
