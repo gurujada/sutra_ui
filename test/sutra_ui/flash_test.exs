@@ -233,11 +233,26 @@ defmodule SutraUI.FlashTest do
       assert button_tag =~ "lv:clear-flash"
     end
 
-    test "CSS lays the description out as a flex row" do
+    test "a link mid-sentence stays in one text flow" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Flash.flash kind={:info}>
+          Saved. <a href="/x">Open it</a> to check.
+        </Flash.flash>
+        """)
+
+      assert html =~
+               ~r/<div class="flash-description">\s*Saved\. <a href="\/x">Open it<\/a> to check\.\s*<\/div>/
+    end
+
+    test "CSS keeps the description as text and its icons inline" do
       css = File.read!("priv/static/sutra_ui.css")
 
-      assert css =~ ~r/\.flash-description \{\s*@apply flex items-center gap-1 text-sm;/
-      assert css =~ ~r/\.flash-description \{[^}]*> svg \{\s*@apply shrink-0;/s
+      [rule] = Regex.run(~r/\.flash-description \{.*?\n    \}/s, css)
+      refute rule =~ "flex"
+      assert rule =~ "inline-block align-middle"
     end
   end
 end

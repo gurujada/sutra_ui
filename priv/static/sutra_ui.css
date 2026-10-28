@@ -3343,10 +3343,13 @@
     }
 
     .flash-description {
-        @apply flex items-center gap-1 text-sm;
+        @apply text-sm;
 
-        > svg {
-            @apply shrink-0;
+        /* Preflight makes svg display:block, which put an icon or spinner on its own line:
+           keep it inline in the text flow. */
+        svg {
+            @apply mx-0.5 inline-block align-middle;
+            vertical-align: -0.125em;
         }
     }
 
