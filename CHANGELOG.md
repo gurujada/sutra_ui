@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **input** (breaking): `<.input type="select">` renders `SutraUI.Select` instead of a bare `<select>` inside a `<label>`. The attributes are the same (`field`, `options`, `prompt`, `multiple`, errors) and the posted value is still the `<select>`'s. The label is now a sibling `<label for>` (not a wrapper), the `<select>` is hidden once the hook runs, and `searchable` and `native` are new. Pass `native` for the old browser-only control
 - **select** (breaking): `select/1` takes `options` or a `field` and renders a real `<select>`; `id` is optional when `name` or `field` is given. The `select_option`/`select_group`/`select_separator` form still works and still keeps a hidden `<input>` instead of a `<select>`; its `<:trigger>` content is no longer overwritten by the chosen label. The `.Select` hook is now **extracted** (it imports `sutra_ui/select`): merge `phoenix-colocated/sutra_ui` into your LiveSocket, as for `dialog`; the `nonce` attribute is unused. `search_placeholder` defaults to "Search..." and `searchable` defaults to `nil`
 
+- **input**: Fields keep one rhythm: label, description, control and error sit 6 px apart in one group, with 20 px before the next field (`fieldset mb-5 gap-1.5`; the error no longer adds its own top margin)
+
 ### Upgrading from 0.4
 
 - Select: nothing changes for `<.input type="select">` callers beyond the above; merge the extracted hooks (`import {hooks as sutraHooks} from "phoenix-colocated/sutra_ui"`) so the styled list shows. Replace slot-built selects with `options` where the options are plain text

@@ -307,7 +307,7 @@ defmodule SutraUI.Input do
       |> assign_field_accessibility()
 
     ~H"""
-    <div class="fieldset mb-2">
+    <div class="fieldset mb-5 gap-1.5">
       <label class="flex items-center gap-2 cursor-pointer">
         <input
           type="hidden"
@@ -347,9 +347,9 @@ defmodule SutraUI.Input do
       |> assign_field_accessibility()
 
     ~H"""
-    <div class="fieldset mb-2">
-      <label :if={@label} for={@id} class="label mb-1 block">{@label}</label>
-      <p :if={@description} id={@description_id} class="field-description mb-1.5">
+    <div class="fieldset mb-5 gap-1.5">
+      <label :if={@label} for={@id} class="label">{@label}</label>
+      <p :if={@description} id={@description_id} class="field-description">
         {@description}
       </p>
       <SutraUI.Select.select
@@ -385,7 +385,7 @@ defmodule SutraUI.Input do
       |> assign_field_accessibility()
 
     ~H"""
-    <div class="fieldset mb-2">
+    <div class="fieldset mb-5 gap-1.5">
       <label>
         <span :if={@label} class="label mb-1">{@label}</span>
         <p :if={@description} id={@description_id} class="field-description mb-1.5">
@@ -418,7 +418,7 @@ defmodule SutraUI.Input do
       |> assign_field_accessibility()
 
     ~H"""
-    <div class="fieldset mb-2">
+    <div class="fieldset mb-5 gap-1.5">
       <label class="flex items-center gap-3 cursor-pointer">
         <input
           type="hidden"
@@ -457,7 +457,7 @@ defmodule SutraUI.Input do
       |> assign_field_accessibility()
 
     ~H"""
-    <div class="fieldset mb-2">
+    <div class="fieldset mb-5 gap-1.5">
       <label :if={@label}>
         <span class="label mb-1">{@label}</span>
       </label>
@@ -484,7 +484,7 @@ defmodule SutraUI.Input do
     assigns = assign_field_accessibility(assigns)
 
     ~H"""
-    <div class="fieldset mb-2">
+    <div class="fieldset mb-5 gap-1.5">
       <label>
         <span :if={@label} class="label mb-1">{@label}</span>
         <p :if={@description} id={@description_id} class="field-description mb-1.5">
@@ -547,7 +547,7 @@ defmodule SutraUI.Input do
   # Renders an error message with icon.
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-destructive">
+    <p class="flex gap-2 items-center text-sm text-destructive">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"

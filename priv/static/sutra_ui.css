@@ -1921,11 +1921,14 @@
             [role="option"] {
                 @apply aria-hidden:hidden [&_svg]:text-muted-foreground relative flex cursor-pointer items-center gap-2 rounded-sm pl-2 py-1.5 pr-7.5 text-sm outline-hidden select-none [&_svg]:shrink-0 [&_svg]:size-4 aria-disabled:opacity-50 aria-disabled:pointer-events-none disabled:opacity-50 disabled:pointer-events-none w-full truncate;
 
-                &[aria-selected="true"] {
-                    background-image: var(--check-icon);
-                    background-repeat: no-repeat;
-                    background-position: center right 0.5rem;
-                    background-size: 0.875rem;
+                /* The check takes the row's text colour (the icon variable is a light stroke). */
+                &[aria-selected="true"]::after {
+                    content: "";
+                    @apply absolute right-2 top-1/2 size-3.5 -translate-y-1/2 bg-current;
+                    mask-image: var(--check-icon);
+                    mask-repeat: no-repeat;
+                    mask-position: center;
+                    mask-size: contain;
                 }
                 &.active,
                 &[data-active="true"],
@@ -2030,6 +2033,14 @@
             }
             &:not([data-enhanced]) > :is(.select-trigger, .select-popover, .select-backdrop) {
                 @apply hidden;
+            }
+            /* The list is as wide as its longest option (at least the field), and the hook
+               shifts it to stay on screen; an option wider than the screen wraps. */
+            .select-popover {
+                @apply w-max min-w-full;
+            }
+            .select-popover .select-option {
+                @apply overflow-visible whitespace-normal break-words text-clip;
             }
             &[data-enhanced] > select {
                 @apply pointer-events-none absolute inset-0 size-full opacity-0;

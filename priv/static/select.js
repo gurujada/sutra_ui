@@ -1,4 +1,4 @@
-/* sutra_ui select source-hash:ea29019b05b7961b (built by mix assets.build; do not edit) */
+/* sutra_ui select source-hash:86ac75160a52aa07 (built by mix assets.build; do not edit) */
 
 // assets/js/fit/index.js
 function fit(content, trigger, wanted) {
@@ -295,7 +295,17 @@ var Select = {
     this.trigger.setAttribute("aria-expanded", "true");
     this.search?.setAttribute("aria-expanded", "true");
     this.place();
-    this.active?.scrollIntoView?.({ block: "nearest" });
+    this.reveal(this.active);
+  },
+  /** Scroll the list (never the page) so an option shows. */
+  reveal(opt) {
+    if (!opt) return;
+    const top = opt.offsetTop - this.listbox.offsetTop;
+    const bottom = top + opt.offsetHeight;
+    if (top < this.listbox.scrollTop) this.listbox.scrollTop = top;
+    else if (bottom > this.listbox.scrollTop + this.listbox.clientHeight) {
+      this.listbox.scrollTop = bottom - this.listbox.clientHeight;
+    }
   },
   /** Fit under (or over) the field on a screen; a bottom sheet on a phone. */
   place() {
@@ -342,7 +352,7 @@ var Select = {
     if (opt) {
       opt.setAttribute("data-active", "true");
       targets.forEach((t) => t.setAttribute("aria-activedescendant", opt.id));
-      if (scroll) opt.scrollIntoView?.({ block: "nearest" });
+      if (scroll) this.reveal(opt);
     } else {
       targets.forEach((t) => t.removeAttribute("aria-activedescendant"));
     }
