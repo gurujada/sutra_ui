@@ -27,6 +27,9 @@ Do not use these from application code:
 - Do not add React, npm packages, Alpine, Stimulus, or third-party JS widgets.
 - Do not replace Phoenix form validation, uploads, navigation, or events with
   client-side state machines.
+- Do not write `style=` attributes on or around Sutra components; use classes.
+- Do not put `phx-click` on a flash box, or use the native `<dialog>` for a
+  Sutra dialog.
 
 For exact attrs, slots, or event names, inspect the component module in
 `lib/sutra_ui/*.ex`. This skill teaches Sutra's composition model; source code
@@ -60,6 +63,11 @@ writing HEEx.
 - Use native inputs for native jobs. `<.input type="date">` is the browser date
   input; `<.calendar>` is a composable calendar grid for custom date flows.
 - Hook-based components need stable ids. Do not auto-generate changing ids.
+- Under a Content-Security-Policy, pass `nonce` to components that render runtime
+  hooks and render `<SutraUI.ThemeSwitcher.theme_script nonce={@csp_nonce} />` in
+  the root layout. The policy `script-src 'self' 'nonce-…'; style-src 'self'`
+  then works: Sutra renders no `style=` attributes (computed sizes use
+  `data-pct`), so never add them. See `skill/recipes.md`.
 - In Sutra library source, component styling belongs in `priv/static/sutra_ui.css`
   with semantic classes. In application templates, use `class` for layout and
   local composition, but do not rewrite component internals with utility soup.
@@ -119,3 +127,9 @@ end
 - Treating `activity/1` as private reasoning output instead of safe progress.
 - Hiding custom content behind rigid attrs when a slot would be simpler.
 - Copying demo-specific layout or marketing copy into reusable app components.
+- Dismissing a flash by clicking its box: only its × button closes it.
+- Passing CSS values (`width="200px"`, `gap="1rem"`) to `skeleton/1` or
+  `carousel/1`: pass classes (`w-48`, `gap-4`); the CSS form is deprecated and
+  goes away in 0.5.
+- Leaving the chevron on an icon-only `dropdown_menu/1` trigger: pass
+  `chevron={false}`.

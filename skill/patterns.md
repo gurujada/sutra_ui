@@ -101,6 +101,27 @@ Use Phoenix events and helpers instead of client framework callbacks:
 Do not convert this to `on_click`, `onSelect`, `onOpenChange`, or similar
 framework-style props unless the component module documents that attr.
 
+Under a Content-Security-Policy, runtime hooks render an inline `<script>`: pass
+`nonce={@csp_nonce}` to each component that has one (`dropdown_menu`, `select`,
+`tooltip`, `popover`, `tabs`, `slider`, ...). An `avatar` needs an `id` for its
+fallback hook. `skeleton` and `carousel` `width`, `height` and `gap` take
+classes (`w-48`, `gap-4`); CSS lengths still work in 0.4.x but are deprecated
+and removed in 0.5.
+
+## Feedback And Overlays
+
+- A `flash` closes only through its × button. Never add `phx-click` to the flash
+  box; selecting text or following a link in it must not dismiss it. Its message
+  is a `div`, so block content is valid.
+- A `dialog` is div-based on purpose (screen sharing); never swap in the native
+  `<dialog>`. A dialog taller than the screen scrolls inside it and keeps its
+  natural width up to its max width.
+- A closed `popover`, `dropdown_menu` or `select` list takes no layout room.
+- Pass `chevron={false}` to a `dropdown_menu` whose trigger is only an icon (with
+  an `sr-only` label).
+- `button` passes `popovertarget`, `popovertargetaction` and the `form*`
+  attributes through.
+
 ## CSS And Theming
 
 Sutra library source uses semantic CSS classes in `priv/static/sutra_ui.css`.
@@ -113,6 +134,10 @@ Applications may still use `class` for layout:
   <:content>...</:content>
 </.card>
 ```
+
+Never write `style=` attributes: a strict `style-src 'self'` blocks them. Use
+classes; Sutra itself maps computed sizes through `data-pct` (an integer 0-100)
+and CSS custom properties.
 
 Theme through CSS variables such as `--primary`, `--background`, `--border`,
 and `--ring`. Do not hard-code one-off brand colors inside reusable Sutra
@@ -135,6 +160,8 @@ summary", not hidden reasoning.
 - No invented icon helper or icon dependency.
 - No external JS/npm dependency was added.
 - Hook-based components have stable ids.
+- Under a CSP: `nonce` on hook components, `theme_script` in the root layout, no
+  `style=` attributes, no `phx-click` on a flash box, no native `<dialog>`.
 - Forms use Phoenix changesets and `used_input?/1` behavior.
 - Component content is slot-owned when users need custom markup.
 - Docs and demo snippets match rendered previews.

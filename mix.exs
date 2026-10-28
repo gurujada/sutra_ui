@@ -57,7 +57,7 @@ defmodule SutraUI.MixProject do
         "Demo" => "https://sutraui.gurujada.com"
       },
       files:
-        ~w(lib priv guides cheatsheets .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage_rules.md)
+        ~w(lib priv guides cheatsheets .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage_rules.md SKILL.md skill)
     ]
   end
 

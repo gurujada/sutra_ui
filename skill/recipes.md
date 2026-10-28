@@ -3,6 +3,48 @@
 Use these as starting shapes. Always inspect the component module for exact
 attrs before implementing.
 
+## Root Layout Under A Content-Security-Policy
+
+Generate a nonce per request in a plug, send it in the header, and use it in the
+root layout and on components that render runtime hooks:
+
+```elixir
+# plug
+nonce = Base.encode64(:crypto.strong_rand_bytes(16))
+
+conn
+|> assign(:csp_nonce, nonce)
+|> put_resp_header(
+  "content-security-policy",
+  "script-src 'self' 'nonce-#{nonce}'; style-src 'self'"
+)
+```
+
+```heex
+<head>
+  <SutraUI.ThemeSwitcher.theme_script nonce={@csp_nonce} />
+  <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+  <script defer phx-track-static src={~p"/assets/app.js"}></script>
+</head>
+<body>
+  <.theme_switcher id="theme-toggle" nonce={@csp_nonce} />
+  {@inner_content}
+</body>
+```
+
+```heex
+<.dropdown_menu id="row-menu" chevron={false} nonce={@csp_nonce}>
+  <:trigger><span class="sr-only">Row actions</span>...</:trigger>
+  ...
+</.dropdown_menu>
+<.skeleton width="w-48" height="h-4" />
+<.carousel id="shots" width="w-96" gap="gap-4" nonce={@csp_nonce}>...</.carousel>
+```
+
+Pass classes, not CSS values, to `skeleton` and `carousel`; never write `style=`.
+Components rendered in a LiveView need the nonce in their assigns (put it in the
+session or a `on_mount` assign).
+
 ## Popover + Calendar
 
 Use this when a page needs a custom visible calendar experience. Keep selected
@@ -173,6 +215,10 @@ right-click actions. Keep command behavior in normal Phoenix events.
   </.dropdown_item>
 </.dropdown_menu>
 ```
+
+For an icon-only trigger pass `chevron={false}` and keep an `sr-only` label.
+A popover that closes from inside uses a `button` with
+`popovertarget="…" popovertargetaction="hide"`, which `button/1` passes through.
 
 Use `phx-value-*` freely through globals; do not assume examples whitelist the
 only allowed payload names.

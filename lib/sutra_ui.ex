@@ -9,7 +9,7 @@ defmodule SutraUI do
   ## Quick Start
 
       # mix.exs
-      {:sutra_ui, "~> 0.4.0"}
+      {:sutra_ui, "~> 0.4.1"}
 
       # lib/my_app_web.ex
       defp html_helpers do
