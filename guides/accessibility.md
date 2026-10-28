@@ -254,9 +254,7 @@ links or buttons in order: `Tab` moves between them.
 ### Confirm dialog
 
 ```heex
-<.confirm_dialog id="delete" title="Delete this course?" verb="Delete" tone="danger" event="delete">
-  Its sections and results go with it.
-</.confirm_dialog>
+<.confirm_dialog id="delete" title="Delete this course?" consequence="Its sections and results go with it." confirm="Delete" tone={:danger} event="delete" />
 <.confirm_host />
 ```
 
