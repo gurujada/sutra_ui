@@ -28,9 +28,11 @@ Sutra UI components are designed with WCAG 2.1 Level AA criteria in mind:
 
 | Key | Action |
 |-----|--------|
-| `Arrow Left/Right` | Navigate between tabs |
-| `Home` | Go to first tab |
-| `End` | Go to last tab |
+| `Arrow Left/Right` | Move between tabs (client-only tabs activate as focus moves; URL `patch` tabs only move focus) |
+| `Home` / `End` | First / last tab |
+| `Enter` / `Space` | Activate the focused tab (URL `patch` tabs: manual activation, so arrowing never patches) |
+
+`navigate` tabs are a `nav` of links: `Tab` moves between them and `Enter` follows one.
 
 #### Dropdown Menu
 
@@ -44,10 +46,12 @@ Sutra UI components are designed with WCAG 2.1 Level AA criteria in mind:
 
 | Key | Action |
 |-----|--------|
-| `Arrow Up/Down` | Navigate options |
-| `Enter` | Select option |
-| `Escape` | Close dropdown |
-| Letter key (open listbox) | Jump to the next visible option starting with that letter |
+| `Arrow Up/Down` | Navigate options (also opens the list) |
+| `Home` / `End`, `PageUp` / `PageDown` | First / last option, a page of options |
+| `Enter` / `Space` | Open the list; select the active option |
+| `Tab` | Select the active option and move on |
+| `Escape` | Close the list |
+| Letters (type-ahead) | Jump to the next option starting with what you type; repeated letters cycle |
 
 #### Accordion
 
@@ -62,13 +66,34 @@ Sutra UI components are designed with WCAG 2.1 Level AA criteria in mind:
 | `Escape` | Close dialog |
 | `Tab` | Cycle through focusable elements (trapped) |
 
-#### Command Palette
+#### Command Palette and `command_dialog`
 
 | Key | Action |
 |-----|--------|
+| `Mod + K` (configurable) | Open the palette |
 | `Arrow Up/Down` | Navigate results |
-| `Enter` | Select item |
-| `Escape` | Close `command_dialog` |
+| `Enter` | Run the active action |
+| `Escape` | Back one step (page, argument, confirmation), then close |
+| `?` | List the shortcuts |
+
+Shortcuts such as `g h` are never typed into text fields. `command_dialog` is the same div-based
+dialog without shortcuts, pages or server search; `Escape` closes it.
+
+#### Date and time pickers
+
+| Key | Action |
+|-----|--------|
+| Digits | Fill a segment and move to the next |
+| `Arrow Up/Down` | Step the segment's value |
+| `Arrow Left/Right` | Previous / next segment |
+| `Backspace` | Clear the segment |
+| In the calendar: arrows, `Page Up/Down`, `Home` / `End` | Day, month, week edges |
+| `Escape` | Close the calendar |
+
+#### Segmented and filter tabs
+
+`segmented` is a radio group: arrows move and select, `Tab` leaves the group. `filter_tabs` items are
+links or buttons in order: `Tab` moves between them.
 
 ## ARIA Attributes by Component
 
@@ -122,6 +147,147 @@ Sutra UI components are designed with WCAG 2.1 Level AA criteria in mind:
 </.tabs>
 <!-- Full tablist/tab/tabpanel ARIA pattern -->
 ```
+
+#### URL tabs
+
+```heex
+<.tabs id="course" value={@tab} label="Course sections">
+  <:tab value="overview" patch={~p"/courses/#{@id}/overview"}>Overview</:tab>
+  <:tab value="notes" patch={~p"/courses/#{@id}/notes"}>Notes</:tab>
+  <:panel value="overview">...</:panel>
+  <:panel value="notes">...</:panel>
+</.tabs>
+```
+
+- `patch` tabs use the tabs pattern with **manual activation**: arrows move focus, `Enter` or `Space`
+  activates, so a screen-reader user arrowing past a tab does not load it. The active tab has
+  `aria-selected="true"`, its panel is `role="tabpanel"` labelled by the tab, and while the server has
+  not sent a panel it shows a loading bar with `loading_label` as a `role="status"` announcement.
+- `navigate` tabs are a `<nav aria-label>` of links with `aria-current="page"` on the active one;
+  they are navigation, not a tablist, because each tab is a page.
+- One call cannot mix `patch` and `navigate` tabs: `tabs` raises an `ArgumentError`.
+- The app sets `value` from `handle_params`, so reload and direct links land on the right tab.
+- The active tab is more than colour: it is `aria-selected` or `aria-current` and underlined.
+
+### Segmented and filter tabs
+
+```heex
+<.segmented id="view" label="View" value={@view} click="set_view">
+  <:option value="list" label="List" />
+  <:option value="grid" label="Grid" />
+</.segmented>
+
+<.filter_tabs id="inbox" label="Filter inbox">
+  <:item label="All" count={42} active={@filter == "all"} patch={~p"/inbox"} />
+  <:item label="Mine" count={3} active={@filter == "mine"} patch={~p"/inbox?filter=mine"} />
+</.filter_tabs>
+```
+
+- `segmented` is a real radio group (`role="radiogroup"` named by `label`), so it posts in forms.
+- `filter_tabs` items that are links carry `aria-current="page"` when active; items that are buttons
+  carry `aria-pressed`. A count is read with the label ("Mine 3").
+
+### Select
+
+```heex
+<.input type="select" field={@form[:role]} label="Role" options={@roles} prompt="Choose" />
+```
+
+- The trigger is a WAI-ARIA select-only combobox (an editable combobox with search) controlling a
+  listbox; `aria-expanded`, `aria-activedescendant` and `aria-selected` follow the active option. A
+  `<label for>` focuses the trigger.
+- The real `<select>` stays in the form (posted value, no-JS) and is hidden from assistive technology.
+- A required select that fails the browser's validation gets focus on the **trigger**, marked
+  `aria-invalid` with the browser's message under it (`role="alert"`, linked by `aria-describedby`);
+  the message goes away when a value is chosen. (The browser's own bubble would vanish as soon as
+  focus left the hidden `<select>`.)
+- Below 640 px the list is a bottom sheet with the label as its title and a Close button; rows are
+  finger-sized and the search box takes focus only when tapped.
+
+### Date and time pickers
+
+```heex
+<.date_picker id="due" name="due" label="Due date" />
+<.date_range_picker id="range" name="range" label="Dates" />
+<.datetime_picker id="at" name="at" label="Starts" zone="Asia/Kolkata" />
+```
+
+- The field is segments (day, month, year, hour, minute), each a spin button with its own name
+  ("Day", "Month"), in the app's locale order; the browser's own `<input type="date">` is the posted
+  field and the whole picker until the hook mounts.
+- The calendar is a `role="dialog"` with a grid (`role="grid"`, `aria-label` the month). Today has
+  `aria-current="date"`, and so do the **current month** in the month list and the **current year**
+  in the year list (also bold and underlined, not colour alone). The chosen day is `aria-selected`
+  (or `aria-pressed` in the month and year lists); disabled days (see `SutraUI.DateRules`) are
+  `aria-disabled`.
+- A range reads its length ("7 days") in a polite live region. A skipped time after a clock change
+  is stated in words, never guessed; a repeated hour is a choice between two named offsets.
+- Below 640 px the calendar is a bottom sheet with the label as title and a Close button.
+
+### Command palette
+
+```heex
+<.command_palette id="palette" actions={@actions} />
+```
+
+- A `role="dialog"` named by `label`, containing a combobox over a listbox
+  (`aria-activedescendant` follows the active action). Results are announced in a polite live
+  region ("3 results"). A disabled action is `aria-disabled` and its reason describes it
+  (`aria-describedby`); a danger action shows an icon and a word, not only a colour.
+- Shortcut key caps are hidden from screen readers (the action's name is the content); a
+  chevron on an action with children is decorative.
+- Focus is trapped while it is open; when it closes, focus returns to what opened it (the dialog's job).
+
+### Toasts
+
+```heex
+<.toast_group flash={@flash} live />
+```
+
+- `info` and `success` toasts are `role="status"` (polite); `warning` and `error` are
+  `role="alert"` (assertive). The kind is an icon, a colour and a screen-reader word, never colour
+  alone, and a toast has no title unless you pass one.
+- The timer pauses on hover and focus, and toasts with an action or an error do not time out.
+- A "Can't reach the server" notice is announced after a disconnect and goes on reconnect.
+- Stacked toasts beyond three fold into a "+n more" line.
+
+### Confirm dialog
+
+```heex
+<.confirm_dialog id="delete" title="Delete this course?" verb="Delete" tone="danger" event="delete">
+  Its sections and results go with it.
+</.confirm_dialog>
+<.confirm_host />
+```
+
+- `role="alertdialog"`, named by its title and described by the consequence; the page behind is
+  `inert`, focus is trapped, `Escape` means Keep.
+- For a danger action focus starts on **Keep**, not on the destructive verb, and returns to the
+  trigger when the dialog closes.
+- `confirm_host` makes `data-confirm` use the same dialog instead of `window.confirm()`.
+
+### Avatar presence
+
+```heex
+<.avatar initials="AR" status="online" />
+<.avatar_group id="here" label="Online now" people={[%{name: "Asha", status: "away"}]} />
+```
+
+- The state is a dot **and** a screen-reader word ("online", "away", "offline"), so colour is
+  never the only signal; the dot itself is `aria-hidden`.
+- In an `avatar_group` the group's accessible name includes each status: "Online now: Asha (away)".
+
+### Times
+
+`relative_time` and `local_time` render a `<time datetime title>` with the final words in the
+markup, so they read without JavaScript. The browser hook only refreshes the words and adds the
+viewer's time; it does not announce changes.
+
+### Badges and empty states
+
+`badge` variants are a word plus colour (the `soft` and `dashed` appearances keep the text); an
+`icon` slot is decorative. `empty` renders a heading-level title and its description; the inline
+variant is one line of text with its action as a button.
 
 ### Separator
 
@@ -192,14 +358,14 @@ Sutra UI components are designed with WCAG 2.1 Level AA criteria in mind:
 
 ### Focus Trapping
 
-Modal components manage focus according to their implementation:
+Every modal is the div-based `dialog` (visible in a screen share), so they share one focus rule:
 
-- `dialog` moves focus to the first focusable element when opened and traps
-  focus with `focus_wrap`.
-- `command_dialog` uses the native `<dialog>` element and browser modal focus
-  behavior.
-- If your workflow needs explicit focus restoration to a trigger, handle that in
-  the parent LiveView or with app-side JavaScript.
+- Focus moves to the first focusable element, or to `initial_focus`, when it opens and is trapped
+  with `focus_wrap`.
+- Focus returns to what opened it on **every** hide (close button, `Escape`, backdrop, a server
+  `show` change). This holds for `command_dialog`, `command_palette` and `confirm_dialog` too.
+- `inert_page` (on for confirmations) makes the rest of the page inert while it is open.
+- `alert` gives `role="alertdialog"`. An open dialog stays open when its parent LiveView re-renders.
 
 ### Focus Indicators
 

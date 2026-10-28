@@ -66,7 +66,7 @@ writing HEEx.
 - Hook-based components need stable ids. Do not auto-generate changing ids.
 - Under a Content-Security-Policy, pass `nonce` to components that render runtime
   hooks and render `<SutraUI.ThemeSwitcher.theme_script nonce={@csp_nonce} />` in
-  the root layout. The policy `script-src 'self' 'nonce-…'; style-src 'self'`
+  the root layout. The policy `script-src 'self' 'nonce-…'; style-src 'self'; img-src 'self' data:`
   then works: Sutra renders no `style=` attributes (computed sizes use
   `data-pct`), so never add them. See `skill/recipes.md`.
 - In Sutra library source, component styling belongs in `priv/static/sutra_ui.css`
@@ -87,7 +87,7 @@ writing HEEx.
   `SutraUI.DateRules`; datetime needs a `zone`), `input`, `textarea`, `checkbox`, `switch`, `radio_group`, `select` (real
   `<select>` + SutraUI list; `options`, `field`, `multiple`, `searchable`, `native`),
   `slider`, `range_slider`, `live_select` (LiveComponent), `input_otp`, `file_upload`,
-  `simple_form`, `input_group`, `filter_bar`, `label`
+  `simple_form`, `input_group`, `label` (`filter_bar` is deprecated: use LiveTable filters)
 - Layout/data: `card`, `header`, `table`, `item`, `separator`, `marquee`,
   `calendar`, `timeline`, `tree_view`, `stepper`, `stepper_wizard`, `drawer`
 - Feedback: `alert`, `flash`, `progress`, `skeleton`, `empty`,
@@ -96,7 +96,7 @@ writing HEEx.
   `dropdown_menu`, `context_menu`, `command`, `command_palette`
 - Navigation: `tabs` (client-only, `patch` URL tabs, `navigate` tab bar), `segmented`, `filter_tabs`, `accordion`, `breadcrumb`, `pagination`,
   `tab_nav`
-- Display: `avatar`, `avatar_group`, `carousel`, `theme_switcher`, `relative_time`,
+- Display: `avatar` (`status` presence), `avatar_group`, `carousel`, `theme_switcher`, `relative_time`,
   `local_time`
 - AI: `response`, `activity`
 
@@ -137,7 +137,6 @@ end
   `confirm_host` once in the layout; confirm only what cannot be undone, offer Undo in a toast
   for the rest.
 - Passing CSS values (`width="200px"`, `gap="1rem"`) to `skeleton/1` or
-  `carousel/1`: pass classes (`w-48`, `gap-4`); the CSS form is deprecated and
-  goes away in 0.5.
+  `carousel/1`: pass classes (`w-48`, `gap-4`); the CSS form was removed in 0.5.
 - Leaving the chevron on an icon-only `dropdown_menu/1` trigger: pass
   `chevron={false}`.
