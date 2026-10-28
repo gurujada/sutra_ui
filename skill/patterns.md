@@ -82,8 +82,11 @@ For manual errors without a form field, pass `errors={...}` explicitly.
   controls and ordinary form submission.
 - Use `<.calendar>` when the app needs a visible calendar grid, custom date
   selection, disabled dates, range selection, or composition inside another UI.
-- Use `<.select>` for custom searchable/selectable UI. Use
-  `<.input type="select">` for ordinary native form selects.
+- Every form select is `<.select>` (a real `<select>` with SutraUI's list on top, a
+  bottom sheet on phones): `<.input type="select" options={...}>` for a labelled field,
+  `<.select field={@form[:x]} options={...} label="...">` bare. `searchable`, `multiple`,
+  `prompt`, option groups and `native` (browser control only) are attributes. Build the
+  list from `select_option/1` only when options need markup.
 - Use `<.slider>` for single range input and `<.range_slider>` for dual-handle
   range selection.
 
@@ -119,12 +122,25 @@ and removed in 0.5.
 - A `dialog` takes `placement`: `center`, `side` (docked right from 768 px), `sheet`
   (bottom sheet on phones) or `popover` (a card under its `anchor` from 640 px).
   All are the same div-based dialog.
+- `command_palette` (shortcuts, pages, arguments, server search) and `command_dialog` are
+  div-based dialogs too. Put the palette once in the layout, set it up with
+  `on_mount: [{SutraUI.Commands.Live, MyAppWeb.Commands}]`, and define actions in a
+  `use SutraUI.Commands` module; never hand-write the filtering in a hook.
 - A closed `popover`, `dropdown_menu` or `select` list takes no layout room. An open
   `popover` or `dropdown_menu` flips or shifts to stay inside the viewport.
 - Pass `chevron={false}` to a `dropdown_menu` whose trigger is only an icon (with
   an `sr-only` label).
 - `button` passes `popovertarget`, `popovertargetaction` and the `form*`
   attributes through.
+
+## URL Tabs
+
+For tabs that need their own URL use `tabs` with `patch` on each tab (one LiveView, `value`
+from `handle_params`; `keep` for instant return and preserved typing) or `navigate` (separate
+LiveViews of one `live_session`; a `nav` with `aria-current`, no panels). Do not build tabs from
+`phx-click` plus an assign: the URL, reload and back button would not work. Patch tabs switch on
+the client before the server answers, so keep the server's render of `value` equal to the
+clicked tab.
 
 ## Times
 

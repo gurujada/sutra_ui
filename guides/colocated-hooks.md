@@ -38,7 +38,7 @@ Several Sutra UI components use colocated hooks for interactivity:
 | `response` | `SutraUI.Response.Response` | Extracted | Smooth text reveal |
 | `carousel` | `.Carousel` | Runtime | Scroll snap, navigation |
 | `command` | `.Command` | Runtime | Command palette behavior |
-| `command_dialog` | `.CommandDialog` | Runtime | Native dialog show/hide helpers |
+| `command_palette` | `.CommandPalette` | Extracted | Command palette (imports `sutra_ui/commands`) |
 | `context_menu` | `.ContextMenu` | Runtime | Right-click menu behavior |
 | `drawer` | `.Drawer` | Runtime | Drawer open/close state |
 | `dropdown_menu` | `.DropdownMenu` | Runtime | Menu positioning, keyboard nav |
@@ -48,7 +48,7 @@ Several Sutra UI components use colocated hooks for interactivity:
 | `live_select` | `.LiveSelect` | Runtime | Async search, tags |
 | `popover` | `.Popover` | Runtime | Popover dismissal and positioning |
 | `range_slider` | `.RangeSlider` | Runtime | Dual-handle slider |
-| `select` | `.Select` | Runtime | Dropdown behavior, search |
+| `select` | `.Select` | Extracted | Styled list over the real `<select>` (imports `sutra_ui/select`, which bundles `fit`) |
 | `slider` | `.Slider` | Runtime | Range input behavior |
 | `tab_nav` | `.TabNav` | Runtime | Routed navigation keyboard focus and mobile dropdown |
 | `tabs` | `.Tabs` | Runtime | Keyboard navigation |
@@ -67,8 +67,9 @@ generated `phoenix-colocated/sutra_ui` hooks into your LiveSocket.
 
 Small behaviour (open/close, focus, keys, up to a few hundred lines) stays in the colocated
 hook. A widget with real logic gets one source module in the library's `assets/js/<widget>/`,
-with its own tests, and a thin hook that imports it. `relative_time` and `local_time` (`sutra_ui/time`), the toast stack
-(`sutra_ui/toast`) and `data-confirm` (`sutra_ui/confirm`) use it.
+with its own tests, and a thin hook that imports it. `relative_time` and `local_time`
+(`sutra_ui/time`), the command palette (`sutra_ui/commands`), the toast stack (`sutra_ui/toast`) and
+`data-confirm` (`sutra_ui/confirm`) use it.
 
 A runtime hook is an inline `<script>` and cannot import, so a hook that uses a module is an
 **extracted** hook: your app's esbuild bundles it, and resolves `sutra_ui/time` through `deps`

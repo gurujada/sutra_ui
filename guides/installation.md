@@ -121,7 +121,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
 ```
 
 Extracted hooks that import a Sutra UI module (`relative_time` and `local_time` import
-`sutra_ui/time`) need your esbuild to find `deps` through `NODE_PATH`, the way it finds
+`sutra_ui/time`, `command_palette` imports `sutra_ui/commands`) need your esbuild to find `deps` through `NODE_PATH`, the way it finds
 `phoenix` and `phoenix_live_view`. A Phoenix app already has this:
 
 ```elixir

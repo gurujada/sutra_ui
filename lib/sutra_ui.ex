@@ -65,7 +65,7 @@ defmodule SutraUI do
   | `SutraUI.Checkbox` | Checkbox input |
   | `SutraUI.Switch` | Toggle switch |
   | `SutraUI.RadioGroup` | Radio button groups |
-  | `SutraUI.Select` | Searchable dropdown (hook) |
+  | `SutraUI.Select` | Form select: real `<select>` with a styled list, bottom sheet on phones (hook) |
   | `SutraUI.Slider` | Range slider (hook) |
   | `SutraUI.RangeSlider` | Dual-handle range (hook) |
   | `SutraUI.LiveSelect` | LiveComponent async searchable select (hook) |
@@ -118,7 +118,8 @@ defmodule SutraUI do
   | `SutraUI.DropdownMenu` | Dropdown menus (hook) |
   | `SutraUI.ContextMenu` | Right-click action menus (hook) |
   | `SutraUI.HoverCard` | Hover preview cards (hook) |
-  | `SutraUI.Command` | Command palette (hook) |
+  | `SutraUI.Command` | Command menu and dialog (hook) |
+  | `SutraUI.Commands.Palette` | Command palette with shortcuts and server search (`command_palette`) |
 
   ### Navigation
 
@@ -262,6 +263,7 @@ defmodule SutraUI do
       import SutraUI.Dialog
       import SutraUI.Popover
       import SutraUI.Command
+      import SutraUI.Commands.Palette
       import SutraUI.Carousel
 
       # Phase 6: Form & Layout Helpers

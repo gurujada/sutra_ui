@@ -165,12 +165,8 @@ Formats: `:date :short :long :day :time :date_time :day_time :full :month`. 24-h
 ### Select
 
 ```heex
-<.select id="country" name="country" value={@country}>
-  <:trigger>{@country_label || "Select country"}</:trigger>
-  <.select_option value="us" label="United States" />
-  <.select_option value="uk" label="United Kingdom" />
-  <.select_option value="ca" label="Canada" />
-</.select>
+<.select field={@form[:country]} label="Country" prompt="Choose"
+         options={[{"United States", "us"}, {"United Kingdom", "uk"}]} />
 ```
 
 ### Slider
@@ -619,6 +615,21 @@ conn |> Toast.put_toast(:success, "Published") |> redirect(to: ~p"/")   # surviv
 </.command>
 ```
 
+### Command Palette
+
+```heex
+<.command_palette id="command-palette" commands={@sutra_commands} />
+<.button phx-click={show_palette("command-palette")}>Search</.button>
+```
+
+```elixir
+use SutraUI.Commands                                  # actions/1, sources/0, search/3
+live_session :app, on_mount: [{SutraUI.Commands.Live, MyAppWeb.Commands}]
+SutraUI.Commands.put_page_actions(socket, [Action.new(id: "x", title: "X", navigate: "/x")])
+```
+
+Keys: `mod+k` opens, arrows move, Enter runs, Escape steps back then closes, `?` lists shortcuts.
+
 ### Hover Card
 
 ```heex
@@ -646,6 +657,26 @@ conn |> Toast.put_toast(:success, "Published") |> redirect(to: ~p"/")   # surviv
   <:panel value="notifications">Notification preferences...</:panel>
 </.tabs>
 ```
+
+### URL Tabs
+
+```heex
+<%!-- tabs as routes of one LiveView; handle_params sets @tab --%>
+<.tabs id="course" value={@tab} label="Course" keep={@visited}>
+  <:tab value="overview" patch={~p"/courses/#{@id}/overview"}>Overview</:tab>
+  <:tab value="notes" patch={~p"/courses/#{@id}/notes"}>Notes</:tab>
+  <:panel value="overview">...</:panel>
+  <:panel value="notes">...</:panel>
+</.tabs>
+
+<%!-- separate LiveViews in one live_session --%>
+<.tabs id="account" value={to_string(@live_action)} label="Account">
+  <:tab value="profile" navigate={~p"/account/profile"}>Profile</:tab>
+  <:tab value="billing" navigate={~p"/account/billing"}>Billing</:tab>
+</.tabs>
+```
+
+`keep={@visited}` (kept with `SutraUI.Tabs.visit/2`) or `keep` (every panel) leaves visited panels hidden on the page; without it only the active panel renders.
 
 ### Segmented And Filter Tabs
 

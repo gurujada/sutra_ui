@@ -83,7 +83,8 @@ writing HEEx.
 ## Component Map
 
 - Foundation: `button`, `badge`, `spinner`, `kbd`
-- Forms: `input`, `textarea`, `checkbox`, `switch`, `radio_group`, `select`,
+- Forms: `input`, `textarea`, `checkbox`, `switch`, `radio_group`, `select` (real
+  `<select>` + SutraUI list; `options`, `field`, `multiple`, `searchable`, `native`),
   `slider`, `range_slider`, `live_select` (LiveComponent), `input_otp`, `file_upload`,
   `simple_form`, `input_group`, `filter_bar`, `label`
 - Layout/data: `card`, `header`, `table`, `item`, `separator`, `marquee`,
@@ -91,8 +92,8 @@ writing HEEx.
 - Feedback: `alert`, `flash`, `progress`, `skeleton`, `empty`,
   `loading_state`, `toast_group` (+ `SutraUI.Toast.send/3`), `toast`
 - Overlays/actions: `dialog`, `popover`, `tooltip`, `hover_card`,
-  `dropdown_menu`, `context_menu`, `command`
-- Navigation: `tabs`, `segmented`, `filter_tabs`, `accordion`, `breadcrumb`, `pagination`,
+  `dropdown_menu`, `context_menu`, `command`, `command_palette`
+- Navigation: `tabs` (client-only, `patch` URL tabs, `navigate` tab bar), `segmented`, `filter_tabs`, `accordion`, `breadcrumb`, `pagination`,
   `tab_nav`
 - Display: `avatar`, `avatar_group`, `carousel`, `theme_switcher`, `relative_time`,
   `local_time`

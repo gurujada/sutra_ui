@@ -5,9 +5,12 @@
   "license": "MIT",
   "type": "module",
   "exports": {
+    "./commands": "./priv/static/commands.js",
+    "./confirm": "./priv/static/confirm.js",
+    "./fit": "./priv/static/fit.js",
+    "./select": "./priv/static/select.js",
     "./time": "./priv/static/time.js",
-    "./toast": "./priv/static/toast.js",
-    "./confirm": "./priv/static/confirm.js"
+    "./toast": "./priv/static/toast.js"
   },
   "files": [
     "priv/static/*.js"
