@@ -224,5 +224,16 @@ defmodule SutraUI.ToastTest do
       assert html =~ "Hello"
       assert attr_of(html, "section", "data-live") == ["false"]
     end
+
+    test "flash toasts never take the ids of Phoenix's own flash markup" do
+      assigns = %{flash: %{"info" => "Saved", "error" => "Failed"}}
+      html = rendered_to_string(~H"<Toast.toast_group flash={@flash} />")
+
+      ids = html |> html_of() |> LazyHTML.query("[id]") |> LazyHTML.attribute("id")
+      assert "toast-flash-info" in ids
+      assert "toast-flash-error" in ids
+      refute "flash-info" in ids
+      refute "flash-error" in ids
+    end
   end
 end

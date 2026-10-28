@@ -130,16 +130,37 @@ export function installConfirm(doc = document, win = window) {
 
   const onClick = (event) => {
     const el = event.target?.closest?.("[data-confirm]");
-    // A form with data-confirm is caught on submit, not on the click of its button.
-    if (!el || el.matches?.("form") || confirmer.passes(el)) return;
+    if (!el || confirmer.passes(el)) return;
     if (!findHost(doc)) return; // no host on the page: phoenix_html's own prompt stays
+    if (el.matches?.("form")) {
+      // A form with data-confirm is caught on submit, not on the click of its button. But
+      // phoenix_html asks window.confirm() for it on every click inside the form (it walks
+      // the click's ancestors), so the attribute is off until the submit, or the next tick.
+      hideFormAttribute(el);
+      return;
+    }
     event.preventDefault();
     event.stopImmediatePropagation();
     confirmer.ask(el);
   };
 
+  // Forms whose data-confirm is off for the length of one click (see onClick).
+  const hidden = new Map();
+  const restoreFormAttribute = (form) => {
+    const message = hidden.get(form);
+    if (message === undefined) return;
+    hidden.delete(form);
+    form.setAttribute("data-confirm", message);
+  };
+  const hideFormAttribute = (form) => {
+    hidden.set(form, form.getAttribute("data-confirm"));
+    form.removeAttribute("data-confirm");
+    setTimeout(() => restoreFormAttribute(form), 0);
+  };
+
   const onSubmit = (event) => {
     const form = event.target;
+    restoreFormAttribute(form);
     if (!form?.matches?.("form[data-confirm]") || confirmer.passes(form) || !findHost(doc)) return;
     event.preventDefault();
     event.stopImmediatePropagation();

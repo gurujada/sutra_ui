@@ -80,6 +80,17 @@ defmodule SutraUI.Popover do
   attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
 
   def popover(assigns) do
+    # A trigger that reads `open` renders twice (closed, open) and CSS shows one. One that does
+    # not renders once, so an element with an `id` inside it is not duplicated in the DOM.
+    closed = ~H"{render_slot(@trigger, false)}"
+    open = ~H"{render_slot(@trigger, true)}"
+
+    assigns =
+      assign(assigns,
+        trigger_closed: closed,
+        trigger_open: if(same_markup?(closed, open), do: nil, else: open)
+      )
+
     ~H"""
     <div
       id={@id}
@@ -96,12 +107,15 @@ defmodule SutraUI.Popover do
         aria-controls={"#{@id}-content"}
         phx-click={toggle_popover(@id)}
       >
-        <span class="popover-trigger-closed">
-          {render_slot(@trigger, false)}
+        <span :if={@trigger_open} class="popover-trigger-closed">
+          {@trigger_closed}
         </span>
-        <span class="popover-trigger-open">
-          {render_slot(@trigger, true)}
+        <span :if={@trigger_open} class="popover-trigger-open">
+          {@trigger_open}
         </span>
+        <%= if !@trigger_open do %>
+          {@trigger_closed}
+        <% end %>
       </button>
       <div
         id={"#{@id}-content"}
@@ -341,4 +355,7 @@ defmodule SutraUI.Popover do
     |> JS.toggle_attribute({"aria-expanded", "true", "false"}, to: "##{id} .popover-trigger")
     |> JS.toggle_attribute({"aria-hidden", "false", "true"}, to: "##{id}-content")
   end
+
+  defp same_markup?(a, b), do: to_bin(a) == to_bin(b)
+  defp to_bin(r), do: r |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
 end

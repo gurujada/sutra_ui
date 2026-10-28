@@ -6,6 +6,30 @@ defmodule SutraUI.AvatarTest do
 
   alias SutraUI.Avatar
 
+  describe "avatar/1 hook" do
+    test "names the colocated hook in full, so LiveView finds it" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Avatar.avatar id="a1" src="/x.png" initials="JD" />
+        """)
+
+      assert html =~ ~s(phx-hook="SutraUI.Avatar.Avatar")
+      refute html =~ ~s(phx-hook=".)
+    end
+
+    test "no component hands LiveView a dotted hook name through an expression" do
+      offenders =
+        for file <- Path.wildcard("lib/**/*.ex"),
+            line <- file |> File.read!() |> String.split("\n"),
+            line =~ ~r/phx-hook=\{[^}]*"\.\w/,
+            do: {file, String.trim(line)}
+
+      assert offenders == []
+    end
+  end
+
   describe "avatar/1 rendering" do
     test "renders as span element" do
       assigns = %{}

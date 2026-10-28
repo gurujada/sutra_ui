@@ -203,6 +203,69 @@ defmodule SutraUI do
   @doc "Like `open_confirm/1`, chained onto other JS commands."
   defdelegate open_confirm(js, id), to: SutraUI.Confirm
 
+  # Every module `use SutraUI` imports, with the `only` list of those that import a part.
+  @imports [
+    {SutraUI.Button, nil},
+    {SutraUI.Badge, nil},
+    {SutraUI.Spinner, nil},
+    {SutraUI.Kbd, nil},
+    {SutraUI.Label, nil},
+    {SutraUI.Input, nil},
+    {SutraUI.Textarea, nil},
+    {SutraUI.Checkbox, nil},
+    {SutraUI.Switch, nil},
+    {SutraUI.RadioGroup, nil},
+    {SutraUI.Select, nil},
+    {SutraUI.Slider, nil},
+    {SutraUI.Card, nil},
+    {SutraUI.Header, nil},
+    {SutraUI.Table, nil},
+    {SutraUI.Skeleton, nil},
+    {SutraUI.Empty, nil},
+    {SutraUI.Alert, nil},
+    {SutraUI.Flash, nil},
+    {SutraUI.Progress, nil},
+    {SutraUI.Breadcrumb, nil},
+    {SutraUI.Pagination, nil},
+    {SutraUI.Accordion, nil},
+    {SutraUI.Tabs, nil},
+    {SutraUI.DropdownMenu, nil},
+    {SutraUI.Toast, [toast: 1, toast_group: 1, toast_container: 1]},
+    {SutraUI.Confirm, nil},
+    {SutraUI.Avatar, nil},
+    {SutraUI.Tooltip, nil},
+    {SutraUI.Dialog, nil},
+    {SutraUI.Popover, nil},
+    {SutraUI.Command, nil},
+    {SutraUI.Commands.Palette, nil},
+    {SutraUI.Carousel, nil},
+    {SutraUI.FilterBar, nil},
+    {SutraUI.InputGroup, nil},
+    {SutraUI.InputOTP, nil},
+    {SutraUI.FileUpload, nil},
+    {SutraUI.Item, nil},
+    {SutraUI.LoadingState, nil},
+    {SutraUI.SimpleForm, nil},
+    {SutraUI.Drawer, nil},
+    {SutraUI.TabNav, nil},
+    {SutraUI.Stepper, nil},
+    {SutraUI.StepperWizard, nil},
+    {SutraUI.TreeView, nil},
+    {SutraUI.ThemeSwitcher, nil},
+    {SutraUI.RangeSlider, nil},
+    {SutraUI.LiveSelect, [decode: 1, normalize_options: 1]},
+    {SutraUI.Separator, nil},
+    {SutraUI.Marquee, nil},
+    {SutraUI.HoverCard, nil},
+    {SutraUI.Calendar, nil},
+    {SutraUI.DatePicker, nil},
+    {SutraUI.Timeline, nil},
+    {SutraUI.ContextMenu, nil},
+    {SutraUI.Response, nil},
+    {SutraUI.Activity, nil},
+    {SutraUI.Time, [relative_time: 1, local_time: 1]}
+  ]
+
   @doc """
   Use Sutra UI in your Phoenix application.
 
@@ -220,90 +283,32 @@ defmodule SutraUI do
           end
         end
       end
+
+  ## When a name clashes with your own
+
+  `use SutraUI` imports every component (for example `command_palette/1`, `avatar/1`). If your
+  app defines a function with the same name and arity, Elixir reports an ambiguity at the call.
+  Leave the Sutra one out with `except` (a list of `name: arity`), then call it as
+  `SutraUI.Commands.Palette.command_palette/1` or alias the module:
+
+      use SutraUI, except: [command_palette: 1]
+
+  The option applies to every module `use SutraUI` imports. Plain `import SutraUI.Button` and
+  the like stay available for importing a single module.
   """
-  defmacro __using__(_opts) do
-    quote do
-      # Phase 1: Foundation
-      import SutraUI.Button
-      import SutraUI.Badge
-      import SutraUI.Spinner
-      import SutraUI.Kbd
+  defmacro __using__(opts) do
+    except = Keyword.get(opts, :except, [])
 
-      # Phase 2: Form Primitives
-      import SutraUI.Label
-      import SutraUI.Input
-      import SutraUI.Textarea
-      import SutraUI.Checkbox
-      import SutraUI.Switch
-      import SutraUI.RadioGroup
-      import SutraUI.Select
-      import SutraUI.Slider
+    for {module, only} <- @imports do
+      import_opts =
+        case only do
+          nil -> [except: except]
+          only -> [only: only -- except]
+        end
 
-      # Phase 3: Layout & Data Display
-      import SutraUI.Card
-      import SutraUI.Header
-      import SutraUI.Table
-      import SutraUI.Skeleton
-      import SutraUI.Empty
-      import SutraUI.Alert
-      import SutraUI.Flash
-      import SutraUI.Progress
-
-      # Phase 4: Navigation & Interactive
-      import SutraUI.Breadcrumb
-      import SutraUI.Pagination
-      import SutraUI.Accordion
-      import SutraUI.Tabs
-      import SutraUI.DropdownMenu
-      import SutraUI.Toast, only: [toast: 1, toast_group: 1, toast_container: 1]
-      import SutraUI.Confirm
-
-      # Phase 5: Advanced UI
-      import SutraUI.Avatar
-      import SutraUI.Tooltip
-      import SutraUI.Dialog
-      import SutraUI.Popover
-      import SutraUI.Command
-      import SutraUI.Commands.Palette
-      import SutraUI.Carousel
-
-      # Phase 6: Form & Layout Helpers
-      import SutraUI.FilterBar
-      import SutraUI.InputGroup
-      import SutraUI.InputOTP
-      import SutraUI.FileUpload
-      import SutraUI.Item
-      import SutraUI.LoadingState
-      import SutraUI.SimpleForm
-
-      # Phase 7: Navigation
-      import SutraUI.Drawer
-      import SutraUI.TabNav
-      import SutraUI.Stepper
-      import SutraUI.StepperWizard
-      import SutraUI.TreeView
-      import SutraUI.ThemeSwitcher
-
-      # Phase 8: Advanced Form Controls
-      import SutraUI.RangeSlider
-      # LiveSelect is a LiveComponent - only import helper functions, not lifecycle callbacks
-      import SutraUI.LiveSelect, only: [decode: 1, normalize_options: 1]
-
-      # Phase 9: New Components
-      import SutraUI.Separator
-      import SutraUI.Marquee
-      import SutraUI.HoverCard
-      import SutraUI.Calendar
-      import SutraUI.DatePicker
-      import SutraUI.Timeline
-      import SutraUI.ContextMenu
-
-      # Phase 10: AI Primitives
-      import SutraUI.Response
-      import SutraUI.Activity
-
-      # Times (the wording helpers stay behind `SutraUI.Time.format/3`)
-      import SutraUI.Time, only: [relative_time: 1, local_time: 1]
+      quote do
+        import unquote(module), unquote(import_opts)
+      end
     end
   end
 end

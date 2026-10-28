@@ -30,7 +30,7 @@ defmodule SutraUI.Confirm do
         values={%{"id" => @course.id}}
       />
 
-  `values` are posted as hidden fields and arrive as event params. Put extra fields in the
+  `values` arrive as event params (strings, like form fields); any key works, including `id`. Put extra fields in the
   inner block (they are inside the form, so the verb submits them too):
 
       <.confirm_dialog id="remove" title="Remove Asha?" consequence="She loses access today."
@@ -107,7 +107,7 @@ defmodule SutraUI.Confirm do
   attr(:confirm, :string, required: true, doc: "The verb on the button, such as \"Retire\"")
   attr(:keep, :string, default: "Keep it", doc: "The label of the button that changes nothing")
   attr(:event, :string, required: true, doc: "The event the verb pushes")
-  attr(:values, :map, default: %{}, doc: "Posted as hidden fields; they arrive as event params")
+  attr(:values, :map, default: %{}, doc: "Sent with the event; they arrive as string params")
   attr(:tone, :atom, values: [:danger, :primary], default: :danger)
   attr(:target, :any, default: nil, doc: "`phx-target` of the pushed events")
   attr(:show, :boolean, default: false)
@@ -122,10 +122,15 @@ defmodule SutraUI.Confirm do
         do: assigns.id |> close_confirm() |> JS.push(assigns.on_cancel, target: assigns.target),
         else: close_confirm(assigns.id)
 
-    submit =
-      if assigns.on_cancel,
-        do: JS.push(assigns.event, target: assigns.target),
-        else: JS.push(assigns.event, target: assigns.target) |> close_confirm(assigns.id)
+    # `values` ride on the push, not on hidden inputs: LiveView warns about (and mishandles) an
+    # input named `id`, the usual key. They arrive as strings, as form fields do.
+    push =
+      JS.push(assigns.event,
+        target: assigns.target,
+        value: Map.new(assigns.values, fn {k, v} -> {to_string(k), to_string(v)} end)
+      )
+
+    submit = if assigns.on_cancel, do: push, else: close_confirm(push, assigns.id)
 
     assigns = assign(assigns, close: close, submit: submit)
 
@@ -147,7 +152,6 @@ defmodule SutraUI.Confirm do
       </:title>
       <:description>{@consequence}</:description>
       <.form for={%{}} id={"#{@id}-form"} phx-submit={@submit} class="space-y-4">
-        <input :for={{name, value} <- @values} type="hidden" name={name} value={value} />
         {render_slot(@inner_block)}
         <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button.button type="button" variant="ghost" data-confirm-keep phx-click={@close}>

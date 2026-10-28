@@ -62,7 +62,10 @@ defmodule SutraUI.ConfirmTest do
       assert q(html, "[data-confirm-ok]") |> LazyHTML.text() =~ "Retire"
       assert attr_of(html, "[data-confirm-ok]", "type") == ["submit"]
       assert attr_of(html, "[data-confirm-ok]", "data-tone") == ["danger"]
-      assert attr_of(html, "input[name=id]", "value") == ["7"]
+      # LiveView warns about an input named "id": values ride on the push instead
+      assert attr_of(html, "input[name=id]", "value") == []
+      assert [submit] = attr_of(html, "form", "phx-submit")
+      assert submit =~ ~s("id":"7")
       assert attr_of(html, "form", "id") == ["retire-form"]
     end
 

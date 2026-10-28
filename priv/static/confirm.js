@@ -1,4 +1,4 @@
-/* sutra_ui confirm source-hash:92e40207f63d0123 (built by mix assets.build; do not edit) */
+/* sutra_ui confirm source-hash:1f3c5d4f0d837835 (built by mix assets.build; do not edit) */
 
 // assets/js/confirm/index.js
 var HOST_SELECTOR = "[data-sutra-confirm-host]";
@@ -97,14 +97,31 @@ function installConfirm(doc = document, win = window) {
   const confirmer = new Confirmer(domHost(win, () => findHost(doc)));
   const onClick = (event) => {
     const el = event.target?.closest?.("[data-confirm]");
-    if (!el || el.matches?.("form") || confirmer.passes(el)) return;
+    if (!el || confirmer.passes(el)) return;
     if (!findHost(doc)) return;
+    if (el.matches?.("form")) {
+      hideFormAttribute(el);
+      return;
+    }
     event.preventDefault();
     event.stopImmediatePropagation();
     confirmer.ask(el);
   };
+  const hidden = /* @__PURE__ */ new Map();
+  const restoreFormAttribute = (form) => {
+    const message = hidden.get(form);
+    if (message === void 0) return;
+    hidden.delete(form);
+    form.setAttribute("data-confirm", message);
+  };
+  const hideFormAttribute = (form) => {
+    hidden.set(form, form.getAttribute("data-confirm"));
+    form.removeAttribute("data-confirm");
+    setTimeout(() => restoreFormAttribute(form), 0);
+  };
   const onSubmit = (event) => {
     const form = event.target;
+    restoreFormAttribute(form);
     if (!form?.matches?.("form[data-confirm]") || confirmer.passes(form) || !findHost(doc)) return;
     event.preventDefault();
     event.stopImmediatePropagation();

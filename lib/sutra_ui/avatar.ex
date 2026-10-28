@@ -119,7 +119,7 @@ defmodule SutraUI.Avatar do
     ~H"""
     <span
       class={["avatar", "avatar-#{@size}", "avatar-#{@shape}", @class]}
-      phx-hook={@src && @rest[:id] && ".Avatar"}
+      phx-hook={@src && @rest[:id] && "SutraUI.Avatar.Avatar"}
       data-status={@status}
       {@rest}
     >
