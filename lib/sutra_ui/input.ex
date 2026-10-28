@@ -66,7 +66,7 @@ defmodule SutraUI.Input do
 
     * `type="checkbox"` - Delegates to `SutraUI.Checkbox` with hidden false value
     * `type="switch"` - Delegates to `SutraUI.Switch` (toggle with role="switch")
-    * `type="select"` - Renders a native `<select>` element
+    * `type="select"` - Renders `SutraUI.Select`: a real `<select>` with SutraUI's list on top
     * `type="textarea"` - Delegates to `SutraUI.Textarea`
     * `type="range"` - Delegates to `SutraUI.Slider` with colocated hook
     * `type="hidden"` - Renders just the input, no wrapper or label
@@ -96,11 +96,13 @@ defmodule SutraUI.Input do
 
   ## Select Types
 
-  This component provides two ways to render select inputs:
+  Every form select is `SutraUI.Select`: a real `<select>` (so forms, `phx-change`,
+  `to_form` and no-JS work) that a hook shows as SutraUI's own list, a bottom sheet on
+  phones. Pass `native` to keep only the browser's control.
 
-  ### Native Select (via `<.input type="select">`)
+  ### Select (via `<.input type="select">`)
 
-  For standard form selects that work with Phoenix generators:
+  With label, description and errors, from a form field:
 
       <.input
         field={@form[:country]}
@@ -110,15 +112,8 @@ defmodule SutraUI.Input do
         options={[{"United States", "us"}, {"Canada", "ca"}]}
       />
 
-  ### Custom Select (via `SutraUI.Select`)
-
-  For advanced features like search/filter, keyboard navigation, and custom styling,
-  use the dedicated `SutraUI.Select` component directly:
-
-      <.select id="country" name="country" value={@country} searchable>
-        <.select_option value="us" label="United States" />
-        <.select_option value="ca" label="Canada" />
-      </.select>
+  Options, prompt, option groups, `multiple`, `searchable` and the rest are documented in
+  `SutraUI.Select`; this component adds the label, description and errors around it.
 
   See `SutraUI.Select` for more details.
 
@@ -261,6 +256,17 @@ defmodule SutraUI.Input do
   attr(:prompt, :string, default: nil, doc: "The prompt for select inputs")
   attr(:options, :list, doc: "The options to pass to Phoenix.HTML.Form.options_for_select/2")
   attr(:multiple, :boolean, default: false, doc: "The multiple flag for select inputs")
+
+  attr(:searchable, :any,
+    default: nil,
+    doc: "Select inputs: a search box in the list. `nil` from 10 options on, `true`/`false` force"
+  )
+
+  attr(:native, :boolean,
+    default: false,
+    doc: "Select inputs: only the browser's own `<select>`"
+  )
+
   attr(:class, :any, default: nil, doc: "Additional CSS classes")
 
   attr(:rest, :global,
@@ -330,30 +336,37 @@ defmodule SutraUI.Input do
     """
   end
 
-  # Select input - native HTML select
+  # Select input - SutraUI.Select: a real <select> with the styled list on top
   def input(%{type: "select"} = assigns) do
-    assigns = assign_field_accessibility(assigns)
+    assigns =
+      assigns
+      |> assign(
+        :id,
+        assigns.id || (assigns.name && String.replace(assigns.name, ~r/[^A-Za-z0-9_-]+/, "_"))
+      )
+      |> assign_field_accessibility()
 
     ~H"""
     <div class="fieldset mb-2">
-      <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
-        <p :if={@description} id={@description_id} class="field-description mb-1.5">
-          {@description}
-        </p>
-        <select
-          id={@id}
-          name={@name}
-          class={["select w-full", @class]}
-          multiple={@multiple}
-          aria-invalid={@errors != [] && "true"}
-          aria-describedby={@describedby}
-          {@rest}
-        >
-          <option :if={@prompt} value="">{@prompt}</option>
-          {Phoenix.HTML.Form.options_for_select(@options, @value)}
-        </select>
-      </label>
+      <label :if={@label} for={@id} class="label mb-1 block">{@label}</label>
+      <p :if={@description} id={@description_id} class="field-description mb-1.5">
+        {@description}
+      </p>
+      <SutraUI.Select.select
+        id={@id}
+        name={@name}
+        value={@value}
+        options={@options}
+        prompt={@prompt}
+        multiple={@multiple}
+        searchable={@searchable}
+        native={@native}
+        label={@label}
+        class={@class}
+        aria-invalid={@errors != [] && "true"}
+        aria-describedby={@describedby}
+        {@rest}
+      />
       <div :if={@errors != []} id={@error_id}>
         <.error :for={msg <- @errors}>{msg}</.error>
       </div>

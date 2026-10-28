@@ -1,113 +1,121 @@
 defmodule SutraUI.Select do
   @moduledoc """
-  A custom select component with search/filter capabilities (combobox pattern).
+  A select for forms: a real `<select>` underneath, SutraUI's own list on top.
 
-  Provides a keyboard-accessible custom dropdown select with optional search
-  filtering, option grouping, and form integration. Use this instead of native
-  `<select>` when you need custom styling or searchable options.
+  Every form that chooses from a list uses this component (`<.input type="select">` renders
+  it). The server renders a real `<select>` with the options, so the form posts, `phx-change`
+  fires, `to_form`/`field`, validation errors and first paint work with no JavaScript. The
+  `.Select` hook then hides the `<select>` and shows a trigger and a list that the page
+  draws as ordinary markup, so the open list also appears in a screen share (the browser's
+  own option popup does not). Choosing an option sets the `<select>` and fires its `input`
+  and `change` events.
 
   ## Examples
 
-      # Basic select
-      <.select id="country" name="country" value="us">
-        <.select_option value="us" label="United States" />
-        <.select_option value="ca" label="Canada" />
-        <.select_option value="mx" label="Mexico" />
-      </.select>
+      # From a form field (id, name, value come from the field)
+      <.select field={@form[:role]} label="Role" options={[{"Admin", "admin"}, {"Member", "member"}]} />
 
-      # Searchable select
-      <.select id="framework" name="framework" value="phoenix" searchable>
-        <.select_option value="phoenix" label="Phoenix" />
-        <.select_option value="rails" label="Rails" />
-        <.select_option value="django" label="Django" />
-        <.select_option value="laravel" label="Laravel" />
-      </.select>
+      # Standalone, with a prompt
+      <.select id="country" name="country" label="Country" prompt="Choose a country"
+               value={@country} options={@countries} />
 
-      # With option groups
-      <.select id="stack" name="stack" value="phoenix" searchable>
-        <.select_group label="Backend">
-          <.select_option value="phoenix" label="Phoenix" />
-          <.select_option value="rails" label="Rails" />
-        </.select_group>
-        <.select_separator />
-        <.select_group label="Frontend">
-          <.select_option value="react" label="React" />
-          <.select_option value="vue" label="Vue" />
-        </.select_group>
-      </.select>
+      # Option groups and disabled options
+      <.select
+        id="stack"
+        name="stack"
+        label="Stack"
+        options={[
+          {"Backend", [{"Phoenix", "phoenix"}, {"Rails", "rails", disabled: true}]},
+          {"Frontend", [{"React", "react"}, {"Vue", "vue"}]}
+        ]}
+      />
 
-      # With custom trigger content
-      <.select id="status" name="status" value={@status}>
-        <:trigger>
-          <.badge variant={status_variant(@status)}>{@status}</.badge>
-        </:trigger>
-        <.select_option value="active" label="Active" />
-        <.select_option value="pending" label="Pending" />
-        <.select_option value="inactive" label="Inactive" />
-      </.select>
+      # Several values, shown as chips in the trigger
+      <.select field={@form[:tags]} label="Tags" options={@tags} multiple />
 
-  ## Components
+      # Through the input component, with label, description and errors
+      <.input field={@form[:role]} type="select" label="Role" options={@roles} prompt="Choose" />
 
-  | Component | Description |
-  |-----------|-------------|
-  | `select/1` | Main container with trigger and popover |
-  | `select_option/1` | Individual selectable option |
-  | `select_group/1` | Labeled group of options |
-  | `select_separator/1` | Visual divider between options/groups |
+  ## Options
 
-  ## Keyboard Navigation
+  `options` takes what `Phoenix.HTML.Form.options_for_select/2` takes: a list of strings,
+  `{label, value}` pairs, `{label, value, disabled: true}` triples, and `{group_label, options}`
+  for an option group. The value can be anything with a string form.
+
+  ## Attributes
+
+  | Attribute | Meaning |
+  |-----------|---------|
+  | `field` | a `Phoenix.HTML.FormField`; supplies `id`, `name` and `value` |
+  | `label` | the accessible name, and the title of the bottom sheet on phones |
+  | `prompt` | the empty choice ("Choose…"); also offered in the list so a choice can be cleared |
+  | `multiple` | several values; the trigger shows chips and the list stays open while choosing |
+  | `searchable` | a search box in the list. `nil` (default): from 10 options on; `true` or `false` force it |
+  | `native` | only the browser's own `<select>` (for a page that must work without JavaScript) |
+  | `disabled` | the field cannot be changed |
+  | `class`, `trigger_class` | extra classes on the wrapper and on the trigger |
+
+  Attributes such as `required`, `form`, `phx-change`, `aria-invalid` and `aria-describedby`
+  go to the real `<select>` (and, for the last three, to the trigger).
+
+  A multiple select with nothing chosen posts nothing for its field (the browser's rule), so
+  give the field a default in the handler.
+
+  ## Phones
+
+  Below 640 px the list opens as a bottom sheet (a backdrop, the label as title, a Close
+  button and finger-sized rows). A search box in it takes focus only when tapped, so the
+  keyboard does not cover the list.
+
+  ## On screen
+
+  On larger screens the list hangs under the field; near the bottom or the right edge it
+  flips above or shifts back in, and it never grows taller than the room it has (the list
+  scrolls inside).
+
+  ## Keyboard
 
   | Key | Action |
   |-----|--------|
-  | `Enter` / `Space` | Open dropdown or select focused option |
-  | `Escape` | Close dropdown |
-  | `ArrowDown` | Move to next option |
-  | `ArrowUp` | Move to previous option |
-  | `Home` | Jump to first option |
-  | `End` | Jump to last option |
-  | `A-Z` | Jump to first option starting with letter |
+  | `Enter`, `Space`, `ArrowDown`, `ArrowUp` | Open the list (on the field) |
+  | `ArrowDown`, `ArrowUp`, `Home`, `End`, `PageDown`, `PageUp` | Move the active option |
+  | Letters | Type-ahead by first letters (a repeated letter cycles); in the search box they filter |
+  | `Enter`, `Space` | Choose the active option (`Space` types in the search box) |
+  | `Tab` | Take the active option and move on |
+  | `Escape` | Close and return to the field |
 
-  ## Form Integration
+  ## Custom option content
 
-  The select renders a hidden `<input>` with the selected value, making it
-  compatible with Phoenix forms and `phx-change` events:
+  For options that need markup (a badge, an icon) build the list yourself with
+  `select_option/1`, `select_group/1` and `select_separator/1` inside `select/1`. That form
+  keeps a hidden `<input>` for the value instead of a `<select>`:
 
-      <.form for={@form} class="form" phx-change="validate" phx-submit="save">
-        <.select
-          id="role-select"
-          name={@form[:role].name}
-          value={@form[:role].value}
-        >
-          <.select_option value="admin" label="Administrator" />
-          <.select_option value="user" label="User" />
-        </.select>
-      </.form>
+      <.select id="status" name="status" value={@status}>
+        <:trigger><.badge>{@status}</.badge></:trigger>
+        <.select_option value="active" label="Active" />
+        <.select_option value="pending" label="Pending" />
+      </.select>
 
-  ## Colocated Hook
+  Prefer `options` wherever the options are plain text.
 
-  The `.Select` hook handles all interactive behavior:
-  - Opening/closing the dropdown popover
-  - Keyboard navigation and letter jumping
-  - Search filtering (when `searchable`)
-  - Value selection and form `change` event dispatch
-  - Outside click detection
+  ## Hook
 
-  See [JavaScript Hooks](colocated-hooks.md) for more details.
+  The hook is an extracted colocated hook that imports `sutra_ui/select` (see
+  [JavaScript Hooks](colocated-hooks.md)): merge the generated `phoenix-colocated/sutra_ui`
+  hooks into your LiveSocket, as for `dialog`. Without it the page still works with the
+  browser's own `<select>`.
 
   ## Accessibility
 
-  - Uses combobox/listbox-style ARIA roles and attributes
-  - `role="listbox"` for the options container
-  - `role="option"` for each selectable item
-  - `aria-selected` indicates current selection
-  - `aria-expanded` reflects dropdown state
-  - `aria-controls` links trigger to listbox
-  - `aria-disabled` for disabled options
-
-  > #### Required ID {: .warning}
-  >
-  > The `id` attribute is **required** for the JavaScript hook to function.
-  > Each select must have a unique ID on the page.
+  - The trigger is the WAI-ARIA select-only combobox (`role="combobox"`, `aria-expanded`,
+    `aria-controls`, `aria-activedescendant`); the list is a `role="listbox"` (with
+    `aria-multiselectable` for `multiple`) of `role="option"` rows with `aria-selected`
+  - With a search box it is the editable combobox: focus moves to the search box on larger
+    screens
+  - The trigger takes the label as its name and the field's `aria-invalid` and
+    `aria-describedby`; a `<label for={id}>` focuses the trigger
+  - The real `<select>` stays in the form but is out of the tab order and hidden from
+    assistive technology while the hook is active
 
   ## Related
 
@@ -120,51 +128,46 @@ defmodule SutraUI.Select do
 
   use Phoenix.Component
 
+  alias Phoenix.HTML.FormField
   alias Phoenix.LiveView.ColocatedHook
 
   @doc """
-  Renders a custom select component.
+  Renders a select.
 
-  ## Examples
-
-      <.select id="country-select" name="country" value="us">
-        <.select_option value="us" label="United States" />
-        <.select_option value="ca" label="Canada" />
-        <.select_option value="mx" label="Mexico" />
-      </.select>
-
-      <.select id="framework-select" name="framework" value="phoenix" searchable>
-        <.select_group label="Frontend">
-          <.select_option value="react" label="React" />
-          <.select_option value="vue" label="Vue" />
-        </.select_group>
-        <.select_separator />
-        <.select_group label="Backend">
-          <.select_option value="phoenix" label="Phoenix" />
-          <.select_option value="rails" label="Rails" />
-        </.select_group>
-      </.select>
-
-      <.select id="status-select" name="status" value="active" disabled>
-        <.select_option value="active" label="Active" />
-        <.select_option value="inactive" label="Inactive" />
-      </.select>
+  With `options` (or a `field` and `options`) it is a real `<select>` with SutraUI's list on
+  top; with an inner block of `select_option/1` it is the custom-option form. See the module
+  documentation.
   """
 
-  attr(:id, :string, required: true, doc: "Unique identifier for the select (required for hook)")
-  attr(:name, :string, default: nil, doc: "Form input name")
-  attr(:value, :string, default: nil, doc: "Currently selected value")
+  attr(:id, :string, default: nil, doc: "Unique id; the `<select>`'s id (taken from `field`)")
+  attr(:name, :string, default: nil, doc: "Form input name (taken from `field`)")
+  attr(:value, :any, default: nil, doc: "Selected value, or a list of values for `multiple`")
+  attr(:field, FormField, default: nil, doc: "A form field, for example `@form[:role]`")
+
+  attr(:options, :list,
+    default: nil,
+    doc: "Strings, `{label, value}`, `{label, value, disabled: true}` and `{group, options}`"
+  )
+
+  attr(:label, :string, default: nil, doc: "Accessible name, and the title of the phone sheet")
+  attr(:prompt, :string, default: nil, doc: "The empty choice, for example \"Choose…\"")
+  attr(:multiple, :boolean, default: false, doc: "Choose several values; chips in the trigger")
+
+  attr(:searchable, :any,
+    default: nil,
+    doc: "Search box in the list: `nil` from 10 options on, `true` or `false` to force"
+  )
+
+  attr(:native, :boolean, default: false, doc: "Only the browser's own `<select>`")
 
   attr(:selected_label, :string,
     default: nil,
-    doc: "Display label for the current value (defaults to value if not set)"
+    doc: "Custom-option form only: label for the current value (defaults to the value)"
   )
 
-  attr(:searchable, :boolean, default: false, doc: "Enable search/filter functionality")
-
   attr(:search_placeholder, :string,
-    default: "Search entries...",
-    doc: "Placeholder text for search input"
+    default: "Search...",
+    doc: "Placeholder text for the search input"
   )
 
   attr(:empty_message, :string,
@@ -177,28 +180,388 @@ defmodule SutraUI.Select do
   attr(:disabled, :boolean, default: false, doc: "Whether the select is disabled")
 
   attr(:rest, :global,
-    include: ~w(form phx-change phx-blur phx-focus),
-    doc: "Additional HTML attributes"
+    include:
+      ~w(form required autocomplete size phx-change phx-blur phx-focus phx-debounce aria-invalid aria-describedby aria-required),
+    doc: "Additional HTML attributes, set on the `<select>`"
   )
 
-  slot(:trigger, doc: "Custom content for the trigger button (optional)")
-  slot(:inner_block, required: true, doc: "The select options and groups")
+  slot(:trigger, doc: "Custom-option form only: content for the trigger button")
 
-  attr(:nonce, :string, default: nil, doc: "CSP nonce for the inline hook script")
+  slot(:inner_block,
+    doc: "Custom-option form: `select_option`, `select_group`, `select_separator`"
+  )
 
-  def select(assigns) do
+  attr(:nonce, :string, default: nil, doc: "Unused; the hook is bundled by your app, not inline")
+
+  def select(%{field: %FormField{} = field} = assigns) do
+    assigns
+    |> assign(field: nil, id: assigns.id || field.id)
+    |> assign(
+      :name,
+      assigns.name || if(assigns.multiple, do: field.name <> "[]", else: field.name)
+    )
+    |> assign(:value, if(is_nil(assigns.value), do: field.value, else: assigns.value))
+    |> select()
+  end
+
+  def select(%{options: options, native: true} = assigns) when is_list(options) do
+    assigns = assigns |> require_id() |> assign_items()
+
+    ~H"""
+    <select
+      id={@id}
+      name={@name}
+      multiple={@multiple}
+      disabled={@disabled}
+      class={["select w-full", @class]}
+      {@rest}
+    >
+      <.native_options prompt={@prompt} multiple={@multiple} items={@items} selected={@selected} />
+    </select>
+    """
+  end
+
+  def select(%{options: options} = assigns) when is_list(options) do
+    assigns = assigns |> require_id() |> assign_items()
+
+    ~H"""
+    <div
+      id={"#{@id}-wrapper"}
+      class={["select", @class]}
+      data-has-select
+      data-state="closed"
+      data-mode={if @multiple, do: "multiple", else: "single"}
+      data-disabled={@disabled}
+      data-prompt={@prompt}
+      phx-hook=".Select"
+    >
+      <select
+        id={@id}
+        name={@name}
+        multiple={@multiple}
+        disabled={@disabled}
+        class="select-native"
+        {@rest}
+      >
+        <.native_options prompt={@prompt} multiple={@multiple} items={@items} selected={@selected} />
+      </select>
+      <button
+        type="button"
+        id={"#{@id}-trigger"}
+        class={["select-trigger", @trigger_class]}
+        role="combobox"
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        aria-controls={"#{@id}-listbox"}
+        aria-label={@label}
+        aria-invalid={@rest[:"aria-invalid"]}
+        aria-describedby={@rest[:"aria-describedby"]}
+        aria-required={@rest[:required] && "true"}
+        disabled={@disabled}
+      >
+        <span
+          class="select-value"
+          data-selected-label
+          data-placeholder={@selected in [[], [""]]}
+        >{if @shown_chips == [], do: @shown}<span :for={chip <- @shown_chips} class="select-chip">{chip}</span></span>
+        <.chevron />
+      </button>
+      <div class="select-backdrop" aria-hidden="true"></div>
+      <div id={"#{@id}-popover"} class="select-popover" data-popover aria-hidden="true">
+        <div class="select-sheet-head">
+          <span class="select-sheet-title">{@label || @prompt}</span>
+          <button type="button" class="select-sheet-close" data-select-close aria-label="Close">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <header :if={@search}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+          </svg>
+          <input
+            type="text"
+            value=""
+            placeholder={@search_placeholder}
+            aria-label={@search_placeholder}
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+            aria-autocomplete="list"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls={"#{@id}-listbox"}
+          />
+        </header>
+        <div
+          role="listbox"
+          id={"#{@id}-listbox"}
+          class="select-listbox"
+          aria-orientation="vertical"
+          aria-multiselectable={@multiple && "true"}
+          aria-label={@label}
+          data-empty={@empty_message}
+        >
+          <div
+            :if={@prompt && !@multiple}
+            role="option"
+            id={"#{@id}-option-prompt"}
+            class="select-option select-option-prompt"
+            data-value=""
+            data-label={@prompt}
+            aria-selected={to_string(@selected == [""])}
+            tabindex="-1"
+          >
+            {@prompt}
+          </div>
+          <%= for item <- @items do %>
+            <div
+              :if={item.type == :group}
+              role="group"
+              class="select-group"
+              aria-labelledby={"#{@id}-group-#{item.index}"}
+            >
+              <div role="presentation" id={"#{@id}-group-#{item.index}"} class="select-group-label">
+                {item.label}
+              </div>
+              <.list_option :for={opt <- item.options} id={@id} opt={opt} />
+            </div>
+            <.list_option :if={item.type == :option} id={@id} opt={item} />
+          <% end %>
+        </div>
+      </div>
+      <.select_hook />
+    </div>
+    """
+  end
+
+  def select(assigns), do: custom_select(assigns)
+
+  # The id names the `<select>` and everything around it; without one it comes from the name.
+  defp require_id(%{id: nil, name: name} = assigns) when is_binary(name) and name != "" do
+    assign(assigns, :id, String.replace(name, ~r/[^A-Za-z0-9_-]+/, "_"))
+  end
+
+  defp require_id(%{id: nil}),
+    do: raise(ArgumentError, "SutraUI.Select needs an `id`, a `name` or a `field`")
+
+  defp require_id(assigns), do: assigns
+
+  attr(:prompt, :string, default: nil)
+  attr(:multiple, :boolean, default: false)
+  attr(:items, :list, required: true)
+  attr(:selected, :list, required: true)
+
+  defp native_options(assigns) do
+    ~H"""
+    <option :if={@prompt && !@multiple} value="" selected={@selected == [""]}>{@prompt}</option>
+    <%= for item <- @items do %>
+      <optgroup :if={item.type == :group} label={item.label}>
+        <option
+          :for={opt <- item.options}
+          value={opt.value}
+          selected={opt.value in @selected}
+          disabled={opt.disabled}
+        >
+          {opt.label}
+        </option>
+      </optgroup>
+      <option
+        :if={item.type == :option}
+        value={item.value}
+        selected={item.value in @selected}
+        disabled={item.disabled}
+      >
+        {item.label}
+      </option>
+    <% end %>
+    """
+  end
+
+  attr(:id, :string, required: true)
+  attr(:opt, :map, required: true)
+
+  defp list_option(assigns) do
+    ~H"""
+    <div
+      role="option"
+      id={"#{@id}-option-#{@opt.index}"}
+      class={["select-option", @opt.disabled && "select-option-disabled"]}
+      data-value={@opt.value}
+      data-label={@opt.label}
+      aria-selected={to_string(@opt.selected)}
+      aria-disabled={to_string(@opt.disabled)}
+      tabindex="-1"
+    >
+      {@opt.label}
+    </div>
+    """
+  end
+
+  defp chevron(assigns) do
+    ~H"""
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="select-icon"
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+    """
+  end
+
+  defp select_hook(assigns) do
+    ~H"""
+    <script :type={ColocatedHook} name=".Select">
+      import {Select} from "sutra_ui/select"
+      export default Select
+    </script>
+    """
+  end
+
+  # The options as the template needs them: groups and options in order, each option with
+  # its index (for ids), whether it is selected and disabled. For one value, a missing or
+  # unknown value falls back to the prompt, else to the first enabled option (the browser's
+  # own choice), so the trigger and the `<select>` agree.
+  defp assign_items(assigns) do
+    {items, count} = options_to_items(assigns.options)
+
+    flat =
+      Enum.flat_map(items, fn
+        %{type: :group, options: o} -> o
+        opt -> [opt]
+      end)
+
+    values = assigns.value |> List.wrap() |> Enum.map(&to_string/1)
+
+    selected =
+      cond do
+        assigns.multiple ->
+          values
+
+        Enum.any?(flat, &(&1.value in values)) ->
+          [Enum.find(flat, &(&1.value in values)).value]
+
+        assigns.prompt ->
+          [""]
+
+        true ->
+          flat |> Enum.reject(& &1.disabled) |> Enum.take(1) |> Enum.map(& &1.value)
+      end
+
+    items = mark_selected(items, selected)
+
+    flat_selected =
+      flat |> Enum.filter(&(&1.value in selected)) |> Enum.map(& &1.label)
+
+    assigns
+    |> assign(:items, items)
+    |> assign(:selected, selected)
+    |> assign(:count, count)
+    |> assign(:search, search?(assigns.searchable, count))
+    |> assign(
+      :shown,
+      if(assigns.multiple, do: "", else: shown_label(flat_selected, assigns.prompt))
+    )
+    |> assign(:shown_chips, if(assigns.multiple, do: flat_selected, else: []))
+  end
+
+  defp shown_label([label | _], _prompt), do: label
+  defp shown_label([], prompt), do: prompt || ""
+
+  defp search?(true, _), do: true
+  defp search?(false, _), do: false
+  defp search?(_, count), do: count >= 10
+
+  defp mark_selected(items, selected) do
+    Enum.map(items, fn
+      %{type: :group, options: opts} = group ->
+        %{group | options: Enum.map(opts, &Map.put(&1, :selected, &1.value in selected))}
+
+      opt ->
+        Map.put(opt, :selected, opt.value in selected)
+    end)
+  end
+
+  defp options_to_items(options) do
+    {items, count} =
+      Enum.map_reduce(options, 0, fn entry, n ->
+        case entry do
+          {label, list} when is_list(list) ->
+            {opts, n2} = Enum.map_reduce(list, n, &option_item(&1, &2))
+            {%{type: :group, label: to_string(label), options: opts, index: n}, n2}
+
+          other ->
+            option_item(other, n)
+        end
+      end)
+
+    {items, count}
+  end
+
+  defp option_item({label, value, opts}, n) when is_list(opts) do
+    {item(label, value, Keyword.get(opts, :disabled, false), n), n + 1}
+  end
+
+  defp option_item({label, value}, n), do: {item(label, value, false, n), n + 1}
+  defp option_item(value, n), do: {item(value, value, false, n), n + 1}
+
+  defp item(label, value, disabled, n) do
+    %{
+      type: :option,
+      label: to_string(label),
+      value: to_string(value),
+      disabled: disabled == true,
+      index: n
+    }
+  end
+
+  defp custom_select(assigns) do
     ~H"""
     <div
       id={@id}
       class={["select", @class]}
       data-select-value={@value}
       phx-hook=".Select"
+      data-custom-trigger={@trigger != []}
       {@rest}
     >
       <button
         type="button"
         class={["select-trigger", @trigger_class]}
         id={"#{@id}-trigger"}
+        role="combobox"
         aria-haspopup="listbox"
         aria-expanded="false"
         aria-controls={"#{@id}-listbox"}
@@ -300,387 +663,7 @@ defmodule SutraUI.Select do
         data-select-input
       />
 
-      <script :type={ColocatedHook} name=".Select" runtime nonce={@nonce}>
-        {
-          mounted() {
-            this.initSelect();
-          },
-
-          beforeUpdate() {
-            // Save popover state BEFORE morphdom patches aria-hidden back to "true"
-            this._wasOpen = this.popover && this.popover.getAttribute('aria-hidden') === 'false';
-            this._filterValue = this.filter ? this.filter.value : '';
-          },
-
-          updated() {
-            // Re-query ALL DOM refs (morphdom may have replaced inner elements)
-            const oldTrigger = this.trigger;
-            const oldListbox = this.listbox;
-            const oldFilter = this.filter;
-            this.trigger = this.el.querySelector(':scope > button');
-            this.selectedLabel = this.trigger.querySelector('[data-selected-label]');
-            this.popover = this.el.querySelector('[data-popover]');
-            this.listbox = this.popover.querySelector('[role="listbox"]');
-            this.input = this.el.querySelector('[data-select-input]');
-            this.filter = this.el.querySelector('input[type="text"]');
-
-            // Refresh option references
-            this.allOptions = Array.from(this.listbox.querySelectorAll('[role="option"]'));
-            this.options = this.allOptions.filter(opt => opt.getAttribute('aria-disabled') !== 'true');
-            this.visibleOptions = [...this.options];
-
-            if (this.trigger !== oldTrigger) {
-              oldTrigger?.removeEventListener('click', this.handleTriggerClick);
-              oldTrigger?.removeEventListener('keydown', this.handleTriggerKeydown);
-              this.trigger.addEventListener('click', this.handleTriggerClick);
-              this.trigger.addEventListener('keydown', this.handleTriggerKeydown);
-            }
-
-            if (this.listbox !== oldListbox) {
-              oldListbox?.removeEventListener('click', this.handleListboxClick);
-              oldListbox?.removeEventListener('mousemove', this.handleListboxMousemove);
-              oldListbox?.removeEventListener('mouseleave', this.handleListboxMouseleave);
-              this.listbox.addEventListener('click', this.handleListboxClick);
-              this.listbox.addEventListener('mousemove', this.handleListboxMousemove);
-              this.listbox.addEventListener('mouseleave', this.handleListboxMouseleave);
-            }
-
-            // Re-register filter listeners if the element was replaced by morphdom
-            if (this.filter !== oldFilter) {
-              this.removeFilterListeners(oldFilter);
-              if (this.filter) {
-                this.addFilterListeners(this.filter);
-              }
-            }
-
-            // Sync value from server
-            const newValue = this.el.dataset.selectValue;
-            this.selectByValue(newValue || this.input.value, false);
-
-            // Restore popover state saved in beforeUpdate
-            if (this._wasOpen) {
-              this.popover.setAttribute('aria-hidden', 'false');
-              this.trigger.setAttribute('aria-expanded', 'true');
-              this.filter?.setAttribute('aria-expanded', 'true');
-              if (this.filter) {
-                this.filter.value = this._filterValue;
-                if (this._filterValue) {
-                  this.filterOptions();
-                }
-                setTimeout(() => this.filter.focus(), 0);
-              }
-            }
-          },
-
-          destroyed() {
-            document.removeEventListener('click', this.handleOutsideClick);
-            this.trigger?.removeEventListener('click', this.handleTriggerClick);
-            this.trigger?.removeEventListener('keydown', this.handleTriggerKeydown);
-            this.listbox?.removeEventListener('click', this.handleListboxClick);
-            this.listbox?.removeEventListener('mousemove', this.handleListboxMousemove);
-            this.listbox?.removeEventListener('mouseleave', this.handleListboxMouseleave);
-            this.removeFilterListeners(this.filter);
-          },
-
-          initSelect() {
-            this.trigger = this.el.querySelector(':scope > button');
-            this.selectedLabel = this.trigger.querySelector('[data-selected-label]');
-            this.popover = this.el.querySelector('[data-popover]');
-            this.listbox = this.popover.querySelector('[role="listbox"]');
-            this.input = this.el.querySelector('[data-select-input]');
-            this.filter = this.el.querySelector('input[type="text"]');
-
-            if (!this.trigger || !this.popover || !this.listbox || !this.input) {
-              console.error('SutraUI.Select: Missing required elements');
-              return;
-            }
-
-            this.allOptions = Array.from(this.listbox.querySelectorAll('[role="option"]'));
-            this.options = this.allOptions.filter(opt => opt.getAttribute('aria-disabled') !== 'true');
-            this.visibleOptions = [...this.options];
-            this.activeIndex = -1;
-
-            this.handleTriggerClick = () => this.togglePopover();
-            this.handleTriggerKeydown = (e) => this.handleKeyNavigation(e);
-            this.handleListboxClick = (e) => this.handleOptionClick(e);
-            this.handleListboxMousemove = (e) => this.handleMouseMove(e);
-            this.handleListboxMouseleave = () => this.handleMouseLeave();
-            this.handleFilterInput = (e) => {
-              e.stopPropagation(); // Prevent bubbling to parent form's phx-change
-              this.filterOptions();
-            };
-            this.handleFilterChange = (e) => e.stopPropagation();
-            this.handleFilterKeydown = (e) => this.handleKeyNavigation(e);
-
-            this.trigger.addEventListener('click', this.handleTriggerClick);
-            this.trigger.addEventListener('keydown', this.handleTriggerKeydown);
-            this.listbox.addEventListener('click', this.handleListboxClick);
-            this.listbox.addEventListener('mousemove', this.handleListboxMousemove);
-            this.listbox.addEventListener('mouseleave', this.handleListboxMouseleave);
-
-            if (this.filter) {
-              this.addFilterListeners(this.filter);
-            }
-
-            this.handleOutsideClick = (e) => {
-              if (!this.el.contains(e.target)) {
-                this.closePopover(false);
-              }
-            };
-            document.addEventListener('click', this.handleOutsideClick);
-
-            const initialValue = this.input.value || this.el.dataset.selectValue;
-            if (initialValue) {
-              this.selectByValue(initialValue, false);
-            } else {
-              const firstOption = this.options[0];
-              if (firstOption) {
-                this.updateValue(firstOption, false);
-              }
-            }
-          },
-
-          setActiveOption(index) {
-            if (this.activeIndex > -1 && this.options[this.activeIndex]) {
-              this.options[this.activeIndex].classList.remove('bg-accent');
-            }
-
-            this.activeIndex = index;
-            const activeTargets = [this.trigger, this.filter].filter(Boolean);
-
-            if (this.activeIndex > -1) {
-              const activeOption = this.options[this.activeIndex];
-              activeOption.classList.add('bg-accent');
-              if (activeOption.id) {
-                activeTargets.forEach((target) => target.setAttribute('aria-activedescendant', activeOption.id));
-              } else {
-                activeTargets.forEach((target) => target.removeAttribute('aria-activedescendant'));
-              }
-            } else {
-              activeTargets.forEach((target) => target.removeAttribute('aria-activedescendant'));
-            }
-          },
-
-          updateValue(option, triggerEvent = true) {
-            if (option) {
-              const label = option.dataset.label || option.textContent.trim();
-              this.selectedLabel.textContent = label;
-              this.input.value = option.dataset.value;
-              this.el.dataset.selectValue = option.dataset.value;
-
-              this.listbox.querySelector('[role="option"][aria-selected="true"]')?.removeAttribute('aria-selected');
-              option.setAttribute('aria-selected', 'true');
-
-              if (triggerEvent) {
-                this.input.dispatchEvent(new Event('input', { bubbles: true }));
-                this.input.dispatchEvent(new Event('change', { bubbles: true }));
-              }
-            }
-          },
-
-          closePopover(focusOnTrigger = true) {
-            if (this.popover.getAttribute('aria-hidden') === 'true') return;
-
-            if (this.filter) {
-              this.filter.value = '';
-              this.visibleOptions = [...this.options];
-              this.allOptions.forEach(opt => opt.setAttribute('aria-hidden', 'false'));
-            }
-
-            if (focusOnTrigger) this.trigger.focus();
-            this.popover.setAttribute('aria-hidden', 'true');
-            this.trigger.setAttribute('aria-expanded', 'false');
-            this.filter?.setAttribute('aria-expanded', 'false');
-            this.setActiveOption(-1);
-          },
-
-          openPopover() {
-            this.popover.setAttribute('aria-hidden', 'false');
-            this.trigger.setAttribute('aria-expanded', 'true');
-            this.filter?.setAttribute('aria-expanded', 'true');
-
-            if (this.filter) {
-              setTimeout(() => this.filter.focus(), 0);
-            }
-
-            const selectedOption = this.listbox.querySelector('[role="option"][aria-selected="true"]');
-            if (selectedOption) {
-              this.setActiveOption(this.options.indexOf(selectedOption));
-              selectedOption.scrollIntoView({ block: 'nearest' });
-            }
-          },
-
-          togglePopover() {
-            const isExpanded = this.trigger.getAttribute('aria-expanded') === 'true';
-            if (isExpanded) {
-              this.closePopover();
-            } else {
-              this.openPopover();
-            }
-          },
-
-          selectOption(option) {
-            if (!option) return;
-
-            const oldValue = this.input.value;
-            const newValue = option.dataset.value;
-
-            if (newValue != null && newValue !== oldValue) {
-              this.updateValue(option);
-            }
-
-            this.closePopover();
-          },
-
-          selectByValue(value, triggerEvent = true) {
-            const option = this.options.find(opt => opt.dataset.value === value);
-            if (option) {
-              this.updateValue(option, triggerEvent);
-            }
-          },
-
-          filterOptions() {
-            const searchTerm = this.filter.value.trim().toLowerCase();
-
-            this.setActiveOption(-1);
-
-            this.visibleOptions = [];
-            this.allOptions.forEach(option => {
-              const optionText = (option.dataset.label || option.textContent).trim().toLowerCase();
-              const matches = optionText.includes(searchTerm);
-              option.setAttribute('aria-hidden', String(!matches));
-              option.style.display = matches ? '' : 'none';
-              if (matches && this.options.includes(option)) {
-                this.visibleOptions.push(option);
-              }
-            });
-          },
-
-          handleKeyNavigation(event) {
-            const isPopoverOpen = this.popover.getAttribute('aria-hidden') === 'false';
-            const isSpace = event.key === ' ' || event.key === 'Spacebar';
-
-            if (event.target === this.filter && isSpace) {
-              return;
-            }
-
-            // Handle letter navigation when popover is open (but NOT when typing in search)
-            if (isPopoverOpen && event.key.length === 1 && /[a-zA-Z]/.test(event.key) && event.target !== this.filter) {
-              this.jumpToLetter(event.key.toLowerCase());
-              return;
-            }
-
-            if (!['ArrowDown', 'ArrowUp', 'Enter', 'Home', 'End', 'Escape'].includes(event.key) && !isSpace) {
-              return;
-            }
-
-            if (!isPopoverOpen) {
-              if (event.key !== 'Enter' && event.key !== 'Escape') {
-                event.preventDefault();
-                this.openPopover();
-              }
-              return;
-            }
-
-            event.preventDefault();
-
-            if (event.key === 'Escape') {
-              this.closePopover();
-              return;
-            }
-
-            if (event.key === 'Enter' || isSpace) {
-              if (this.activeIndex > -1) {
-                this.selectOption(this.options[this.activeIndex]);
-              }
-              return;
-            }
-
-            if (this.visibleOptions.length === 0) return;
-
-            const currentVisibleIndex = this.activeIndex > -1 ? this.visibleOptions.indexOf(this.options[this.activeIndex]) : -1;
-            let nextVisibleIndex = currentVisibleIndex;
-
-            switch (event.key) {
-              case 'ArrowDown':
-                nextVisibleIndex = currentVisibleIndex < this.visibleOptions.length - 1 ? currentVisibleIndex + 1 : currentVisibleIndex;
-                break;
-              case 'ArrowUp':
-                nextVisibleIndex = currentVisibleIndex > 0 ? currentVisibleIndex - 1 : 0;
-                break;
-              case 'Home':
-                nextVisibleIndex = 0;
-                break;
-              case 'End':
-                nextVisibleIndex = this.visibleOptions.length - 1;
-                break;
-            }
-
-            if (nextVisibleIndex !== currentVisibleIndex) {
-              const newActiveOption = this.visibleOptions[nextVisibleIndex];
-              this.setActiveOption(this.options.indexOf(newActiveOption));
-              newActiveOption.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            }
-          },
-
-          jumpToLetter(letter) {
-            // Find first visible option starting with the letter
-            const currentIndex = this.activeIndex > -1 ? this.visibleOptions.indexOf(this.options[this.activeIndex]) : -1;
-
-            // Start searching from after current position, wrap around
-            for (let i = 0; i < this.visibleOptions.length; i++) {
-              const searchIndex = (currentIndex + 1 + i) % this.visibleOptions.length;
-              const option = this.visibleOptions[searchIndex];
-              const label = (option.dataset.label || option.textContent).trim().toLowerCase();
-
-              if (label.startsWith(letter)) {
-                this.setActiveOption(this.options.indexOf(option));
-                option.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                return;
-              }
-            }
-          },
-
-          handleMouseMove(event) {
-            const option = event.target.closest('[role="option"]');
-            if (option && this.visibleOptions.includes(option)) {
-              const index = this.options.indexOf(option);
-              if (index !== this.activeIndex) {
-                this.setActiveOption(index);
-              }
-            }
-          },
-
-          handleMouseLeave() {
-            const selectedOption = this.listbox.querySelector('[role="option"][aria-selected="true"]');
-            if (selectedOption) {
-              this.setActiveOption(this.options.indexOf(selectedOption));
-            } else {
-              this.setActiveOption(-1);
-            }
-          },
-
-          handleOptionClick(event) {
-            const clickedOption = event.target.closest('[role="option"]');
-            if (clickedOption && clickedOption.getAttribute('aria-disabled') !== 'true') {
-              this.selectOption(clickedOption);
-            }
-          },
-
-          addFilterListeners(filter) {
-            filter.addEventListener('input', this.handleFilterInput);
-            filter.addEventListener('change', this.handleFilterChange);
-            filter.addEventListener('keydown', this.handleFilterKeydown);
-          },
-
-          removeFilterListeners(filter) {
-            if (!filter) return;
-            filter.removeEventListener('input', this.handleFilterInput);
-            filter.removeEventListener('change', this.handleFilterChange);
-            filter.removeEventListener('keydown', this.handleFilterKeydown);
-          }
-        }
-      </script>
+      <.select_hook />
     </div>
     """
   end

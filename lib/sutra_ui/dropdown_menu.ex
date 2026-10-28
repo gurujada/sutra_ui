@@ -296,14 +296,16 @@ defmodule SutraUI.DropdownMenu do
           const w = content.offsetWidth;
           const h = content.offsetHeight;
           let side = content.getAttribute('data-side') || 'bottom';
-          if (side === 'bottom' && t.bottom + gap + h > vh - margin && t.top - gap - h >= margin) side = 'top';
-          else if (side === 'top' && t.top - gap - h < margin && t.bottom + gap + h <= vh - margin) side = 'bottom';
+          const below = vh - margin - t.bottom - gap;
+          const above = t.top - gap - margin;
+          if (side === 'bottom' && h > below && (h <= above || above > below)) side = 'top';
+          else if (side === 'top' && h > above && (h <= below || below > above)) side = 'bottom';
           else if (side === 'right' && t.right + gap + w > vw - margin && t.left - gap - w >= margin) side = 'left';
           else if (side === 'left' && t.left - gap - w < margin && t.right + gap + w <= vw - margin) side = 'right';
           content.setAttribute('data-side', side);
 
-          if (side === 'bottom') content.style.maxHeight = Math.max(vh - margin - t.bottom - gap, 120) + 'px';
-          if (side === 'top') content.style.maxHeight = Math.max(t.top - gap - margin, 120) + 'px';
+          if (side === 'bottom') content.style.maxHeight = Math.max(below, 120) + 'px';
+          if (side === 'top') content.style.maxHeight = Math.max(above, 120) + 'px';
 
           // The box without its open animation's scale, around its centre.
           const r = content.getBoundingClientRect();

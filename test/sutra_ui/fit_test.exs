@@ -12,6 +12,22 @@ defmodule SutraUI.FitTest do
     assert fit_block("lib/sutra_ui/popover.ex") == fit_block("lib/sutra_ui/dropdown_menu.ex")
   end
 
+  # The shared module (assets/js/fit, used by select) is the source the inline copies repeat.
+  test "assets/js/fit carries the same code as the inline copies" do
+    lines = fn text ->
+      text |> String.split("\n") |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
+    end
+
+    [_, js] = Regex.run(~r{// fit:start\n(.*?)// fit:end}s, File.read!("assets/js/fit/index.js"))
+
+    # the inline block starts with its comment and `fit(...) {` line and ends with `},`
+    inline = lines.(fit_block("lib/sutra_ui/popover.ex"))
+    sig = Enum.find_index(inline, &String.starts_with?(&1, "fit(content, trigger, wanted)"))
+    body = inline |> Enum.drop(sig + 1) |> Enum.drop(-1)
+
+    assert body == lines.(js)
+  end
+
   test "fit() positions through the CSSOM only" do
     block = fit_block("lib/sutra_ui/popover.ex")
     assert block =~ "content.style.marginLeft"

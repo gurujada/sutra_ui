@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **select**: A select for forms. The server renders a real `<select>` (posted value, `phx-change`, `to_form`/`field`, validation, no-JS) and SutraUI's trigger and list beside it; the extracted `.Select` hook (`sutra_ui/select`) hides the `<select>`, opens the list under the field and fires the `<select>`'s own `input` and `change`. The open list is page markup, so it shows in a screen share. New attributes: `options` (strings, `{label, value}`, `{label, value, disabled: true}`, `{group, options}`), `field`, `label`, `prompt` (also a clearing choice in the list), `multiple` (chips in the trigger), `searchable` (`nil`: from 10 options), `native`. On phones (below 640 px) the list is a bottom sheet with the label as title, a Close button and finger-sized rows; its search box takes focus only when tapped. On larger screens the list flips above the field or shifts to stay on screen and scrolls inside the room it has. WAI-ARIA select-only combobox (editable with search) and listbox; arrows, Home/End, PageUp/PageDown, type-ahead, Enter/Space, Tab, Escape
+- **assets**: `sutra_ui/fit` (the viewport-fitting code popover and dropdown_menu carry inline, as a module for hooks that can import) and `sutra_ui/select`
+
 - **assets**: Widgets with real logic are one source module in `assets/js/<widget>/` with `node --test` tests, built (esbuild, maintainers only: `mix assets.build`) into the committed `priv/static/<widget>.js` and exported by a root `package.json`. An app's esbuild resolves `import {X} from "sutra_ui/<widget>"` through `deps` in `NODE_PATH`; a test fails when a built file is older than its source. See the JavaScript Hooks guide
 - **time**: `relative_time` and `local_time` (see `SutraUI.Time`), and `SutraUI.Time.format/3` with the named formats `:date`, `:short`, `:long`, `:day`, `:time`, `:date_time`, `:day_time`, `:full`, `:month`. Times show in the place's zone on a 24-hour clock ("Mon 5 Oct, 14:30 IST"); the server renders final English words in `<time datetime title>`; `relative_time` takes `length` (`:long` or `:short`); an extracted hook (`sutra_ui/time`) refreshes relative words from one shared page timer and adds the viewer's time when the browser's zone differs. No time zone database is bundled: the app configures one (`tz`), and a missing one raises an error naming the config
 - **badge**: Variants `info`, `warning`, `brand` and `ai` on new theme tokens (`--info`, `--warning`, `--brand`, `--ai`, each with a `-foreground`, light and dark); `appearance` `solid` (default), `soft` and `dashed` for every variant; an `icon` slot. `data-variant` and `data-style` are rendered
@@ -16,7 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **avatar**: `avatar_group/1`, a stack with "+n" beyond `max`, faces parted by a background-colour ring; one `role="group"` named by `label` and every name, and each face shows its name as a tooltip
 - **empty**: `variant="inline"` (one quiet line), the inner block as the one description line, an `action` slot (beside `actions`), `data-variant`, and no description or action markup when none is given
 - **tabs**: `segmented/1` (a single choice out of two to six, a real radio group for forms or a standalone `click`) and `filter_tabs/1` ("All · Mine · Waiting" with counts; links with `aria-current` or buttons with `aria-pressed`)
-- **popover, dropdown_menu**: An open card flips to the other side or shifts to stay inside the viewport (a dropdown opened near the right edge at 390 px wide ran off-screen), and caps its width to the viewport. Positions are set through the CSSOM, never a `style` attribute
+- **popover, dropdown_menu**: When the card fits on neither side it now takes the side with more room (and caps its height to it). An open card flips to the other side or shifts to stay inside the viewport (a dropdown opened near the right edge at 390 px wide ran off-screen), and caps its width to the viewport. Positions are set through the CSSOM, never a `style` attribute
+
+### Changed
+
+- **input** (breaking): `<.input type="select">` renders `SutraUI.Select` instead of a bare `<select>` inside a `<label>`. The attributes are the same (`field`, `options`, `prompt`, `multiple`, errors) and the posted value is still the `<select>`'s. The label is now a sibling `<label for>` (not a wrapper), the `<select>` is hidden once the hook runs, and `searchable` and `native` are new. Pass `native` for the old browser-only control
+- **select** (breaking): `select/1` takes `options` or a `field` and renders a real `<select>`; `id` is optional when `name` or `field` is given. The `select_option`/`select_group`/`select_separator` form still works and still keeps a hidden `<input>` instead of a `<select>`; its `<:trigger>` content is no longer overwritten by the chosen label. The `.Select` hook is now **extracted** (it imports `sutra_ui/select`): merge `phoenix-colocated/sutra_ui` into your LiveSocket, as for `dialog`; the `nonce` attribute is unused. `search_placeholder` defaults to "Search..." and `searchable` defaults to `nil`
+
+### Upgrading from 0.4
+
+- Select: nothing changes for `<.input type="select">` callers beyond the above; merge the extracted hooks (`import {hooks as sutraHooks} from "phoenix-colocated/sutra_ui"`) so the styled list shows. Replace slot-built selects with `options` where the options are plain text
+- A multiple select with nothing chosen posts nothing for its field (browser rule); default it in the handler
 
 ## [0.4.1] - 2026-10-28
 

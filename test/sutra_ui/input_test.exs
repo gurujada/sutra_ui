@@ -4,6 +4,8 @@ defmodule SutraUI.InputTest do
   import Phoenix.LiveViewTest
   import Phoenix.Component
 
+  import SutraUI.ComponentCase, only: [assert_selector: 2, refute_selector: 2, get_attribute: 3]
+
   alias SutraUI.Input
 
   describe "input/1 basic rendering" do
@@ -714,11 +716,10 @@ defmodule SutraUI.InputTest do
         />
         """)
 
-      assert html =~ "<select"
-      assert html =~ ~s(name="country")
-      assert html =~ "<option"
+      assert_selector(html, ~s(select[name="country"] option[value="us"]))
+      assert_selector(html, ~s(select[name="country"] option[value="ca"]))
       assert html =~ "United States"
-      assert html =~ ~s(value="us")
+      assert_selector(html, ~s(button[role="combobox"]))
     end
 
     test "renders select with prompt" do
@@ -734,7 +735,8 @@ defmodule SutraUI.InputTest do
         />
         """)
 
-      assert html =~ ~s(<option value="">Select a country</option>)
+      assert_selector(html, ~s(select option[value=""][selected]))
+      assert html =~ "Select a country"
     end
 
     test "renders select with label" do
@@ -750,7 +752,9 @@ defmodule SutraUI.InputTest do
         />
         """)
 
-      assert html =~ ~s(<span class="label mb-1">Country</span>)
+      assert get_attribute(html, "label", "for") == "country"
+      assert html =~ "Country"
+      assert get_attribute(html, ~s(button[role="combobox"]), "aria-label") == "Country"
     end
 
     test "renders select with selected value" do
@@ -766,7 +770,8 @@ defmodule SutraUI.InputTest do
         />
         """)
 
-      assert html =~ ~s(<option selected value="ca">Canada</option>)
+      assert_selector(html, ~s(select option[value="ca"][selected]))
+      refute_selector(html, ~s(select option[value="us"][selected]))
     end
 
     test "renders select with multiple" do

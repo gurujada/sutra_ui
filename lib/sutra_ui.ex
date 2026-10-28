@@ -65,7 +65,7 @@ defmodule SutraUI do
   | `SutraUI.Checkbox` | Checkbox input |
   | `SutraUI.Switch` | Toggle switch |
   | `SutraUI.RadioGroup` | Radio button groups |
-  | `SutraUI.Select` | Searchable dropdown (hook) |
+  | `SutraUI.Select` | Form select: real `<select>` with a styled list, bottom sheet on phones (hook) |
   | `SutraUI.Slider` | Range slider (hook) |
   | `SutraUI.RangeSlider` | Dual-handle range (hook) |
   | `SutraUI.LiveSelect` | LiveComponent async searchable select (hook) |

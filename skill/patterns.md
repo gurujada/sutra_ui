@@ -82,8 +82,11 @@ For manual errors without a form field, pass `errors={...}` explicitly.
   controls and ordinary form submission.
 - Use `<.calendar>` when the app needs a visible calendar grid, custom date
   selection, disabled dates, range selection, or composition inside another UI.
-- Use `<.select>` for custom searchable/selectable UI. Use
-  `<.input type="select">` for ordinary native form selects.
+- Every form select is `<.select>` (a real `<select>` with SutraUI's list on top, a
+  bottom sheet on phones): `<.input type="select" options={...}>` for a labelled field,
+  `<.select field={@form[:x]} options={...} label="...">` bare. `searchable`, `multiple`,
+  `prompt`, option groups and `native` (browser control only) are attributes. Build the
+  list from `select_option/1` only when options need markup.
 - Use `<.slider>` for single range input and `<.range_slider>` for dual-handle
   range selection.
 

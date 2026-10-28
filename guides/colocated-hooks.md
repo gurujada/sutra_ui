@@ -48,7 +48,7 @@ Several Sutra UI components use colocated hooks for interactivity:
 | `live_select` | `.LiveSelect` | Runtime | Async search, tags |
 | `popover` | `.Popover` | Runtime | Popover dismissal and positioning |
 | `range_slider` | `.RangeSlider` | Runtime | Dual-handle slider |
-| `select` | `.Select` | Runtime | Dropdown behavior, search |
+| `select` | `.Select` | Extracted | Styled list over the real `<select>` (imports `sutra_ui/select`, which bundles `fit`) |
 | `slider` | `.Slider` | Runtime | Range input behavior |
 | `tab_nav` | `.TabNav` | Runtime | Routed navigation keyboard focus and mobile dropdown |
 | `tabs` | `.Tabs` | Runtime | Keyboard navigation |

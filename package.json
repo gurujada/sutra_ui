@@ -5,7 +5,9 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./time": "./priv/static/time.js"
+    "./time": "./priv/static/time.js",
+    "./fit": "./priv/static/fit.js",
+    "./select": "./priv/static/select.js"
   },
   "files": [
     "priv/static/*.js"

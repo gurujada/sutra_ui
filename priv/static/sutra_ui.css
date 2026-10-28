@@ -1870,7 +1870,8 @@
 /* Select */
 @layer components {
     :is(.form, .field) select,
-    select.select {
+    select.select,
+    select.select-native {
         @apply appearance-none border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent pl-3 pr-9 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 h-9;
         background-image: var(--chevron-down-icon-50);
         background-repeat: no-repeat;
@@ -1901,10 +1902,19 @@
 
         .select-popover,
         [data-popover] {
-            @apply absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none p-1;
+            @apply absolute z-50 flex w-full min-w-48 flex-col rounded-md border bg-popover text-popover-foreground shadow-md outline-none p-1;
 
             &[aria-hidden="true"] {
                 @apply hidden;
+            }
+
+            /* fit() sets data-side to the side with room: under the field or over it. */
+            &:not([data-side]),
+            &[data-side="bottom"] {
+                @apply top-full mt-1;
+            }
+            &[data-side="top"] {
+                @apply bottom-full mb-1;
             }
 
             .select-option,
@@ -1918,9 +1928,14 @@
                     background-size: 0.875rem;
                 }
                 &.active,
+                &[data-active="true"],
                 &:focus-visible {
                     @apply bg-accent text-accent-foreground;
                 }
+            }
+
+            .select-option-prompt {
+                @apply text-muted-foreground;
             }
 
             .select-option-disabled {
@@ -1946,7 +1961,7 @@
             }
 
             > header {
-                @apply flex h-9 items-center gap-2 border-b px-3 -mx-1 -mt-1 mb-1;
+                @apply flex h-9 shrink-0 items-center gap-2 border-b px-3 -mx-1 -mt-1 mb-1;
 
                 svg {
                     @apply size-4 shrink-0 opacity-50;
@@ -1958,7 +1973,7 @@
 
             .select-listbox,
             [role="listbox"] {
-                @apply max-h-[300px] overflow-y-auto;
+                @apply min-h-0 max-h-[300px] overflow-y-auto;
             }
 
             [role="listbox"]:not(
@@ -1988,6 +2003,86 @@
         &:not([data-select-initialized]) .select-popover .select-option,
         &:not([data-select-initialized]) [data-popover] [role="option"] {
             @apply hover:bg-accent hover:text-accent-foreground;
+        }
+
+        .select-trigger[aria-invalid="true"] {
+            @apply border-destructive ring-destructive/20 dark:ring-destructive/40;
+        }
+
+        .select-value[data-placeholder] {
+            @apply text-muted-foreground;
+        }
+
+        .select-chip {
+            @apply inline-flex max-w-full items-center truncate rounded-sm bg-muted px-1.5 py-0.5 text-xs text-foreground;
+        }
+
+        .select-backdrop,
+        .select-sheet-head {
+            @apply hidden;
+        }
+
+        /* A select with a real <select> inside: the browser's control until the hook runs,
+           then the hook's trigger and list; the <select> stays in the form, unseen. */
+        &[data-has-select] {
+            > select {
+                @apply w-full;
+            }
+            &:not([data-enhanced]) > :is(.select-trigger, .select-popover, .select-backdrop) {
+                @apply hidden;
+            }
+            &[data-enhanced] > select {
+                @apply pointer-events-none absolute inset-0 size-full opacity-0;
+            }
+            &[data-mode="multiple"] {
+                .select-trigger {
+                    @apply h-auto min-h-9 py-1;
+                }
+                .select-value {
+                    @apply flex flex-wrap gap-1 overflow-visible whitespace-normal text-left;
+                }
+            }
+            &[data-state="open"] .select-trigger {
+                @apply ring-2 ring-ring ring-offset-2;
+            }
+
+            /* Phones: the list is a bottom sheet over a backdrop, with the label as its title
+               and finger-sized rows. */
+            @media (max-width: 639px) {
+                &[data-state="open"] .select-backdrop {
+                    @apply fixed inset-0 z-50 block bg-black/40;
+                }
+                .select-popover {
+                    @apply fixed inset-x-0 bottom-0 top-auto! z-50 m-0! w-auto max-w-none! rounded-t-2xl rounded-b-none border-x-0 border-b-0 p-2;
+                    max-height: 80dvh;
+                    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+                }
+                .select-sheet-head {
+                    @apply flex shrink-0 items-center justify-between gap-2 px-2 pb-2 pt-1;
+                }
+                .select-sheet-title {
+                    @apply truncate text-base font-medium;
+                }
+                .select-sheet-close {
+                    @apply -mr-1 inline-flex size-10 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent;
+
+                    svg {
+                        @apply size-5;
+                    }
+                }
+                .select-popover > header {
+                    @apply mx-0 mt-0 h-11 rounded-md border bg-background;
+                }
+                .select-popover > header input[role="combobox"] {
+                    @apply text-base;
+                }
+                .select-popover .select-option {
+                    @apply min-h-12 text-base;
+                }
+                .select-popover .select-group-label {
+                    @apply text-sm;
+                }
+            }
         }
     }
 }
