@@ -72,6 +72,8 @@ defmodule SutraUI.Popover do
 
   attr(:class, :string, default: nil, doc: "Additional CSS classes for the popover content")
 
+  attr(:trigger_action, JS, default: nil, doc: "Optional JS action to run after toggling")
+
   attr(:rest, :global, doc: "Additional HTML attributes")
 
   slot(:trigger, required: true, doc: "The element that triggers the popover")
@@ -105,7 +107,7 @@ defmodule SutraUI.Popover do
         class="popover-trigger"
         aria-expanded="false"
         aria-controls={"#{@id}-content"}
-        phx-click={toggle_popover(@id)}
+        phx-click={JS.concat(toggle_popover(@id), @trigger_action || %JS{})}
       >
         <span :if={@trigger_open} class="popover-trigger-closed">
           {@trigger_closed}

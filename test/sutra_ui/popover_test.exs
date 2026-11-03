@@ -7,6 +7,27 @@ defmodule SutraUI.PopoverTest do
   alias SutraUI.Popover
 
   describe "popover/1 rendering" do
+    test "runs an optional action on the trigger after toggling" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Popover.popover id="test-popover" trigger_action={Phoenix.LiveView.JS.push("load_choices")}>
+          <:trigger>Open</:trigger>
+          Content
+        </Popover.popover>
+        """)
+
+      [click] =
+        html
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query("#test-popover > button")
+        |> LazyHTML.attribute("phx-click")
+
+      assert [["toggle_attr", _], ["toggle_attr", _], ["push", %{"event" => "load_choices"}]] =
+               Jason.decode!(click)
+    end
+
     test "renders with correct structure" do
       assigns = %{}
 
