@@ -314,4 +314,17 @@ defmodule SutraUI.RadioGroupTest do
       assert html =~ ~s(aria-invalid="true")
     end
   end
+
+  describe "touch target" do
+    # The stylesheet is the component's design: the radio input is stretched over its whole
+    # row, which is at least 40px high, so a thumb hits a 40px target and not the 16px circle.
+    test "the radio input covers a row at least 40px high" do
+      css = File.read!("priv/static/sutra_ui.css")
+      [_, rule] = String.split(css, "/* Radio Group */", parts: 2)
+      rule = rule |> String.split("\n/* ", parts: 2) |> hd()
+
+      assert rule =~ ~r/\.radio-group-label \{[^}]*min-h-10/
+      assert rule =~ ~r/& > input\[type="radio"\] \{[^}]*absolute inset-0[^}]*size-full/
+    end
+  end
 end

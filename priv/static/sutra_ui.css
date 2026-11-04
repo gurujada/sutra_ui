@@ -1893,7 +1893,29 @@
         @apply grid gap-3;
     }
     .radio-group-label {
-        @apply flex cursor-pointer items-center gap-2 text-sm font-normal;
+        @apply relative flex min-h-10 cursor-pointer items-center gap-2 text-sm font-normal;
+
+        /* The circle is drawn here; the input itself covers the whole 40px-high row (a touch
+           target of the row's size, not 16px) and is transparent. */
+        &::before {
+            @apply content-[''] aspect-square size-4 shrink-0 rounded-full border border-input shadow-xs transition-[color,box-shadow] dark:bg-input/30;
+        }
+        &:has(> input:checked)::before {
+            @apply border-primary;
+            background: radial-gradient(circle, var(--color-primary) 0 0.25rem, transparent 0.3rem);
+        }
+        &:has(> input:focus-visible)::before {
+            @apply border-ring ring-[3px] ring-ring/50;
+        }
+        &:has(> input[aria-invalid="true"])::before {
+            @apply border-destructive ring-destructive/20 dark:ring-destructive/40;
+        }
+        &:has(> input:disabled)::before {
+            @apply opacity-50;
+        }
+        & > input[type="radio"] {
+            @apply absolute inset-0 m-0 aspect-auto size-full cursor-pointer opacity-0 disabled:cursor-not-allowed;
+        }
     }
     .radio-group-label-disabled {
         @apply cursor-not-allowed opacity-50;
