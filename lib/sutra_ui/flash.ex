@@ -231,7 +231,8 @@ defmodule SutraUI.Flash do
   ## JS Commands
 
   @doc """
-  Shows an element with a fade and scale animation.
+  Shows a flash with a fade and scale animation, as a flex row (`display: flex`), so the icon,
+  the text and the close button stay side by side.
 
   ## Parameters
 
@@ -243,10 +244,10 @@ defmodule SutraUI.Flash do
   ## Examples
 
       # Basic usage
-      show("#my-modal")
+      show("#client-error")
 
       # Chain with other commands
-      JS.push("open") |> show("#modal")
+      JS.remove_attribute("hidden", to: "#client-error") |> show("#client-error")
 
   ## Animation
 
@@ -257,6 +258,8 @@ defmodule SutraUI.Flash do
   def show(js \\ %JS{}, selector) do
     JS.show(js,
       to: selector,
+      # The flash is a flex row (icon, text, close); JS.show would set display: block.
+      display: "flex",
       time: 300,
       transition:
         {"transition-all ease-out duration-300",

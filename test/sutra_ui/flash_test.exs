@@ -202,6 +202,13 @@ defmodule SutraUI.FlashTest do
   end
 
   describe "flash/1 layout and dismissal" do
+    test "show/2 keeps the flash a row: icon, text and close side by side" do
+      # JS.show defaults to display: block inline, which beats the .flash flex row and
+      # stacks the icon, the text and the close button (the reconnect flashes).
+      [["show", %{display: display}]] = Flash.show("#client-error").ops
+      assert display == "flex"
+    end
+
     test "renders the message in a div so block content is valid" do
       assigns = %{}
 
