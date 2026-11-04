@@ -284,8 +284,8 @@ defmodule SutraUI.Popover do
         },
         
         close() {
-          this.trigger.setAttribute('aria-expanded', 'false');
-          this.content.setAttribute('aria-hidden', 'true');
+          this.js().setAttribute(this.trigger, 'aria-expanded', 'false');
+          this.js().setAttribute(this.content, 'aria-hidden', 'true');
         },
         
         calculatePosition() {
