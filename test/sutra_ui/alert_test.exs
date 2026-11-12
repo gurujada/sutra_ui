@@ -146,6 +146,26 @@ defmodule SutraUI.AlertTest do
       refute html =~ ~s(role="alert")
     end
 
+    test "a role supplied through the global rest map overrides the default" do
+      for rest <- [%{role: "status"}, %{"role" => "status"}] do
+        html = render_component(&Alert.alert/1, variant: "destructive", rest: rest)
+        assert html =~ ~s(role="status")
+        refute html =~ ~s(role="alert")
+      end
+    end
+
+    test "a role spread through HEEx overrides the default" do
+      assigns = %{attributes: %{role: "status"}}
+
+      html =
+        rendered_to_string(~H"""
+        <Alert.alert variant="destructive" {@attributes} />
+        """)
+
+      assert html =~ ~s(role="status")
+      refute html =~ ~s(role="alert")
+    end
+
     test "description and action render in order without a title" do
       assigns = %{}
 

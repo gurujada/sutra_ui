@@ -50,10 +50,19 @@ defmodule SutraUI.Alert do
   slot(:action, doc: "Optional action after the description")
 
   def alert(assigns) do
+    {rest_role, rest} = Map.pop(assigns.rest, :role)
+    {string_role, rest} = Map.pop(rest, "role")
+
+    assigns =
+      assign(assigns,
+        role: assigns.role || rest_role || string_role || default_role(assigns.variant),
+        rest: rest
+      )
+
     ~H"""
     <div
       class={[variant_class(@variant), @class]}
-      role={@role || if(@variant == "destructive", do: "alert", else: "status")}
+      role={@role}
       {@rest}
     >
       <span :if={@icon != []}>{render_slot(@icon)}</span>
@@ -65,6 +74,9 @@ defmodule SutraUI.Alert do
     </div>
     """
   end
+
+  defp default_role("destructive"), do: "alert"
+  defp default_role(_), do: "status"
 
   defp variant_class("default"), do: "alert"
   defp variant_class("info"), do: "alert-info"
