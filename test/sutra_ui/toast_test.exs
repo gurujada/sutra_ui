@@ -54,6 +54,20 @@ defmodule SutraUI.ToastTest do
   end
 
   describe "toast/1" do
+    test "a persistent inline notice can suppress its close button" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Toast.toast id="t" close={false}>
+          Accepted <button>Undo</button>
+        </Toast.toast>
+        """)
+
+      assert html =~ "Undo"
+      refute html =~ "data-toast-close"
+    end
+
     for {kind, role, live, word} <- [
           {"info", "status", "polite", "info"},
           {"success", "status", "polite", "success"},

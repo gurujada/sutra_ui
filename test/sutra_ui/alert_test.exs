@@ -110,7 +110,7 @@ defmodule SutraUI.AlertTest do
   end
 
   describe "alert/1 accessibility" do
-    test "has role=alert" do
+    test "defaults to status and destructive alerts are assertive" do
       assigns = %{}
 
       html =
@@ -120,7 +120,54 @@ defmodule SutraUI.AlertTest do
         </Alert.alert>
         """)
 
+      assert html =~ ~s(role="status")
+
+      html =
+        rendered_to_string(~H"""
+        <Alert.alert variant="destructive">
+          <:title>Error</:title>
+        </Alert.alert>
+        """)
+
       assert html =~ ~s(role="alert")
+    end
+
+    test "caller role overrides the default exactly once" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Alert.alert variant="destructive" role="status">
+          <:title>Error</:title>
+        </Alert.alert>
+        """)
+
+      assert html =~ ~s(role="status")
+      refute html =~ ~s(role="alert")
+    end
+
+    test "description and action render in order without a title" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Alert.alert>
+          <:description>Send failed.</:description>
+          <:action><button>Send again</button></:action>
+        </Alert.alert>
+        """)
+
+      refute html =~ "<h2>"
+      assert html =~ "Send failed."
+      assert html =~ "<button>Send again</button>"
+      assert :binary.match(html, "Send failed.") < :binary.match(html, "Send again")
+    end
+
+    test "renders the supported tone classes" do
+      for variant <- ~w(info success warning) do
+        html = render_component(&Alert.alert/1, variant: variant)
+        assert html =~ "alert-#{variant}"
+      end
     end
 
     test "accepts custom id" do

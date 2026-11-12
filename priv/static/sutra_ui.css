@@ -824,6 +824,9 @@
 /* Alert */
 @layer components {
     .alert,
+    .alert-info,
+    .alert-success,
+    .alert-warning,
     .alert-destructive {
         @apply relative w-full rounded-lg border px-4 py-3 text-sm grid has-[>span]:grid-cols-[1rem_1fr] grid-cols-[0_1fr] has-[>span]:gap-x-3 gap-y-0.5 items-start [&>span]:size-4 [&>span]:translate-y-0.5 [&>span]:text-current;
 
@@ -831,6 +834,7 @@
         h3 {
             @apply col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight;
         }
+        .alert-action { @apply col-start-2; }
         section {
             @apply text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed;
 
@@ -849,6 +853,14 @@
             @apply text-destructive;
         }
     }
+    .alert-info, .alert-success, .alert-warning {
+        @apply bg-card;
+        color: var(--alert-tone);
+        section { color: var(--alert-tone); }
+    }
+    .alert-info { --alert-tone: var(--info); }
+    .alert-success { --alert-tone: var(--success); }
+    .alert-warning { --alert-tone: var(--warning); }
 }
 
 /* Badge */

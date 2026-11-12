@@ -444,6 +444,7 @@ defmodule SutraUI.Toast do
   )
 
   attr(:close_label, :string, default: "Close")
+  attr(:close, :boolean, default: true, doc: "Show the close button")
   attr(:class, :string, default: nil)
   attr(:rest, :global, doc: "Additional HTML attributes")
 
@@ -469,6 +470,7 @@ defmodule SutraUI.Toast do
       kind={@kind}
       class={@class}
       close_label={@close_label}
+      close={@close}
       managed={false}
       {@rest}
     >
@@ -577,6 +579,7 @@ defmodule SutraUI.Toast do
   attr(:folded, :boolean, default: false)
   attr(:countdown, :boolean, default: false)
   attr(:close_label, :string, default: "Close")
+  attr(:close, :boolean, default: true)
   attr(:managed, :boolean, default: false)
   attr(:class, :string, default: nil)
   attr(:rest, :global, default: %{})
@@ -611,6 +614,7 @@ defmodule SutraUI.Toast do
     >
       {render_slot(@inner_block)}
       <button
+        :if={@close}
         type="button"
         class="toast-close"
         aria-label={@close_label}

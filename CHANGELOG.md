@@ -1,5 +1,10 @@
 # Changelog
 
+### Unreleased
+
+- **alert**: Added info, success and warning variants, optional title and action slot. The default announcement role is now `status`; destructive alerts retain `alert`, and callers can override the role.
+- **toast**: Standalone toasts accept `close={false}` for persistent notices whose action owns their lifecycle.
+
 All notable changes to Sutra UI will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
