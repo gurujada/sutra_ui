@@ -54,6 +54,26 @@ defmodule SutraUI.ToastTest do
   end
 
   describe "toast/1" do
+    test "unstyled paragraph keeps only caller content and attributes" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Toast.toast id="t" unstyled as="p" close={false} class="notice" data-state="accepted">
+          Accepted <button>Undo</button>
+        </Toast.toast>
+        """)
+
+      assert html =~ "<p "
+      assert html =~ ~s(id="t")
+      assert html =~ ~s(class="notice")
+      assert html =~ ~s(role="status")
+      assert html =~ ~s(data-state="accepted")
+      assert html =~ "Accepted <button>Undo</button>"
+      refute html =~ "toast-close"
+      refute html =~ ~s(class="toast )
+    end
+
     test "a persistent inline notice can suppress its close button" do
       assigns = %{}
 

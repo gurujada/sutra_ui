@@ -7,6 +7,20 @@ defmodule SutraUI.BadgeTest do
   alias SutraUI.Badge
 
   describe "badge/1 rendering" do
+    test "unstyled badges keep caller classes and direct content" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Badge.badge unstyled class="pill" data-outcome="clear"><span>Icon</span> Clear</Badge.badge>
+        """)
+
+      assert html =~ ~s(class="pill")
+      assert html =~ ~s(data-outcome="clear")
+      assert html =~ "<span>Icon</span> Clear"
+      refute html =~ ~s(class="badge)
+    end
+
     test "renders as span element by default" do
       assigns = %{}
 

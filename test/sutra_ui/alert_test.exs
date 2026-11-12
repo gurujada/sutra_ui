@@ -7,6 +7,26 @@ defmodule SutraUI.AlertTest do
   alias SutraUI.Alert
 
   describe "alert/1 rendering" do
+    test "unstyled paragraph renders direct caller content and attributes" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Alert.alert unstyled as="p" class="notice" id="raw" role="alert" data-state="failed">
+          <span>Notice</span><button>Retry</button>
+        </Alert.alert>
+        """)
+
+      assert html =~ "<p "
+      assert html =~ ~s(class="notice")
+      assert html =~ ~s(role="alert")
+      assert html =~ ~s(id="raw")
+      assert html =~ ~s(data-state="failed")
+      assert html =~ "<span>Notice</span><button>Retry</button>"
+      refute html =~ "alert-destructive"
+      refute html =~ "<section>"
+    end
+
     test "renders alert container" do
       assigns = %{}
 

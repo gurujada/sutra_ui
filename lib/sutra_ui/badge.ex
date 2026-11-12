@@ -79,6 +79,8 @@ defmodule SutraUI.Badge do
     doc: "Optional link URL"
   )
 
+  attr(:unstyled, :boolean, default: false, doc: "Omit library styles")
+
   attr(:class, :any,
     default: nil,
     doc: "Additional CSS classes"
@@ -94,18 +96,36 @@ defmodule SutraUI.Badge do
 
   def badge(assigns) do
     assigns =
-      assign(assigns, :classes, badge_class(assigns.variant, assigns.appearance, assigns.class))
+      assign(
+        assigns,
+        :classes,
+        if(assigns.unstyled,
+          do: assigns.class,
+          else: badge_class(assigns.variant, assigns.appearance, assigns.class)
+        )
+      )
 
     if assigns.href do
       ~H"""
-      <a href={@href} class={@classes} data-variant={@variant} data-appearance={@appearance} {@rest}>
+      <a
+        href={@href}
+        class={@classes}
+        data-variant={!@unstyled && @variant}
+        data-appearance={!@unstyled && @appearance}
+        {@rest}
+      >
         <span :if={@icon != []} class="badge-icon" aria-hidden="true">{render_slot(@icon)}</span>
         {render_slot(@inner_block)}
       </a>
       """
     else
       ~H"""
-      <span class={@classes} data-variant={@variant} data-appearance={@appearance} {@rest}>
+      <span
+        class={@classes}
+        data-variant={!@unstyled && @variant}
+        data-appearance={!@unstyled && @appearance}
+        {@rest}
+      >
         <span :if={@icon != []} class="badge-icon" aria-hidden="true">{render_slot(@icon)}</span>
         {render_slot(@inner_block)}
       </span>

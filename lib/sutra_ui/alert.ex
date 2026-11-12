@@ -38,6 +38,8 @@ defmodule SutraUI.Alert do
 
   attr(:class, :string, default: nil, doc: "Additional CSS classes")
   attr(:role, :string, default: nil, doc: "Overrides the announcement role")
+  attr(:unstyled, :boolean, default: false, doc: "Render raw content without library styles")
+  attr(:as, :string, default: "div", values: ~w(div p), doc: "Element for an unstyled alert")
 
   attr(:rest, :global,
     include: ~w(id),
@@ -48,6 +50,7 @@ defmodule SutraUI.Alert do
   slot(:title, doc: "Optional alert title")
   slot(:description, doc: "Optional description content")
   slot(:action, doc: "Optional action after the description")
+  slot(:inner_block, doc: "Raw content for an unstyled alert")
 
   def alert(assigns) do
     {rest_role, rest} = Map.pop(assigns.rest, :role)
@@ -60,7 +63,11 @@ defmodule SutraUI.Alert do
       )
 
     ~H"""
+    <.dynamic_tag :if={@unstyled} tag_name={@as} class={@class} role={@role} {@rest}>
+      {render_slot(@inner_block)}
+    </.dynamic_tag>
     <div
+      :if={!@unstyled}
       class={[variant_class(@variant), @class]}
       role={@role}
       {@rest}

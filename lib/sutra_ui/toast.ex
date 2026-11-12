@@ -445,6 +445,13 @@ defmodule SutraUI.Toast do
 
   attr(:close_label, :string, default: "Close")
   attr(:close, :boolean, default: true, doc: "Show the close button")
+
+  attr(:unstyled, :boolean,
+    default: false,
+    doc: "Render raw content without library styles or controls"
+  )
+
+  attr(:as, :string, default: "div", values: ~w(div p), doc: "Element for an unstyled toast")
   attr(:class, :string, default: nil)
   attr(:rest, :global, doc: "Additional HTML attributes")
 
@@ -462,10 +469,26 @@ defmodule SutraUI.Toast do
       assigns.inner_block != [] and assigns.title == [] and assigns.description == [] and
         assigns.action == [] and assigns.icon == []
 
-    assigns = assign(assigns, kind: kind, custom?: custom?)
+    {rest_role, rest} = Map.pop(assigns.rest, :role)
+    {string_role, rest} = Map.pop(rest, "role")
+    role = rest_role || string_role || if(kind in [:warning, :error], do: "alert", else: "status")
+
+    assigns =
+      assign(assigns, kind: kind, custom?: custom?, unstyled_role: role, unstyled_rest: rest)
 
     ~H"""
+    <.dynamic_tag
+      :if={@unstyled}
+      tag_name={@as}
+      id={@id}
+      class={@class}
+      role={@unstyled_role}
+      {@unstyled_rest}
+    >
+      {render_slot(@inner_block)}
+    </.dynamic_tag>
     <.shell
+      :if={!@unstyled}
       id={@id}
       kind={@kind}
       class={@class}
