@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- **alert**: Mix tone text with the card foreground to keep info, success and warning readable against the card in the default light and dark themes.
 - **alert, badge, toast**: `unstyled` opts into a caller-styled shell. Unstyled alerts and toasts render their direct inner block and accept `as="p"` or `as="div"`; unstyled toasts leave controls and lifecycle to the caller.
 - **alert**: Added info, success and warning variants, optional title and action slot. The default announcement role is now `status`; destructive alerts retain `alert`, and callers can override the role.
 - **toast**: Standalone toasts accept `close={false}` for persistent notices whose action owns their lifecycle.

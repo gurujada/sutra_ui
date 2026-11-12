@@ -855,8 +855,8 @@
     }
     .alert-info, .alert-success, .alert-warning {
         @apply bg-card;
-        color: var(--alert-tone);
-        section { color: var(--alert-tone); }
+        color: color-mix(in oklab, var(--alert-tone) 55%, var(--card-foreground));
+        section { color: inherit; }
     }
     .alert-info { --alert-tone: var(--info); }
     .alert-success { --alert-tone: var(--success); }
