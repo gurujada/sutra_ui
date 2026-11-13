@@ -191,6 +191,22 @@ defmodule SutraUI.Commands.PaletteTest do
     end
   end
 
+  test "a palette rejects multiple free text actions" do
+    make = fn id ->
+      Action.new(
+        id: id,
+        title: id,
+        run: fn s, _ -> s end,
+        args: [%{name: :text, type: :text}],
+        free_text: :text
+      )
+    end
+
+    assert_raise ArgumentError, ~r/at most one free_text/, fn ->
+      render_palette(%{actions: [make.("one"), make.("two")]})
+    end
+  end
+
   describe "focus return" do
     # The palette closes through the dialog's hide event, which the dialog hook answers by
     # focusing what opened it; the palette's browser module no longer does this itself.

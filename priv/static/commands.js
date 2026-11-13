@@ -1,4 +1,4 @@
-/* sutra_ui commands source-hash:30521bf1a8c9500d (built by mix assets.build; do not edit) */
+/* sutra_ui commands source-hash:4b3aadede24e1aa7 (built by mix assets.build; do not edit) */
 
 // assets/js/commands/match.js
 var PREFIX = 6;
@@ -98,7 +98,8 @@ function initial() {
     results: {},
     confirm: null,
     status: null,
-    refs: 0
+    refs: 0,
+    waiting: null
   };
 }
 function page(state) {
@@ -111,6 +112,10 @@ function placeholder(state) {
   const p = page(state);
   if (p?.type === "ask") return p.arg.placeholder || p.arg.label || null;
   return null;
+}
+function searchQuery(query) {
+  const chars = globalThis.Intl?.Segmenter ? [...new Intl.Segmenter(void 0, { granularity: "grapheme" }).segment(query)].map((part) => part.segment) : Array.from(query);
+  return chars.slice(0, 200).join("");
 }
 function itemText(action) {
   return { title: action.title, keywords: [...action.keywords ?? [], action.section ?? ""] };
@@ -163,11 +168,21 @@ function rows(state, ctx) {
   out.push(...grouped(ranked, null));
   if (!p) {
     for (const source of ctx.sources ?? []) {
-      const found = state.results[source.id]?.items ?? [];
+      const result = state.results[source.id];
+      const found = ctx.actions.some((a) => a.free_text) && result?.loading ? [] : result?.items ?? [];
       if (found.length) {
         out.push({ type: "heading", id: `source:${source.id}`, title: source.title });
-        for (const action of found) out.push({ type: "item", action });
+        for (const action of found) out.push({ type: "item", action, source: source.id });
       }
+    }
+  }
+  if (!p) {
+    const action = ctx.actions.find((a) => a.free_text);
+    const spec = action?.args?.find((a) => a.name === action.free_text);
+    const length = globalThis.Intl?.Segmenter ? [...new Intl.Segmenter(void 0, { granularity: "grapheme" }).segment(state.query)].length : Array.from(state.query).length;
+    if (action && spec && length <= (spec.max_length ?? 500)) {
+      if (action.section) out.push({ type: "heading", id: "section:free-text", title: action.section });
+      out.push({ type: "item", action: { ...action, title: `${action.title}: ${state.query}` }, freeText: true });
     }
   }
   return out;
@@ -185,7 +200,7 @@ function askRows(state, p, query) {
   }
   if (p.arg.type === "search") {
     const found = state.results[p.arg.source]?.items ?? [];
-    return found.map((action) => ({ type: "item", action, choice: action.id }));
+    return found.map((action) => ({ type: "item", action, choice: action.id, source: p.arg.source }));
   }
   return [];
 }
@@ -229,9 +244,10 @@ function searchAll(state, ctx) {
   for (const source of ctx.sources ?? []) {
     if (!query) {
       results[source.id] = { ref: ++refs, loading: false, items: [] };
+      effects.push({ effect: "cancel-search", source: source.id });
       continue;
     }
-    results[source.id] = { ...results[source.id] ?? { items: [] }, ref: ++refs, loading: true };
+    results[source.id] = { ...results[source.id] ?? { items: [] }, ref: ++refs, loading: true, requestedQuery: searchQuery(query) };
     effects.push({ effect: "search", source: source.id, query, ref: refs });
   }
   return { state: { ...state, results, refs }, effects };
@@ -243,7 +259,7 @@ function searchArg(state, arg) {
     state: {
       ...state,
       refs: ref,
-      results: { ...state.results, [arg.source]: { ...state.results[arg.source] ?? { items: [] }, ref, loading: true } }
+      results: { ...state.results, [arg.source]: { ...state.results[arg.source] ?? { items: [] }, ref, loading: true, requestedQuery: searchQuery(query) } }
     },
     effects: [{ effect: "search", source: arg.source, query, ref }]
   };
@@ -272,6 +288,7 @@ function choose(state, ctx, row) {
     const reason = typeof action.disabled === "string" ? action.disabled : "Not available";
     return { state: { ...state, status: `${action.title}: ${reason}` }, effects: [] };
   }
+  if (row.freeText) return proceed(state, ctx, action, { [action.free_text]: state.query }, false);
   const p = page(state);
   if (p?.type === "ask") {
     const args = { ...p.args, [p.arg.name]: row.choice };
@@ -283,8 +300,21 @@ function choose(state, ctx, row) {
   }
   return proceed(state, ctx, action, {}, false);
 }
+function select(state, ctx, row) {
+  if (row.source) {
+    const result = state.results[row.source];
+    if (result && !result.loading && result.answeredQuery !== state.query.trim()) return { state, effects: [] };
+    if (!result || result.loading || result.answeredQuery !== state.query.trim()) {
+      return { state: { ...state, waiting: { source: row.source, query: state.query } }, effects: [{ effect: "flush", source: row.source }, { effect: "wait" }] };
+    }
+  }
+  return choose(state, ctx, row);
+}
 function drill(state, ctx) {
-  const action = activeItem(state, ctx)?.action;
+  const row = activeItem(state, ctx);
+  const action = row?.action;
+  const result = row?.source && state.results[row.source];
+  if (row?.source && (!result || result.loading || result.answeredQuery !== state.query.trim())) return null;
   if (!action?.children?.length || action.disabled) return null;
   return { state: push(state, { type: "actions", title: action.title, actions: action.children }), effects: [] };
 }
@@ -304,7 +334,7 @@ function step(state, event, ctx) {
       return choose(base, ctx, { action: event.action });
     }
     case "input": {
-      let next = { ...state, query: event.value, active: 0, status: null, confirm: null };
+      let next = { ...state, query: event.value, active: 0, status: null, confirm: null, waiting: null };
       const p = page(next);
       if (!p) return searchAll(next, ctx);
       if (p.type === "ask" && p.arg.type === "search") return searchArg(next, p.arg);
@@ -315,16 +345,23 @@ function step(state, event, ctx) {
       if (!current || current.ref !== event.ref) return { state, effects: [] };
       const results = {
         ...state.results,
-        [event.source]: { ...current, loading: false, items: event.error ? [] : event.items ?? [], error: event.error ?? null }
+        [event.source]: { ...current, loading: false, answeredQuery: current.requestedQuery, items: event.error ? [] : event.items ?? [], error: event.error ?? null }
       };
       const next = { ...state, results };
+      if (state.waiting?.source === event.source && state.waiting.query === state.query) {
+        const ready = settle({ ...next, waiting: null }, ctx);
+        const row = activeItem(ready, ctx);
+        return row?.source === event.source ? select(ready, ctx, row) : { state: ready, effects: [] };
+      }
       return { state: next, effects: [] };
     }
     case "pick": {
       const row = items(state, ctx)[event.index];
       if (!row) return { state, effects: [] };
-      return choose({ ...state, active: event.index }, ctx, row);
+      return select({ ...state, active: event.index }, ctx, row);
     }
+    case "timeout":
+      return { state: { ...state, waiting: null }, effects: [] };
     case "failed":
       return { state: { ...state, status: event.message || "That did not work", confirm: null }, effects: [] };
     case "key":
@@ -364,7 +401,7 @@ function key(state, e, ctx) {
       }
       const row = items(state, ctx)[state.active];
       if (!row) return handled({ state, effects: [] });
-      return handled(choose(state, ctx, row));
+      return handled(select(state, ctx, row));
     }
     case "ArrowRight":
     case "Tab": {
@@ -555,6 +592,7 @@ var CommandPalette = {
     this.defaultPlaceholder = this.input.getAttribute("placeholder") || "";
     this.state = initial();
     this.timers = {};
+    this.pendingSearches = {};
     this.sequence = sequence();
     this.readData();
     this.onShow = () => this.opened();
@@ -616,6 +654,7 @@ var CommandPalette = {
     this.list?.removeEventListener("click", this.onListClick);
     this.list?.removeEventListener("pointermove", this.onListMove);
     document.removeEventListener("keydown", this.onGlobalKey);
+    clearTimeout(this.waitTimer);
     Object.values(this.timers).forEach(clearTimeout);
   },
   // ---- data ------------------------------------------------------------------------------
@@ -664,8 +703,10 @@ var CommandPalette = {
     requestAnimationFrame(() => requestAnimationFrame(() => this.input.focus()));
   },
   closed() {
+    clearTimeout(this.waitTimer);
     Object.values(this.timers).forEach(clearTimeout);
     this.timers = {};
+    this.pendingSearches = {};
     this.state = initial();
     this.root.dataset.state = "closed";
     this.input.value = "";
@@ -680,6 +721,7 @@ var CommandPalette = {
   // ---- keys ------------------------------------------------------------------------------
   inputKey(e) {
     if (e.isComposing) return;
+    if (e.key === "Enter") Object.keys(this.pendingSearches).forEach((source) => this.flushSearch(source));
     const caretAtEnd = this.input.selectionStart === this.input.value.length && this.input.selectionEnd === this.input.value.length;
     const result = reduce(this.state, { type: "key", key: e.key, caretAtEnd }, this.ctx());
     if (!result.handled) return;
@@ -725,6 +767,7 @@ var CommandPalette = {
   },
   // ---- applying a model result -----------------------------------------------------------
   apply(result) {
+    if (this.state.waiting && !result.state.waiting) clearTimeout(this.waitTimer);
     this.state = result.state;
     this.input.value = this.state.query;
     for (const fx of result.effects) this.effect(fx);
@@ -733,12 +776,26 @@ var CommandPalette = {
   effect(fx) {
     if (fx.effect === "search") {
       clearTimeout(this.timers[fx.source]);
-      this.timers[fx.source] = setTimeout(() => {
-        this.pushEvent("sutra-ui:command-search", { source: fx.source, query: fx.query, ref: fx.ref });
-      }, SEARCH_DEBOUNCE_MS);
+      this.pendingSearches[fx.source] = fx;
+      this.timers[fx.source] = setTimeout(() => this.flushSearch(fx.source), SEARCH_DEBOUNCE_MS);
+    } else if (fx.effect === "cancel-search") {
+      clearTimeout(this.timers[fx.source]);
+      delete this.pendingSearches[fx.source];
+    } else if (fx.effect === "flush") {
+      this.flushSearch(fx.source);
+    } else if (fx.effect === "wait") {
+      clearTimeout(this.waitTimer);
+      this.waitTimer = setTimeout(() => this.apply(reduce(this.state, { type: "timeout" }, this.ctx())), 2e3);
     } else if (fx.effect === "run") {
       this.execute(fx.action, fx.args);
     }
+  },
+  flushSearch(source) {
+    clearTimeout(this.timers[source]);
+    const fx = this.pendingSearches[source];
+    if (!fx) return;
+    delete this.pendingSearches[source];
+    this.pushEvent("sutra-ui:command-search", { source, query: fx.query, ref: fx.ref });
   },
   execute(action, args) {
     const done = () => {

@@ -69,7 +69,7 @@ test("server results appear under their source heading after the actions", () =>
 test("an empty query clears the source results and sends no search", () => {
   const s = reduce(type(opened(), "phys").state, { type: "results", source: "workbooks", ref: 1, items: [A("w1", "Physics 1")] }, ctx).state;
   const cleared = type(s, "");
-  assert.deepEqual(cleared.effects, []);
+  assert.deepEqual(cleared.effects, [{ effect: "cancel-search", source: "workbooks" }]);
   assert.equal(items(cleared.state, ctx).length, actions.length);
 });
 
@@ -258,4 +258,65 @@ test("a confirm action keeps its label and tone for the buttons", () => {
   const s = type(opened(), "delete").state;
   const asked = press(s, "Enter").state;
   assert.equal(asked.confirm.action.tone, "danger");
+});
+
+
+test("free text follows matches and runs the full current input", () => {
+  const ask = A("ask", "Ask Vidya", { section: "Ask", kind: "server", free_text: "question", args: [{ name: "question", type: "text", max_length: 500 }] });
+  const c = { actions: [A("student", "Students"), ask], sources: [], recent: [] };
+  let s = reduce(initial(), { type: "open" }, c).state;
+  s = reduce(s, { type: "input", value: "students" }, c).state;
+  assert.deepEqual(titles(s, c), ["Students", "Ask Vidya: students"]);
+  s = reduce(s, { type: "input", value: "  where do I add students  " }, c).state;
+  assert.equal(activeItem(s, c).action.title, "Ask Vidya:   where do I add students  ");
+  assert.deepEqual(reduce(s, { type: "key", key: "Enter" }, c).effects[0].args, { question: "  where do I add students  " });
+  assert.deepEqual(reduce(s, { type: "pick", index: 0 }, c).effects[0].args, { question: "  where do I add students  " });
+  s = reduce(s, { type: "input", value: "x".repeat(501) }, c).state;
+  assert.equal(items(s, c).length, 0);
+});
+
+test("stale source selection waits for the newer answer on Enter and click", () => {
+  let s = type(opened(), "where do I add").state;
+  s = reduce(s, { type: "results", source: "workbooks", ref: 1, items: [A("old", "Old")] }, ctx).state;
+  s = type(s, "where do I add students").state;
+  for (const event of [{ type: "key", key: "Enter" }, { type: "pick", index: 0 }]) {
+    const waiting = reduce(s, event, ctx);
+    assert.deepEqual(waiting.effects, [{ effect: "flush", source: "workbooks" }, { effect: "wait" }]);
+    const done = reduce(waiting.state, { type: "results", source: "workbooks", ref: 2, items: [A("new", "New")] }, ctx);
+    assert.equal(done.effects[0].action.id, "new");
+    const empty = reduce(waiting.state, { type: "results", source: "workbooks", ref: 2, items: [] }, ctx);
+    assert.deepEqual(empty.effects, []);
+  }
+});
+
+test("root renders a sectionless event result from each declared source", () => {
+  const c = { actions: [], sources: [{ id: "pages", title: "Pages" }, { id: "learners", title: "Learners" }], recent: [] };
+  const searching = reduce(initial(), { type: "input", value: "learner" }, c);
+  assert.deepEqual(searching.effects.map((fx) => fx.source), ["pages", "learners"]);
+  const s = reduce(searching.state, { type: "results", source: "learners", ref: 2, items: [A("learner:1", "Learner", { kind: "event", section: null, target: { event: "view_as", payload: {} } })] }, c).state;
+  assert.equal(rows(s, c).at(-2).title, "Learners");
+  assert.equal(rows(s, c).at(-1).action.target.event, "view_as");
+});
+
+test("typing and Enter inside the debounce uses the complete input, with or without an earlier answer", () => {
+  const ask = A("ask", "Ask Vidya", { kind: "server", free_text: "question", args: [{ name: "question", type: "text", max_length: 500 }] });
+  const c = { actions: [ask], sources: [{ id: "learners", title: "Learners" }], recent: [] };
+  // A deterministic clock advances the debounce and the response independently.
+  for (const paused of [false, true]) {
+    let now = 0, scheduled = [], state = reduce(initial(), { type: "open" }, c).state;
+    const advance = (ms) => { now += ms; for (const task of scheduled.filter((t) => t.at <= now)) task.fn(); scheduled = scheduled.filter((t) => t.at > now); };
+    const input = (value) => {
+      const result = reduce(state, { type: "input", value }, c); state = result.state;
+      scheduled = [];
+      for (const fx of result.effects) if (fx.effect === "search") scheduled.push({ at: now + 150, fn: () => {
+        const reply = { at: now + 50, fn: () => { state = reduce(state, { type: "results", source: fx.source, ref: fx.ref, items: [A("old", "Old result")] }, c).state; } };
+        scheduled.push(reply);
+      } });
+    };
+    if (paused) { input("where do I add"); advance(150); advance(50); }
+    input("where do I add students");
+    advance(10);
+    const run = reduce(state, { type: "key", key: "Enter" }, c);
+    assert.deepEqual(run.effects[0].args, { question: "where do I add students" });
+  }
 });

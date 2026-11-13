@@ -31,6 +31,13 @@ defmodule SutraUI.CommandsApp.Commands do
         end
       ),
       Action.new(
+        id: "ask",
+        title: "Ask Vidya",
+        free_text: :question,
+        args: [%{name: :question, type: :text, max_length: 300}],
+        run: fn socket, %{question: text} -> Phoenix.Component.assign(socket, :theme, text) end
+      ),
+      Action.new(
         id: "note",
         title: "Add a note",
         section: "Settings",

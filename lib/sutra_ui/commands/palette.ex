@@ -79,6 +79,10 @@ defmodule SutraUI.Commands.Palette do
         commands -> {Commands.visible(commands), commands.sources}
       end
 
+    if Enum.count(Commands.flatten(actions), & &1.free_text) > 1 do
+      raise ArgumentError, "a palette may have at most one free_text action"
+    end
+
     assigns =
       assigns
       |> assign(:visible, actions)

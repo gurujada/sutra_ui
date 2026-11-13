@@ -192,6 +192,19 @@ defmodule SutraUI.Commands.LiveTest do
     end
   end
 
+  test "free text helper runs a full validated argument" do
+    view = mount_view()
+    text = String.duplicate("x", 250)
+    assert :ok = run_free_text(view, "  " <> text <> "  ")
+    assert render(view) =~ text
+
+    assert {:error, "Use at most 300 characters"} =
+             run_free_text(view, String.duplicate("x", 301))
+
+    assert {:error, "Type a value first"} = run(view, "ask", %{})
+    assert {:error, "Type a value first"} = run(view, "ask", %{question: 42})
+  end
+
   describe "telemetry" do
     test "searches and runs are reported" do
       ref = make_ref()

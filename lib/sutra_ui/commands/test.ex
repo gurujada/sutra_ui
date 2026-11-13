@@ -42,6 +42,14 @@ defmodule SutraUI.Commands.Test do
     end
   end
 
+  @doc "Runs the palette free-text action with the given text."
+  def run_free_text(view, text) do
+    action =
+      Enum.find(actions(view), & &1["free_text"]) || raise ArgumentError, "no free_text action"
+
+    run(view, action["id"], %{action["free_text"] => text})
+  end
+
   @doc "The titles of a list of actions."
   @spec titles([map()]) :: [String.t()]
   def titles(actions), do: Enum.map(actions, & &1["title"])

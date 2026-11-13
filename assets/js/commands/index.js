@@ -84,6 +84,7 @@ export const CommandPalette = {
 
     this.state = initial();
     this.timers = {};
+    this.pendingSearches = {};
     this.sequence = keys.sequence();
     this.readData();
 
@@ -151,6 +152,7 @@ export const CommandPalette = {
     this.list?.removeEventListener("click", this.onListClick);
     this.list?.removeEventListener("pointermove", this.onListMove);
     document.removeEventListener("keydown", this.onGlobalKey);
+    clearTimeout(this.waitTimer);
     Object.values(this.timers).forEach(clearTimeout);
   },
 
@@ -211,8 +213,10 @@ export const CommandPalette = {
   },
 
   closed() {
+    clearTimeout(this.waitTimer);
     Object.values(this.timers).forEach(clearTimeout);
     this.timers = {};
+    this.pendingSearches = {};
     this.state = initial();
     this.root.dataset.state = "closed";
     this.input.value = "";
@@ -232,6 +236,7 @@ export const CommandPalette = {
 
   inputKey(e) {
     if (e.isComposing) return;
+    if (e.key === "Enter") Object.keys(this.pendingSearches).forEach((source) => this.flushSearch(source));
     const caretAtEnd = this.input.selectionStart === this.input.value.length && this.input.selectionEnd === this.input.value.length;
     const result = reduce(this.state, { type: "key", key: e.key, caretAtEnd }, this.ctx());
     if (!result.handled) return;
@@ -282,6 +287,7 @@ export const CommandPalette = {
   // ---- applying a model result -----------------------------------------------------------
 
   apply(result) {
+    if (this.state.waiting && !result.state.waiting) clearTimeout(this.waitTimer);
     this.state = result.state;
     this.input.value = this.state.query;
     for (const fx of result.effects) this.effect(fx);
@@ -291,12 +297,27 @@ export const CommandPalette = {
   effect(fx) {
     if (fx.effect === "search") {
       clearTimeout(this.timers[fx.source]);
-      this.timers[fx.source] = setTimeout(() => {
-        this.pushEvent("sutra-ui:command-search", { source: fx.source, query: fx.query, ref: fx.ref });
-      }, SEARCH_DEBOUNCE_MS);
+      this.pendingSearches[fx.source] = fx;
+      this.timers[fx.source] = setTimeout(() => this.flushSearch(fx.source), SEARCH_DEBOUNCE_MS);
+    } else if (fx.effect === "cancel-search") {
+      clearTimeout(this.timers[fx.source]);
+      delete this.pendingSearches[fx.source];
+    } else if (fx.effect === "flush") {
+      this.flushSearch(fx.source);
+    } else if (fx.effect === "wait") {
+      clearTimeout(this.waitTimer);
+      this.waitTimer = setTimeout(() => this.apply(reduce(this.state, { type: "timeout" }, this.ctx())), 2000);
     } else if (fx.effect === "run") {
       this.execute(fx.action, fx.args);
     }
+  },
+
+  flushSearch(source) {
+    clearTimeout(this.timers[source]);
+    const fx = this.pendingSearches[source];
+    if (!fx) return;
+    delete this.pendingSearches[source];
+    this.pushEvent("sutra-ui:command-search", { source, query: fx.query, ref: fx.ref });
   },
 
   execute(action, args) {

@@ -31,6 +31,7 @@ defmodule SutraUI.Commands.Action do
   | `confirm_label` | Text of the confirm button (default: the title) |
   | `children` | Actions of a next page, opened instead of running |
   | `args` | Values asked in turn before running (see below) |
+  | `free_text` | Name of the single required text argument to offer directly from the root input (server `run` actions only) |
   | `allow` | `fn socket -> boolean end`, checked again before a server action runs |
   | `value` | What a `:search` argument receives when this result is picked (default: `id`) |
 
@@ -80,6 +81,7 @@ defmodule SutraUI.Commands.Action do
             confirm_label: nil,
             children: [],
             args: [],
+            free_text: nil,
             allow: nil,
             value: nil,
             navigate: nil,
@@ -131,6 +133,16 @@ defmodule SutraUI.Commands.Action do
 
     if action.args != [] and (set == [] or hd(set) not in [:run, :event]) do
       raise ArgumentError, "action #{id}: args need `run` or `event`"
+    end
+
+    if not is_nil(action.free_text) do
+      spec = Enum.find(action.args, &(&1.name == action.free_text))
+
+      unless is_atom(action.free_text) and is_function(action.run, 2) and
+               length(action.args) == 1 and not is_nil(spec) and spec.type == :text and
+               spec.required == true do
+        raise ArgumentError, "action #{id}: free_text needs one required text argument and run"
+      end
     end
 
     if action.tone not in [nil, :danger] do
@@ -202,6 +214,7 @@ defmodule SutraUI.Commands.Action do
       kind: kind,
       target: target,
       children: Enum.map(action.children, &to_wire/1),
+      free_text: action.free_text && to_string(action.free_text),
       args: Enum.map(action.args, &wire_arg/1)
     }
   end
@@ -236,6 +249,7 @@ defmodule SutraUI.Commands.Action do
       source: arg[:source] && to_string(arg.source),
       placeholder: arg[:placeholder],
       required: arg.required,
+      max_length: arg[:max_length] || 500,
       choices: Enum.map(arg.choices, fn {value, label} -> %{value: value, label: label} end)
     }
   end

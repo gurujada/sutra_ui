@@ -58,6 +58,31 @@ defmodule SutraUI.Commands.ActionTest do
     end
   end
 
+  test "free_text names a required text argument of a server action" do
+    arg = %{name: :question, type: :text, max_length: 250}
+
+    action =
+      Action.new(
+        id: "ask",
+        title: "Ask",
+        run: fn s, _ -> s end,
+        args: [arg],
+        free_text: :question
+      )
+
+    assert %{free_text: "question", args: [%{max_length: 250}]} = Action.to_wire(action)
+
+    for opts <- [
+          [args: [arg], free_text: :missing],
+          [args: [%{name: :question, type: :text, required: false}], free_text: :question],
+          [args: [%{name: :question, type: :choice}], free_text: :question]
+        ] do
+      assert_raise ArgumentError, ~r/free_text/, fn ->
+        Action.new([id: "ask", title: "Ask", run: fn s, _ -> s end] ++ opts)
+      end
+    end
+  end
+
   describe "allowed?/2" do
     test "disabled actions are not allowed; allow is asked with the socket" do
       assert Action.allowed?(Action.new(id: "a", title: "T", copy: "x"), :socket)
