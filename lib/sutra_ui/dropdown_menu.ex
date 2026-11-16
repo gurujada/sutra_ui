@@ -375,9 +375,10 @@ defmodule SutraUI.DropdownMenu do
 
         closePopover(focusOnTrigger = true) {
           if (this.trigger.getAttribute('aria-expanded') === 'false') return;
-          this.trigger.setAttribute('aria-expanded', 'false');
+          // Through LiveView's JS so a patch keeps the state (plain attributes are reset).
+          this.js().setAttribute(this.trigger, 'aria-expanded', 'false');
           this.trigger.removeAttribute('aria-activedescendant');
-          this.popover.setAttribute('aria-hidden', 'true');
+          this.js().setAttribute(this.popover, 'aria-hidden', 'true');
 
           if (focusOnTrigger) {
             this.trigger.focus();
@@ -391,8 +392,8 @@ defmodule SutraUI.DropdownMenu do
             detail: { source: this.el }
           }));
 
-          this.trigger.setAttribute('aria-expanded', 'true');
-          this.popover.setAttribute('aria-hidden', 'false');
+          this.js().setAttribute(this.trigger, 'aria-expanded', 'true');
+          this.js().setAttribute(this.popover, 'aria-hidden', 'false');
           this.updateMenuItems();
 
           if (this.menuItems.length > 0 && initialSelection) {
